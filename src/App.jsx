@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, FileText, Settings, LogOut, Search, Send, BookOpen, Clock, CheckCircle, AlertCircle, Lock, Unlock, TrendingUp, Database, MessageSquare, Award, ChevronDown, ChevronRight, X, Calendar, BarChart3 } from 'lucide-react';
 
