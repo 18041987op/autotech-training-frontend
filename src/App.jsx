@@ -40,7 +40,7 @@ function AppRoutes() {
         <Route path="onboarding" element={<SimplePage titleKey="pages.onboardingTitle" />} />
         <Route path="training" element={<SimplePage titleKey="pages.trainingTitle" />} />
         <Route path="culture" element={<SimplePage titleKey="pages.cultureTitle" />} />
-        <Route path="evaluations" element={<SimplePage titleKey="pages.evaluationsTitle" />} />
+        <Route path="assessments" element={<SimplePage titleKey="nav.assessments" />} />
         <Route path="ai" element={<SimplePage titleKey="pages.aiCoachTitle" />} />
         <Route path="progress" element={<SimplePage titleKey="pages.progressTitle" />} />
         <Route path="settings" element={<SettingsPage />} />
