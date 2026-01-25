@@ -15,6 +15,7 @@ function inferTypeFromTitle(title = "") {
 export function ModulesListPage({ pageType }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -57,20 +58,18 @@ export function ModulesListPage({ pageType }) {
       ? "modules.assessments.subtitle"
       : "modules.training.subtitle";
 
-  if (pageType === "admin-users-placeholder") {
+  if (loading) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{t("admin.usersTitle")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t("common.comingSoon")}</p>
+      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+        {t("status.loading")}
       </div>
     );
   }
 
-  if (pageType === "admin-content-placeholder") {
+  if (err) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{t("admin.contentTitle")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t("common.comingSoon")}</p>
+      <div className="rounded-3xl border border-red-200 bg-red-50 p-6 shadow-sm text-sm text-red-700">
+        {err}
       </div>
     );
   }
@@ -82,15 +81,7 @@ export function ModulesListPage({ pageType }) {
         <p className="mt-2 text-sm text-slate-600">{t(subtitleKey)}</p>
       </div>
 
-      {loading ? (
-        <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
-          {t("status.loading")}
-        </div>
-      ) : err ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 p-6 shadow-sm text-sm text-red-700">
-          {err}
-        </div>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
           <div className="font-extrabold">{t("modules.empty.title")}</div>
           <div className="mt-2 text-xs text-slate-500">{t("modules.empty.hint")}</div>
@@ -107,12 +98,14 @@ export function ModulesListPage({ pageType }) {
                   </span>
                 ) : null}
               </div>
+
               <p className="mt-2 text-sm text-slate-600">{m.description || "—"}</p>
 
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
                 <span>{t("modules.completion")}</span>
                 <span className="font-semibold text-slate-700">{m.completionRate || 0}%</span>
               </div>
+
               <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
                 <div
                   className="h-2 rounded-full bg-slate-900"
