@@ -1,752 +1,1039 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
-import { Shield, Users, FileText, Settings, LogOut, Search, Send, BookOpen, Clock, CheckCircle, AlertCircle, Lock, Unlock, TrendingUp, Database, MessageSquare, Award, ChevronDown, ChevronRight, X, Calendar, BarChart3 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import i18n from './i18n';
+import { api } from './api';
+import {
+  LayoutGrid, GraduationCap, BookOpen, BadgeCheck, MessageSquare, BarChart3,
+  Users, FolderKanban, HardDrive, LogOut, Globe, Plus, CheckCircle2, AlertTriangle,
+  Search, ExternalLink
+} from 'lucide-react';
 
-// ⚠️ IMPORTANTE: Cambia esta URL por la de tu backend en Render
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// -------------------------
+// Auth helpers
+// -------------------------
+function setToken(token) {
+  localStorage.setItem('token', token);
+}
+function clearToken() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('authToken');
+}
+function getToken() {
+  return localStorage.getItem('token') || localStorage.getItem('authToken');
+}
 
-export default function AutoRepairLearningPortal() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authView, setAuthView] = useState('login');
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [selectedModule, setSelectedModule] = useState(null);
-  const [quizActive, setQuizActive] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const [chatInput, setChatInput] = useState('');
-  const [currentQuiz, setCurrentQuiz] = useState(null);
-  const [quizAnswers, setQuizAnswers] = useState({});
-  const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [modules, setModules] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [registerData, setRegisterData] = useState({ name: '', email: '', password: '', role: 'technician' });
+function useAuth() {
+  const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
 
-  // Verificar autenticación al cargar
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      verifyToken(token);
+    const t = getToken();
+    if (!t) {
+      setReady(true);
+      return;
     }
+    api.verify()
+      .then((d) => setUser(d.user))
+      .catch(() => clearToken())
+      .finally(() => setReady(true));
   }, []);
 
-  // Cargar módulos cuando el usuario esté autenticado
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadModules();
-    }
-  }, [isAuthenticated]);
-
-  const verifyToken = async (token) => {
-    try {
-      const response = await fetch(`${API_URL}/api/auth/verify`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentUser(data.user);
-        setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem('token');
-      }
-    } catch (error) {
-      console.error('Error verificando token:', error);
-      localStorage.removeItem('token');
-    }
+  const logout = () => {
+    clearToken();
+    setUser(null);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+  return { user, setUser, ready, logout };
+}
 
-    try {
-      const response = await fetch(`${API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(loginData)
-      });
+function RequireAuth({ user, children }) {
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  return children;
+}
 
-      const data = await response.json();
+function RequireAdmin({ user, children }) {
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'admin') return <Navigate to="/" replace />;
+  return children;
+}
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        setCurrentUser(data.user);
-        setIsAuthenticated(true);
-      } else {
-        setError(data.error || 'Error al iniciar sesión');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Error de conexión. Verifica que el backend esté corriendo.');
-    } finally {
-      setLoading(false);
-    }
-  };
+// -------------------------
+// UI building blocks
+// -------------------------
+function Card({ title, right, children }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 shadow-xl shadow-black/20">
+      {(title || right) && (
+        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
+          <div className="text-sm font-semibold text-white/90">{title}</div>
+          <div>{right}</div>
+        </div>
+      )}
+      <div className="p-5">{children}</div>
+    </div>
+  );
+}
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+function Pill({ children }) {
+  return <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/80 border border-white/10">{children}</span>;
+}
 
-    try {
-      const response = await fetch(`${API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(registerData)
-      });
+function PrimaryButton({ children, ...props }) {
+  return (
+    <button
+      {...props}
+      className={`inline-flex items-center gap-2 rounded-xl bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-white/90 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${props.className || ''}`}
+    >
+      {children}
+    </button>
+  );
+}
 
-      const data = await response.json();
+function GhostButton({ children, ...props }) {
+  return (
+    <button
+      {...props}
+      className={`inline-flex items-center gap-2 rounded-xl bg-white/5 text-white px-4 py-2 text-sm font-semibold hover:bg-white/10 border border-white/10 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed ${props.className || ''}`}
+    >
+      {children}
+    </button>
+  );
+}
 
-      if (response.ok) {
-        alert('Registro exitoso. Tu cuenta está pendiente de aprobación por un administrador.');
-        setAuthView('login');
-      } else {
-        setError(data.error || 'Error al registrar usuario');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError('Error de conexión. Verifica que el backend esté corriendo.');
-    } finally {
-      setLoading(false);
-    }
-  };
+function TextField({ label, value, onChange, type = 'text', placeholder, autoComplete }) {
+  return (
+    <label className="block">
+      <div className="text-xs font-semibold text-white/70 mb-2">{label}</div>
+      <input
+        className="w-full rounded-xl bg-black/20 border border-white/10 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-white/20"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        type={type}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+      />
+    </label>
+  );
+}
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-    setActiveSection('dashboard');
-  };
+function SelectField({ label, value, onChange, options }) {
+  return (
+    <label className="block">
+      <div className="text-xs font-semibold text-white/70 mb-2">{label}</div>
+      <select
+        className="w-full rounded-xl bg-black/20 border border-white/10 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-white/20"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value} className="bg-[#0b1020]">
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
-  const loadModules = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/modules/user`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+// -------------------------
+// Layout
+// -------------------------
+function AppShell({ user, onLogout, children }) {
+  const { t } = useTranslation();
+  const location = useLocation();
 
-      if (response.ok) {
-        const data = await response.json();
-        setModules(data.modules);
-      }
-    } catch (error) {
-      console.error('Error cargando módulos:', error);
-    }
-  };
+  const nav = useMemo(() => {
+    const base = [
+      { to: '/', label: t('dashboard'), icon: LayoutGrid },
+      { to: '/onboarding', label: t('onboarding'), icon: GraduationCap },
+      { to: '/training', label: t('training'), icon: BookOpen },
+      { to: '/culture', label: t('culture'), icon: BadgeCheck },
+      { to: '/evaluations', label: t('evaluations'), icon: BadgeCheck },
+      { to: '/ai', label: t('aiCoach'), icon: MessageSquare },
+      { to: '/progress', label: t('myProgress'), icon: BarChart3 }
+    ];
+    const admin = [
+      { to: '/admin/users', label: t('adminUsers'), icon: Users },
+      { to: '/admin/content', label: t('adminContent'), icon: FolderKanban },
+      { to: '/admin/drive', label: t('adminDrive'), icon: HardDrive }
+    ];
+    return user?.role === 'admin' ? [...base, ...admin] : base;
+  }, [t, user?.role]);
 
-  const generateQuizWithAI = async (moduleTitle, moduleId) => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/ai/generate-quiz`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ module_title: moduleTitle, module_id: moduleId })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setCurrentQuiz(data.quiz);
-        setQuizActive(true);
-        setQuizAnswers({});
-        setQuizSubmitted(false);
-      } else {
-        alert('Error al generar quiz. Intenta nuevamente.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error de conexión al generar quiz.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAIChatMessage = async (message) => {
-    setChatMessages(prev => [...prev, { role: 'user', content: message }]);
-    setChatInput('');
-
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/ai/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ message })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setChatMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.response,
-          source: 'Base de Conocimiento'
-        }]);
-      } else {
-        setChatMessages(prev => [...prev, {
-          role: 'assistant',
-          content: 'Lo siento, hubo un error. Intenta nuevamente.',
-          error: true
-        }]);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setChatMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Error de conexión. Verifica tu conexión a internet.',
-        error: true
-      }]);
-    }
-  };
-
-  const submitQuiz = async () => {
-    const quiz = currentQuiz;
-    let correctCount = 0;
-
-    quiz.questions.forEach((q, index) => {
-      if (quizAnswers[index] === q.correct) {
-        correctCount++;
-      }
-    });
-
-    const score = (correctCount / quiz.questions.length) * 100;
-    const passed = score >= quiz.passingScore;
-
-    setQuizSubmitted({ score, passed, correctCount, total: quiz.questions.length });
-
-    // Guardar progreso en backend
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/api/progress`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          module_id: selectedModule.id,
-          completion_rate: passed ? 100 : 50,
-          quiz_score: score
-        })
-      });
-    } catch (error) {
-      console.error('Error guardando progreso:', error);
-    }
-  };
-
-  const LoginView = () => (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl mx-auto flex items-center justify-center mb-4">
-              <Shield className="w-10 h-10 text-white" />
+  return (
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
+          {/* Sidebar */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 shadow-xl shadow-black/20 p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-bold tracking-tight">{t('appName')}</div>
+              <Pill>{user?.role}</Pill>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Portal de Capacitación</h1>
-            <p className="text-slate-600 mt-2">Sistema de Certificación Profesional</p>
+
+            <div className="mt-4 space-y-1">
+              {nav.map((item) => {
+                const active = location.pathname === item.to;
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm border ${
+                      active ? 'bg-white text-black border-white' : 'bg-transparent text-white/85 border-transparent hover:bg-white/5 hover:border-white/10'
+                    }`}
+                  >
+                    <Icon size={18} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 border-t border-white/10 pt-4 space-y-2">
+              <div className="text-xs text-white/60">{user?.email}</div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-white/70">
+                  <Globe size={16} />
+                  {t('language')}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    className={`rounded-lg px-2 py-1 text-xs border ${i18n.language === 'en' ? 'bg-white text-black border-white' : 'bg-white/5 text-white border-white/10'}`}
+                    onClick={() => { i18n.changeLanguage('en'); localStorage.setItem('lang', 'en'); }}
+                  >
+                    EN
+                  </button>
+                  <button
+                    className={`rounded-lg px-2 py-1 text-xs border ${i18n.language === 'es' ? 'bg-white text-black border-white' : 'bg-white/5 text-white border-white/10'}`}
+                    onClick={() => { i18n.changeLanguage('es'); localStorage.setItem('lang', 'es'); }}
+                  >
+                    ES
+                  </button>
+                </div>
+              </div>
+
+              <GhostButton className="w-full justify-center" onClick={onLogout}>
+                <LogOut size={16} /> {t('logout')}
+              </GhostButton>
+            </div>
           </div>
 
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {authView === 'login' ? (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="usuario@empresa.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Iniciando...' : 'Iniciar Sesión'}
-              </button>
-              <div className="text-center mt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthView('register');
-                    setError(null);
-                  }}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                >
-                  ¿No tienes cuenta? Registrarse
-                </button>
-              </div>
-            </form>
-          ) : (
-            <form onSubmit={handleRegister} className="space-y-4">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-                <p className="text-sm text-yellow-800">
-                  <AlertCircle className="w-4 h-4 inline mr-2" />
-                  Tu cuenta será revisada por un administrador antes de obtener acceso.
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Nombre Completo
-                </label>
-                <input
-                  type="text"
-                  value={registerData.name}
-                  onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Juan Pérez"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Correo Electrónico
-                </label>
-                <input
-                  type="email"
-                  value={registerData.email}
-                  onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="usuario@empresa.com"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Rol
-                </label>
-                <select
-                  value={registerData.role}
-                  onChange={(e) => setRegisterData({ ...registerData, role: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="technician">Técnico Automotriz</option>
-                  <option value="administrative">Personal Administrativo</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Contraseña
-                </label>
-                <input
-                  type="password"
-                  value={registerData.password}
-                  onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
-                  required
-                  minLength="6"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50"
-              >
-                {loading ? 'Registrando...' : 'Solicitar Acceso'}
-              </button>
-              <div className="text-center mt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthView('login');
-                    setError(null);
-                  }}
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                >
-                  ¿Ya tienes cuenta? Iniciar Sesión
-                </button>
-              </div>
-            </form>
-          )}
+          {/* Main */}
+          <div className="space-y-5">
+            {children}
+          </div>
         </div>
       </div>
     </div>
   );
+}
 
-  const DashboardView = () => {
-    const groupedModules = modules.reduce((acc, module) => {
-      if (!acc[module.category]) acc[module.category] = [];
-      acc[module.category].push(module);
-      return acc;
-    }, {});
+// -------------------------
+// Pages
+// -------------------------
+function LoginPage({ onLoggedIn }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">Módulos de Capacitación</h2>
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-        {Object.keys(groupedModules).map((category) => (
-          <div key={category}>
-            <h3 className="text-sm font-semibold text-slate-600 uppercase tracking-wider mb-3">
-              {category === 'universal' ? 'Módulos Universales' :
-               category === 'technician' ? 'Módulos Técnicos' :
-               'Módulos Administrativos'}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {groupedModules[category].map(module => (
-                <ModuleCard key={module.id} module={module} />
-              ))}
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const from = location.state?.from?.pathname || '/';
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const data = await api.login(email, password);
+      setToken(data.token);
+      onLoggedIn(data.user);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <Card
+          title={t('login')}
+          right={<Link className="text-sm text-white/70 hover:text-white" to="/register">{t('register')}</Link>}
+        >
+          {error && (
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              <AlertTriangle size={16} className="mt-0.5" />
+              <div>{error}</div>
+            </div>
+          )}
+          <form onSubmit={submit} className="space-y-4">
+            <TextField label={t('email')} value={email} onChange={setEmail} type="email" autoComplete="email" />
+            <TextField label={t('password')} value={password} onChange={setPassword} type="password" autoComplete="current-password" />
+            <PrimaryButton disabled={loading} className="w-full justify-center" type="submit">
+              {loading ? t('loading') : t('login')}
+            </PrimaryButton>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function RegisterPage() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [role, setRole] = useState('technician');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [ok, setOk] = useState('');
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setOk('');
+    setLoading(true);
+    try {
+      await api.register({ name, email, password, role });
+      setOk('Account created. Pending approval by an administrator.');
+      setTimeout(() => navigate('/login'), 800);
+    } catch (err) {
+      setError(err.message || 'Register failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <Card
+          title={t('register')}
+          right={<Link className="text-sm text-white/70 hover:text-white" to="/login">{t('login')}</Link>}
+        >
+          {error && (
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
+              <AlertTriangle size={16} className="mt-0.5" />
+              <div>{error}</div>
+            </div>
+          )}
+          {ok && (
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
+              <CheckCircle2 size={16} className="mt-0.5" />
+              <div>{ok}</div>
+            </div>
+          )}
+          <form onSubmit={submit} className="space-y-4">
+            <TextField label={t('name')} value={name} onChange={setName} autoComplete="name" />
+            <TextField label={t('email')} value={email} onChange={setEmail} type="email" autoComplete="email" />
+            <TextField label={t('password')} value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+            <SelectField
+              label={t('role')}
+              value={role}
+              onChange={setRole}
+              options={[
+                { value: 'technician', label: t('role_technician') },
+                { value: 'administrative', label: t('role_administrative') }
+              ]}
+            />
+            <PrimaryButton disabled={loading} className="w-full justify-center" type="submit">
+              {loading ? t('loading') : t('register')}
+            </PrimaryButton>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function HomePage() {
+  const { t } = useTranslation();
+  return (
+    <div className="space-y-5">
+      <Card title="Today">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-xs text-white/60 mb-1">Required this week</div>
+            <div className="text-2xl font-bold">3</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-xs text-white/60 mb-1">Onboarding items</div>
+            <div className="text-2xl font-bold">2</div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="text-xs text-white/60 mb-1">Knowledge checks pending</div>
+            <div className="text-2xl font-bold">1</div>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="What this app is for">
+        <div className="text-sm text-white/80 leading-relaxed">
+          Training, onboarding and company culture in one place — controlled by role, with required knowledge checks and progress tracking.
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function ModuleListPage({ title, categoryFilter }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const [q, setQ] = useState('');
+  const [modules, setModules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    api.getUserModules()
+      .then((d) => {
+        if (!mounted) return;
+        setModules(d.modules || []);
+      })
+      .catch((e) => mounted && setErr(e.message))
+      .finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
+  }, []);
+
+  const filtered = useMemo(() => {
+    const base = modules.filter((m) => {
+      if (!categoryFilter) return true;
+      return m.category === categoryFilter;
+    });
+    const ql = q.trim().toLowerCase();
+    if (!ql) return base;
+    return base.filter((m) => (m.title || '').toLowerCase().includes(ql) || (m.description || '').toLowerCase().includes(ql));
+  }, [modules, q, categoryFilter]);
+
+  return (
+    <Card
+      title={title}
+      right={
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
+            <input
+              className="rounded-xl bg-black/20 border border-white/10 pl-9 pr-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-white/20"
+              placeholder={t('search')}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+          </div>
+        </div>
+      }
+    >
+      {loading && <div className="text-sm text-white/70">{t('loading')}</div>}
+      {err && <div className="text-sm text-red-200">{t('error')}: {err}</div>}
+
+      {!loading && filtered.length === 0 && (
+        <div className="text-sm text-white/70">No modules found.</div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filtered.map((m) => (
+          <div key={m.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-base font-semibold">{m.title}</div>
+                <div className="text-sm text-white/70 mt-1">{m.description}</div>
+              </div>
+              <Pill>{m.category}</Pill>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {m.required ? <Pill>{t('required')}</Pill> : <Pill>{t('optional')}</Pill>}
+              <Pill>{Math.round(m.completionRate || 0)}%</Pill>
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <PrimaryButton onClick={() => navigate(`/modules/${m.id}`)}>
+                {t('open')}
+              </PrimaryButton>
             </div>
           </div>
         ))}
       </div>
-    );
+    </Card>
+  );
+}
+
+function ModuleDetailPage() {
+  const { t } = useTranslation();
+  const { id } = useParams();
+
+  const [module, setModule] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  const [coachQ, setCoachQ] = useState('');
+  const [coachMsgs, setCoachMsgs] = useState([]);
+
+  const [assessment, setAssessment] = useState(null);
+  const [answers, setAnswers] = useState({});
+  const [score, setScore] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    setErr('');
+    Promise.all([api.getModule(id), api.getModuleResources(id)])
+      .then(([m, r]) => {
+        if (!mounted) return;
+        setModule(m.module);
+        setFiles(r.files || []);
+      })
+      .catch((e) => mounted && setErr(e.message))
+      .finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
+  }, [id]);
+
+  const askAI = async () => {
+    const q = coachQ.trim();
+    if (!q) return;
+    setCoachQ('');
+    setCoachMsgs((p) => [...p, { role: 'user', content: q }]);
+    try {
+      const data = await api.aiChat(q);
+      setCoachMsgs((p) => [...p, { role: 'assistant', content: data.response }]);
+    } catch (e) {
+      setCoachMsgs((p) => [...p, { role: 'assistant', content: `Error: ${e.message}` }]);
+    }
   };
 
-  const ModuleCard = ({ module }) => {
-    const canAccess = module.category === 'universal' ||
-                     module.category === currentUser?.role ||
-                     currentUser?.role === 'admin';
-
-    return (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all">
-        <div className="h-1" style={{ backgroundColor: module.color }}></div>
-        <div className="p-5">
-          <div className="flex items-start justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${module.color}15` }}>
-              <Shield className="w-5 h-5" style={{ color: module.color }} />
-            </div>
-            {module.required && (
-              <span className="px-2 py-1 bg-red-50 text-red-700 text-xs font-medium rounded">
-                Obligatorio
-              </span>
-            )}
-          </div>
-
-          <h3 className="font-semibold text-slate-900 mb-1">{module.title}</h3>
-          <p className="text-sm text-slate-600 mb-4">{module.description}</p>
-
-          <div className="space-y-2 mb-4">
-            <div className="flex justify-between text-xs text-slate-500">
-              <span>Completado</span>
-              <span className="font-medium">{module.completionRate || 0}%</span>
-            </div>
-            <div className="w-full bg-slate-200 rounded-full h-1.5">
-              <div
-                className="h-1.5 rounded-full transition-all"
-                style={{
-                  width: `${module.completionRate || 0}%`,
-                  backgroundColor: module.color
-                }}
-              ></div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => {
-              if (canAccess) {
-                setSelectedModule(module);
-                setActiveSection('module');
-              }
-            }}
-            disabled={!canAccess}
-            className={`w-full py-2 px-4 rounded-lg font-medium text-sm transition-all ${
-              canAccess
-                ? 'text-white hover:opacity-90'
-                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-            }`}
-            style={canAccess ? { backgroundColor: module.color } : {}}
-          >
-            {canAccess ? 'Acceder al Módulo' : 'Acceso Restringido'}
-          </button>
-        </div>
-      </div>
-    );
+  const startAssessment = async () => {
+    if (!module) return;
+    setScore(null);
+    setAnswers({});
+    try {
+      const data = await api.aiGenerateAssessment(module.title, module.id);
+      setAssessment(data.quiz);
+    } catch (e) {
+      alert(e.message);
+    }
   };
 
-  const ModuleDetailView = () => {
-    if (!selectedModule) return null;
-
-    return (
-      <div className="space-y-6">
-        <button
-          onClick={() => {
-            setSelectedModule(null);
-            setActiveSection('dashboard');
-          }}
-          className="text-slate-600 hover:text-slate-900 font-medium flex items-center gap-2"
-        >
-          ← Volver al Dashboard
-        </button>
-
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-4">{selectedModule.title}</h1>
-          <p className="text-slate-600 mb-6">{selectedModule.description}</p>
-
-          <button
-            onClick={() => generateQuizWithAI(selectedModule.title, selectedModule.id)}
-            disabled={loading}
-            className="w-full py-4 px-6 rounded-lg font-semibold text-white transition-all flex items-center justify-center gap-3"
-            style={{ backgroundColor: selectedModule.color }}
-          >
-            <BookOpen className="w-5 h-5" />
-            {loading ? 'Generando evaluación...' : 'Iniciar Evaluación de Certificación'}
-          </button>
-        </div>
-      </div>
-    );
+  const submitAssessment = () => {
+    if (!assessment?.questions?.length) return;
+    let correct = 0;
+    for (const q of assessment.questions) {
+      if (answers[q.id] === q.correct) correct += 1;
+    }
+    const pct = Math.round((correct / assessment.questions.length) * 100);
+    setScore(pct);
   };
-
-  const QuizView = () => {
-    if (!currentQuiz) return null;
-
-    return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
-          {!quizSubmitted ? (
-            <div className="space-y-8">
-              <h2 className="text-2xl font-bold text-slate-900">{currentQuiz.title}</h2>
-              
-              {currentQuiz.questions.map((question, qIndex) => (
-                <div key={question.id} className="pb-8 border-b border-slate-200 last:border-0">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">
-                    {qIndex + 1}. {question.question}
-                  </h3>
-                  <div className="space-y-3">
-                    {question.options.map((option, oIndex) => (
-                      <label
-                        key={oIndex}
-                        className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                          quizAnswers[qIndex] === oIndex
-                            ? 'border-blue-600 bg-blue-50'
-                            : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={`question-${qIndex}`}
-                          checked={quizAnswers[qIndex] === oIndex}
-                          onChange={() => setQuizAnswers({ ...quizAnswers, [qIndex]: oIndex })}
-                          className="mt-1"
-                        />
-                        <span className="text-slate-700">{option}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              <button
-                onClick={submitQuiz}
-                disabled={Object.keys(quizAnswers).length !== currentQuiz.questions.length}
-                className="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                Enviar Evaluación
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className={`p-8 rounded-xl ${quizSubmitted.passed ? 'bg-green-50 border-2 border-green-200' : 'bg-red-50 border-2 border-red-200'}`}>
-                <div className="text-center">
-                  {quizSubmitted.passed ? (
-                    <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                  ) : (
-                    <AlertCircle className="w-16 h-16 text-red-600 mx-auto mb-4" />
-                  )}
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                    {quizSubmitted.passed ? '¡Felicitaciones!' : 'Resultado Insuficiente'}
-                  </h3>
-                  <p className="text-4xl font-bold text-slate-900 mb-2">{quizSubmitted.score.toFixed(0)}%</p>
-                  <p className="text-slate-600">
-                    {quizSubmitted.correctCount}/{quizSubmitted.total} respuestas correctas
-                  </p>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setQuizActive(false);
-                  setCurrentQuiz(null);
-                  setQuizAnswers({});
-                  setQuizSubmitted(false);
-                }}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all"
-              >
-                Finalizar
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  if (!isAuthenticated) {
-    return <LoginView />;
-  }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        body {
-          font-family: 'Inter', sans-serif;
-        }
-      `}</style>
+    <div className="space-y-5">
+      <Card title="Module">
+        {loading && <div className="text-sm text-white/70">{t('loading')}</div>}
+        {err && <div className="text-sm text-red-200">{t('error')}: {err}</div>}
+        {!loading && module && (
+          <div>
+            <div className="text-2xl font-bold">{module.title}</div>
+            <div className="text-white/70 mt-2">{module.description}</div>
 
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Pill>{module.category}</Pill>
+              {module.required ? <Pill>{t('required')}</Pill> : <Pill>{t('optional')}</Pill>}
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <Card title={t('resources')}>
+        {files.length === 0 ? (
+          <div className="text-sm text-white/70">No files yet. Upload PDFs/docs into the module folder in Drive.</div>
+        ) : (
+          <div className="space-y-2">
+            {files.map((f) => (
+              <div key={f.id} className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold truncate">{f.name}</div>
+                  <div className="text-xs text-white/60 truncate">{f.mimeType}</div>
+                </div>
+                {f.webViewLink && (
+                  <a
+                    href={f.webViewLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
+                  >
+                    <ExternalLink size={16} /> Open
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
+      <Card
+        title={t('assessment')}
+        right={<PrimaryButton onClick={startAssessment}>{t('startAssessment')}</PrimaryButton>}
+      >
+        {!assessment && <div className="text-sm text-white/70">Start a short knowledge check to confirm understanding.</div>}
+
+        {assessment && (
+          <div className="space-y-4">
+            {assessment.questions?.map((q) => (
+              <div key={q.id} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                <div className="font-semibold">{q.id}. {q.question}</div>
+                <div className="mt-3 space-y-2">
+                  {q.options.map((opt, idx) => (
+                    <label key={idx} className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 cursor-pointer hover:bg-white/10">
+                      <input
+                        type="radio"
+                        name={`q-${q.id}`}
+                        checked={answers[q.id] === idx}
+                        onChange={() => setAnswers((p) => ({ ...p, [q.id]: idx }))}
+                        className="mt-1"
+                      />
+                      <div className="text-sm">{opt}</div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-slate-900">AutoTech Training</h1>
-                <p className="text-xs text-slate-500">Sistema de Certificación Profesional</p>
-              </div>
+              <PrimaryButton onClick={submitAssessment}>Submit</PrimaryButton>
+              {score !== null && <Pill>Score: {score}%</Pill>}
             </div>
+          </div>
+        )}
+      </Card>
 
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setChatOpen(!chatOpen)}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-all relative"
-              >
-                <MessageSquare className="w-5 h-5 text-slate-600" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-              </button>
+      <Card title={t('aiCoach')}>
+        <div className="space-y-3">
+          <div className="text-sm text-white/70">Ask about procedures, safety, customer handling, or this module content.</div>
 
-              <div className="flex items-center gap-3 px-4 py-2 bg-slate-100 rounded-lg">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {currentUser?.name?.charAt(0)}
-                </div>
-                <div className="hidden md:block">
-                  <p className="text-sm font-semibold text-slate-900">{currentUser?.name}</p>
-                  <p className="text-xs text-slate-500 capitalize">{currentUser?.role}</p>
-                </div>
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4 h-[240px] overflow-auto space-y-3">
+            {coachMsgs.length === 0 ? (
+              <div className="text-sm text-white/50">No messages yet.</div>
+            ) : coachMsgs.map((m, i) => (
+              <div key={i} className={`text-sm ${m.role === 'user' ? 'text-white' : 'text-white/80'}`}>
+                <span className="font-semibold">{m.role === 'user' ? 'You' : 'AI'}:</span> {m.content}
               </div>
+            ))}
+          </div>
 
-              <button
-                onClick={handleLogout}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-all"
-              >
-                <LogOut className="w-5 h-5 text-slate-600" />
-              </button>
-            </div>
+          <div className="flex gap-2">
+            <input
+              className="flex-1 rounded-xl bg-black/20 border border-white/10 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-white/20"
+              value={coachQ}
+              onChange={(e) => setCoachQ(e.target.value)}
+              placeholder="Type your question..."
+            />
+            <PrimaryButton onClick={askAI}>{t('askAI')}</PrimaryButton>
           </div>
         </div>
-      </header>
+      </Card>
+    </div>
+  );
+}
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {quizActive ? (
-          <QuizView />
-        ) : activeSection === 'module' ? (
-          <ModuleDetailView />
-        ) : (
-          <DashboardView />
-        )}
-      </main>
+function ProgressPage() {
+  const { t } = useTranslation();
+  const [data, setData] = useState([]);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
 
-      {chatOpen && (
-        <div className="fixed bottom-6 right-6 w-96 bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden z-50">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-white" />
-              <h3 className="font-semibold text-white">Asistente de Capacitación</h3>
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    api.getMyProgress()
+      .then((d) => mounted && setData(d.progress || []))
+      .catch((e) => mounted && setErr(e.message))
+      .finally(() => mounted && setLoading(false));
+    return () => { mounted = false; };
+  }, []);
+
+  return (
+    <Card title={t('myProgress')}>
+      {loading && <div className="text-sm text-white/70">{t('loading')}</div>}
+      {err && <div className="text-sm text-red-200">{t('error')}: {err}</div>}
+      {!loading && (
+        <div className="space-y-2">
+          {data.length === 0 ? (
+            <div className="text-sm text-white/70">No progress records yet.</div>
+          ) : data.map((p) => (
+            <div key={p.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <div className="text-sm font-semibold">{p.modules?.title || 'Module'}</div>
+              <div className="text-xs text-white/60 mt-1">Completion: {p.completion_rate}% — Quiz: {p.quiz_score ?? 'N/A'}</div>
             </div>
-            <button
-              onClick={() => setChatOpen(false)}
-              className="text-white hover:bg-white/20 rounded p-1"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
 
-          <div className="h-96 overflow-y-auto p-4 space-y-4">
-            {chatMessages.length === 0 ? (
-              <div className="text-center text-slate-500 text-sm mt-8">
-                <p className="mb-2">Hola, soy tu asistente de capacitación.</p>
-                <p>Pregúntame sobre procedimientos, políticas o regulaciones.</p>
+function AICoachPage() {
+  const { t } = useTranslation();
+  const [q, setQ] = useState('');
+  const [msgs, setMsgs] = useState([]);
+
+  const send = async () => {
+    const text = q.trim();
+    if (!text) return;
+    setQ('');
+    setMsgs((p) => [...p, { role: 'user', content: text }]);
+    try {
+      const d = await api.aiChat(text);
+      setMsgs((p) => [...p, { role: 'assistant', content: d.response }]);
+    } catch (e) {
+      setMsgs((p) => [...p, { role: 'assistant', content: `Error: ${e.message}` }]);
+    }
+  };
+
+  return (
+    <Card title={t('aiCoach')}>
+      <div className="rounded-2xl border border-white/10 bg-black/20 p-4 h-[360px] overflow-auto space-y-3">
+        {msgs.length === 0 ? (
+          <div className="text-sm text-white/50">Ask anything about shop procedures, OSHA, customer service, or culture.</div>
+        ) : msgs.map((m, i) => (
+          <div key={i} className={`text-sm ${m.role === 'user' ? 'text-white' : 'text-white/80'}`}>
+            <span className="font-semibold">{m.role === 'user' ? 'You' : 'AI'}:</span> {m.content}
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 flex gap-2">
+        <input
+          className="flex-1 rounded-xl bg-black/20 border border-white/10 px-3 py-2 text-sm text-white outline-none focus:ring-2 focus:ring-white/20"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Type your question..."
+        />
+        <PrimaryButton onClick={send}>{t('askAI')}</PrimaryButton>
+      </div>
+    </Card>
+  );
+}
+
+// -------------------------
+// Admin pages
+// -------------------------
+function AdminDrivePage() {
+  const { t } = useTranslation();
+  const [msg, setMsg] = useState('');
+  const [anchors, setAnchors] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const run = async () => {
+    setLoading(true);
+    setMsg('');
+    try {
+      const d = await api.adminBootstrapDrive();
+      setMsg(d.message || t('driveReady'));
+      setAnchors(d.anchors || {});
+    } catch (e) {
+      setMsg(`${t('error')}: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card title={t('adminDrive')} right={<PrimaryButton disabled={loading} onClick={run}>{t('initDrive')}</PrimaryButton>}>
+      {msg && <div className="text-sm text-white/80 mb-3">{msg}</div>}
+      {anchors && (
+        <div className="space-y-2">
+          {Object.entries(anchors).map(([k, v]) => (
+            <div key={k} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+              <span className="font-semibold">{k}</span>: <span className="text-white/70">{v}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function AdminUsersPage() {
+  const { t } = useTranslation();
+  const [users, setUsers] = useState([]);
+  const [err, setErr] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // create form
+  const [openCreate, setOpenCreate] = useState(false);
+  const [cName, setCName] = useState('');
+  const [cEmail, setCEmail] = useState('');
+  const [cPassword, setCPassword] = useState('');
+  const [cRole, setCRole] = useState('technician');
+  const [cApproved, setCApproved] = useState(true);
+
+  const refresh = async () => {
+    setLoading(true);
+    setErr('');
+    try {
+      const d = await api.adminListUsers();
+      setUsers(d.users || []);
+    } catch (e) {
+      setErr(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { refresh(); }, []);
+
+  const approve = async (id) => {
+    try {
+      await api.adminApproveUser(id);
+      await refresh();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  const createUser = async () => {
+    try {
+      await api.adminCreateUser({
+        name: cName,
+        email: cEmail,
+        password: cPassword,
+        role: cRole,
+        approved: cApproved
+      });
+      setOpenCreate(false);
+      setCName(''); setCEmail(''); setCPassword('');
+      setCRole('technician'); setCApproved(true);
+      await refresh();
+    } catch (e) {
+      alert(e.message);
+    }
+  };
+
+  return (
+    <Card
+      title={t('adminUsers')}
+      right={
+        <PrimaryButton onClick={() => setOpenCreate(true)}>
+          <Plus size={16} /> {t('createUser')}
+        </PrimaryButton>
+      }
+    >
+      {loading && <div className="text-sm text-white/70">{t('loading')}</div>}
+      {err && <div className="text-sm text-red-200">{t('error')}: {err}</div>}
+
+      {!loading && (
+        <div className="space-y-2">
+          {users.map((u) => (
+            <div key={u.id} className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm font-semibold truncate">{u.name} <span className="text-white/50">({u.role})</span></div>
+                <div className="text-xs text-white/60 truncate">{u.email}</div>
               </div>
-            ) : (
-              chatMessages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-lg ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : msg.error
-                      ? 'bg-red-50 text-red-800 border border-red-200'
-                      : 'bg-slate-100 text-slate-900'
-                  }`}>
-                    <p className="text-sm">{msg.content}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+              <div className="flex items-center gap-2">
+                {u.approved ? <Pill>{t('approved')}</Pill> : <Pill>{t('pending')}</Pill>}
+                {!u.approved && (
+                  <PrimaryButton onClick={() => approve(u.id)}>
+                    {t('approve')}
+                  </PrimaryButton>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-          <div className="p-4 border-t border-slate-200">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter' && chatInput.trim()) {
-                    handleAIChatMessage(chatInput);
-                  }
-                }}
-                placeholder="Escribe tu pregunta..."
-                className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+      {/* Create modal */}
+      {openCreate && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center px-4 z-50">
+          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0b1020] shadow-2xl p-5">
+            <div className="flex items-center justify-between">
+              <div className="text-lg font-bold">{t('createUser')}</div>
+              <button className="text-white/70 hover:text-white" onClick={() => setOpenCreate(false)}>✕</button>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <TextField label={t('name')} value={cName} onChange={setCName} />
+              <TextField label={t('email')} value={cEmail} onChange={setCEmail} type="email" />
+              <TextField label={t('password')} value={cPassword} onChange={setCPassword} type="password" />
+              <SelectField
+                label={t('role')}
+                value={cRole}
+                onChange={setCRole}
+                options={[
+                  { value: 'technician', label: t('role_technician') },
+                  { value: 'administrative', label: t('role_administrative') },
+                  { value: 'admin', label: t('role_admin') }
+                ]}
               />
-              <button
-                onClick={() => {
-                  if (chatInput.trim()) {
-                    handleAIChatMessage(chatInput);
-                  }
-                }}
-                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+              <label className="flex items-center gap-2 text-sm text-white/80 mt-2">
+                <input type="checkbox" checked={cApproved} onChange={(e) => setCApproved(e.target.checked)} />
+                {t('approved')}
+              </label>
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <GhostButton onClick={() => setOpenCreate(false)}>{t('cancel')}</GhostButton>
+              <PrimaryButton onClick={createUser}>{t('create')}</PrimaryButton>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </Card>
+  );
+}
+
+function AdminContentPage() {
+  const { t } = useTranslation();
+  const [title, setTitle] = useState('');
+  const [description, setDesc] = useState('');
+  const [category, setCategory] = useState('universal');
+  const [required, setRequired] = useState(true);
+
+  const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const create = async () => {
+    setLoading(true);
+    setMsg('');
+    try {
+      const d = await api.adminCreateModule({ title, description, category, required });
+      setMsg(`Created: ${d.module?.title || title}`);
+      setTitle(''); setDesc('');
+      setCategory('universal'); setRequired(true);
+    } catch (e) {
+      setMsg(`${t('error')}: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card title={t('adminContent')}>
+      <div className="text-sm text-white/70 mb-4">
+        Create modules and automatically generate the Drive folder for resources.
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <TextField label={t('moduleTitle')} value={title} onChange={setTitle} />
+        <SelectField
+          label={t('category')}
+          value={category}
+          onChange={setCategory}
+          options={[
+            { value: 'universal', label: t('category_universal') },
+            { value: 'technician', label: t('category_technician') },
+            { value: 'administrative', label: t('category_administrative') }
+          ]}
+        />
+        <div className="md:col-span-2">
+          <TextField label={t('moduleDescription')} value={description} onChange={setDesc} />
+        </div>
+        <label className="flex items-center gap-2 text-sm text-white/80">
+          <input type="checkbox" checked={required} onChange={(e) => setRequired(e.target.checked)} />
+          {t('required')}
+        </label>
+      </div>
+
+      <div className="mt-4 flex items-center gap-2">
+        <PrimaryButton disabled={loading} onClick={create}>
+          <Plus size={16} /> {t('createModule')}
+        </PrimaryButton>
+        {msg && <div className="text-sm text-white/80">{msg}</div>}
+      </div>
+    </Card>
+  );
+}
+
+// -------------------------
+// App root
+// -------------------------
+export default function App() {
+  const auth = useAuth();
+
+  if (!auth.ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white/80">
+        Loading...
+      </div>
+    );
+  }
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={auth.user ? <Navigate to="/" replace /> : <LoginPage onLoggedIn={auth.setUser} />}
+        />
+        <Route
+          path="/register"
+          element={auth.user ? <Navigate to="/" replace /> : <RegisterPage />}
+        />
+
+        <Route
+          path="/*"
+          element={
+            <RequireAuth user={auth.user}>
+              <AppShell user={auth.user} onLogout={auth.logout}>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/onboarding" element={<ModuleListPage title="Onboarding" categoryFilter={null} />} />
+                  <Route path="/training" element={<ModuleListPage title="Training" categoryFilter={null} />} />
+                  <Route path="/culture" element={<ModuleListPage title="Culture" categoryFilter={null} />} />
+                  <Route path="/evaluations" element={<ModuleListPage title="Evaluations" categoryFilter={null} />} />
+                  <Route path="/ai" element={<AICoachPage />} />
+                  <Route path="/progress" element={<ProgressPage />} />
+                  <Route path="/modules/:id" element={<ModuleDetailPage />} />
+
+                  <Route
+                    path="/admin/drive"
+                    element={
+                      <RequireAdmin user={auth.user}>
+                        <AdminDrivePage />
+                      </RequireAdmin>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <RequireAdmin user={auth.user}>
+                        <AdminUsersPage />
+                      </RequireAdmin>
+                    }
+                  />
+                  <Route
+                    path="/admin/content"
+                    element={
+                      <RequireAdmin user={auth.user}>
+                        <AdminContentPage />
+                      </RequireAdmin>
+                    }
+                  />
+
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </AppShell>
+            </RequireAuth>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
