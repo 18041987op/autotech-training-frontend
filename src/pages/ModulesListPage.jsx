@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
 
 function inferTypeFromTitle(title = "") {
@@ -13,6 +14,7 @@ function inferTypeFromTitle(title = "") {
 
 export function ModulesListPage({ pageType }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -33,24 +35,33 @@ export function ModulesListPage({ pageType }) {
   }, []);
 
   const filtered = useMemo(() => {
-    if (pageType === "admin-users-placeholder" || pageType === "admin-content-placeholder") return [];
-    return modules.filter((m) => inferTypeFromTitle(m.title) === pageType);
+    if (pageType?.startsWith("admin-")) return [];
+    return (modules || []).filter((m) => inferTypeFromTitle(m.title) === pageType);
   }, [modules, pageType]);
 
-  const title =
+  const titleKey =
     pageType === "onboarding"
-      ? "Onboarding"
+      ? "modules.onboarding.title"
       : pageType === "training"
-      ? "Training"
+      ? "modules.training.title"
       : pageType === "assessments"
-      ? "Assessments"
-      : pageType;
+      ? "modules.assessments.title"
+      : "modules.training.title";
+
+  const subtitleKey =
+    pageType === "onboarding"
+      ? "modules.onboarding.subtitle"
+      : pageType === "training"
+      ? "modules.training.subtitle"
+      : pageType === "assessments"
+      ? "modules.assessments.subtitle"
+      : "modules.training.subtitle";
 
   if (pageType === "admin-users-placeholder") {
     return (
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">Admin / Users</h1>
-        <p className="mt-2 text-sm text-slate-600">Next phase (Option C). UI only for now.</p>
+        <h1 className="text-2xl font-extrabold">{t("admin.usersTitle")}</h1>
+        <p className="mt-2 text-sm text-slate-600">{t("common.comingSoon")}</p>
       </div>
     );
   }
@@ -58,8 +69,8 @@ export function ModulesListPage({ pageType }) {
   if (pageType === "admin-content-placeholder") {
     return (
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">Admin / Content</h1>
-        <p className="mt-2 text-sm text-slate-600">Next phase (Option C). UI only for now.</p>
+        <h1 className="text-2xl font-extrabold">{t("admin.contentTitle")}</h1>
+        <p className="mt-2 text-sm text-slate-600">{t("common.comingSoon")}</p>
       </div>
     );
   }
@@ -67,24 +78,22 @@ export function ModulesListPage({ pageType }) {
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{title}</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Showing modules tagged by naming convention (temporary). Next we’ll add a real “type” field in DB.
-        </p>
+        <h1 className="text-2xl font-extrabold">{t(titleKey)}</h1>
+        <p className="mt-2 text-sm text-slate-600">{t(subtitleKey)}</p>
       </div>
 
       {loading ? (
-        <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">Loading…</div>
+        <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+          {t("status.loading")}
+        </div>
       ) : err ? (
         <div className="rounded-3xl border border-red-200 bg-red-50 p-6 shadow-sm text-sm text-red-700">
           {err}
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
-          No modules found for this section yet.
-          <div className="mt-2 text-xs text-slate-500">
-            Tip: name a module like <b>Onboarding: Shop Tour</b> or <b>Knowledge Check: Safety Basics</b>.
-          </div>
+          <div className="font-extrabold">{t("modules.empty.title")}</div>
+          <div className="mt-2 text-xs text-slate-500">{t("modules.empty.hint")}</div>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -94,14 +103,14 @@ export function ModulesListPage({ pageType }) {
                 <h3 className="font-extrabold leading-tight">{m.title}</h3>
                 {m.required ? (
                   <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold">
-                    Required
+                    {t("status.required")}
                   </span>
                 ) : null}
               </div>
               <p className="mt-2 text-sm text-slate-600">{m.description || "—"}</p>
 
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                <span>Completion</span>
+                <span>{t("modules.completion")}</span>
                 <span className="font-semibold text-slate-700">{m.completionRate || 0}%</span>
               </div>
               <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
@@ -115,7 +124,7 @@ export function ModulesListPage({ pageType }) {
                 className="mt-4 w-full rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800"
                 onClick={() => navigate(`/modules/${m.id}`)}
               >
-                Open
+                {t("actions.open")}
               </button>
             </div>
           ))}

@@ -71,5 +71,61 @@
   "admin": {
     "usersTitle": "User Management",
     "contentTitle": "Content Management"
+  },
+  
+  "actions": {
+    "open": "Open",
+    "close": "Close",
+    "save": "Save",
+    "sync": "Sync from Drive",
+    "syncing": "Syncing…",
+    "openInDrive": "Open in Drive"
+  },
+  "status": {
+    "loading": "Loading…",
+    "required": "Required",
+    "noneFound": "No items found yet."
+  },
+  "modules": {
+    "onboarding": {
+      "title": "Onboarding",
+      "subtitle": "Company onboarding modules available to you."
+    },
+    "training": {
+      "title": "Training",
+      "subtitle": "Role-based training modules available to you."
+    },
+    "assessments": {
+      "title": "Assessments",
+      "subtitle": "Knowledge checks and skill checks for your role."
+    },
+    "empty": {
+      "title": "No modules found",
+      "hint": "Tip: create modules like “Onboarding: …” or “Knowledge Check: …”."
+    },
+    "completion": "Completion"
+  },
+  "moduleDetail": {
+    "title": "Module",
+    "resourcesTitle": "Resources",
+    "resourcesSubtitle": "Files listed from Drive and extracted text preview (if available).",
+    "noResources": "No files found for this module yet.",
+    "fullText": "Full text",
+    "noExtractedText": "No text extracted."
+  },
+  "progress": {
+    "title": "My Progress",
+    "subtitle": "Your completion and scores so far.",
+    "modulesStarted": "Modules started",
+    "avgCompletion": "Average completion",
+    "passed": "Passed checks (>=80)",
+    "detail": "Detail"
+  },
+  "auth2": {
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "loginFailed": "Login failed"
   }
+
+
 }

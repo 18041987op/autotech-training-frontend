@@ -70,5 +70,61 @@
   "admin": {
     "usersTitle": "Gestión de Usuarios",
     "contentTitle": "Gestión de Contenido"
+  },
+  
+  "actions": {
+    "open": "Abrir",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "sync": "Sincronizar desde Drive",
+    "syncing": "Sincronizando…",
+    "openInDrive": "Abrir en Drive"
+  },
+  "status": {
+    "loading": "Cargando…",
+    "required": "Obligatorio",
+    "noneFound": "No hay elementos todavía."
+  },
+  "modules": {
+    "onboarding": {
+      "title": "Onboarding",
+      "subtitle": "Módulos de onboarding disponibles para ti."
+    },
+    "training": {
+      "title": "Entrenamiento",
+      "subtitle": "Módulos de entrenamiento por rol disponibles para ti."
+    },
+    "assessments": {
+      "title": "Evaluaciones",
+      "subtitle": "Chequeos de conocimiento y habilidad para tu rol."
+    },
+    "empty": {
+      "title": "No se encontraron módulos",
+      "hint": "Tip: crea módulos como “Onboarding: …” o “Knowledge Check: …”."
+    },
+    "completion": "Progreso"
+  },
+  "moduleDetail": {
+    "title": "Módulo",
+    "resourcesTitle": "Recursos",
+    "resourcesSubtitle": "Archivos listados desde Drive y vista previa del texto extraído (si existe).",
+    "noResources": "Todavía no hay archivos para este módulo.",
+    "fullText": "Texto completo",
+    "noExtractedText": "No se extrajo texto."
+  },
+  "progress": {
+    "title": "Mi Progreso",
+    "subtitle": "Tu progreso y resultados hasta ahora.",
+    "modulesStarted": "Módulos iniciados",
+    "avgCompletion": "Promedio de progreso",
+    "passed": "Aprobadas (>=80)",
+    "detail": "Detalle"
+  },
+  "auth2": {
+    "signIn": "Iniciar sesión",
+    "signingIn": "Iniciando…",
+    "loginFailed": "No se pudo iniciar sesión"
   }
+
+
 }

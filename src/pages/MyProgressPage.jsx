@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
 
 export function MyProgressPage() {
+  const { t } = useTranslation();
   const [progress, setProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -33,7 +35,11 @@ export function MyProgressPage() {
   }, [progress]);
 
   if (loading) {
-    return <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">Loading…</div>;
+    return (
+      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+        {t("status.loading")}
+      </div>
+    );
   }
 
   if (err) {
@@ -47,22 +53,21 @@ export function MyProgressPage() {
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">My Progress</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Basic stats (Option B). Next we’ll add attempts/history and retake flow.
-        </p>
+        <h1 className="text-2xl font-extrabold">{t("progress.title")}</h1>
+        <p className="mt-2 text-sm text-slate-600">{t("progress.subtitle")}</p>
 
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <StatCard label="Modules started" value={stats.started} />
-          <StatCard label="Average completion" value={`${stats.avg}%`} />
-          <StatCard label="Passed checks (>=80)" value={stats.passed} />
+          <StatCard label={t("progress.modulesStarted")} value={stats.started} />
+          <StatCard label={t("progress.avgCompletion")} value={`${stats.avg}%`} />
+          <StatCard label={t("progress.passed")} value={stats.passed} />
         </div>
       </div>
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-extrabold">Detail</h2>
+        <h2 className="text-lg font-extrabold">{t("progress.detail")}</h2>
+
         {progress.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-600">No progress entries yet.</p>
+          <p className="mt-2 text-sm text-slate-600">{t("status.noneFound")}</p>
         ) : (
           <div className="mt-4 space-y-3">
             {progress.map((p) => (
@@ -74,7 +79,8 @@ export function MyProgressPage() {
                   </div>
                   <div className="text-right text-xs text-slate-600">
                     <div>
-                      Completion: <span className="font-semibold">{p.completion_rate || 0}%</span>
+                      {t("modules.completion")}:{" "}
+                      <span className="font-semibold">{p.completion_rate || 0}%</span>
                     </div>
                     <div>
                       Score: <span className="font-semibold">{p.quiz_score ?? "—"}</span>
