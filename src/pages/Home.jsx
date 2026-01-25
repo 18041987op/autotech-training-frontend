@@ -5,6 +5,8 @@ import { BookOpen, GraduationCap, Layers, Shield, Sparkles } from "lucide-react"
 
 function Card({ icon: Icon, title, blurb, to }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-3xl border bg-white p-5 shadow-sm">
       <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-900 text-white">
@@ -16,7 +18,7 @@ function Card({ icon: Icon, title, blurb, to }) {
         onClick={() => navigate(to)}
         className="mt-4 rounded-xl border px-3 py-2 text-xs font-semibold hover:bg-slate-50"
       >
-        View →
+        {t("common.view")} →
       </button>
     </div>
   );
@@ -28,13 +30,11 @@ export function Home({ user }) {
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-extrabold">
-          {t("home.headline")}
-        </h2>
+        <h2 className="text-2xl font-extrabold">{t("home.headline")}</h2>
         <p className="mt-2 text-sm text-slate-600">
           {user?.role === "technician"
-            ? "Focus on required training and assessments for your role."
-            : "Admin overview. Next we’ll wire real data."}
+            ? t("home.subtextTechnician")
+            : t("home.subtextAdmin")}
         </p>
       </div>
 

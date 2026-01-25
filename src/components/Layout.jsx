@@ -110,7 +110,7 @@ function Brand() {
       </div>
       <div>
         <p className="text-sm font-extrabold">{t("appName")}</p>
-        <p className="text-xs text-slate-500">Company learning + culture</p>
+        <p className="text-xs text-slate-500">{t("brand.tagline")}</p>
       </div>
     </div>
   );

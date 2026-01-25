@@ -40,7 +40,9 @@
       "onboarding": "Onboarding para nuevos",
       "training": "Entrenamiento por rol",
       "culture": "Cultura y estándares",
-      "evaluations": "Chequeos de conocimiento"
+      "evaluations": "Chequeos de conocimiento",
+      "view": "Ver",
+      "optionAHelp": "Opción A: layout + navegación + i18n. Próximo paso: conectar datos reales y reglas por rol."
     },
     "blurbRequired": "Elementos mandatorios por rol. Mantente al día y en cumplimiento.",
     "blurbOnboarding": "Todo lo que un nuevo empleado necesita en los primeros días y semanas.",
@@ -59,5 +61,10 @@
   },
   "settings": {
     "languageHelp": "Cambia el idioma de la interfaz. Los archivos de contenido en Drive pueden estar en cualquier idioma."
+  },
+  
+  "brand": {
+    "tagline": "Aprendizaje + cultura"
   }
+  
 }

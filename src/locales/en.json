@@ -18,7 +18,9 @@
     "english": "English",
     "spanish": "Spanish",
     "search": "Search",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "view": "View",
+    "optionAHelp": "Option A: layout + navigation + i18n only. Next step is wiring real data and role rules."
   },
   "auth": {
     "welcomeTitle": "Welcome back",
@@ -40,7 +42,9 @@
       "onboarding": "New hire onboarding",
       "training": "Role training",
       "culture": "Culture & standards",
-      "evaluations": "Knowledge checks"
+      "evaluations": "Knowledge checks",
+      "subtextTechnician": "Focus on required training and assessments for your role.",
+      "subtextAdmin": "Admin overview. Next we’ll wire real data."
     },
     "blurbRequired": "Mandatory items for your role. Stay current and compliant.",
     "blurbOnboarding": "Everything a new hire needs in the first days and weeks.",
@@ -59,5 +63,12 @@
   },
   "settings": {
     "languageHelp": "Switch the interface language. Content files can stay in Drive in any language."
+  },
+  "brand": {
+    "tagline": "Company learning + culture"
+  },
+  "admin": {
+    "usersTitle": "User Management",
+    "contentTitle": "Content Management"
   }
 }
