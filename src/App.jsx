@@ -1,19 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { I18nextProvider } from "react-i18next";
 import i18n from "./i18n";
 
+import { apiFetch, clearToken } from "./lib/api";
+
 import { Layout } from "./components/Layout";
 import { AuthScreen } from "./pages/AuthScreen";
 import { Home } from "./pages/Home";
-import { SimplePage } from "./pages/SimplePage";
 import { SettingsPage } from "./pages/SettingsPage";
 
-/**
- * OPTION A:
- * - UI Shell + Navigation + i18n
- * - Demo auth only (no backend calls)
- */
+import { ModulesListPage } from "./pages/ModulesListPage";
+import { ModuleDetailPage } from "./pages/ModuleDetailPage";
+import { MyProgressPage } from "./pages/MyProgressPage";
+
+function Protected({ user, children }) {
+  if (!user) return <Navigate to="/login" replace />;
+  return children;
+}
 
 export default function App() {
   return (
@@ -27,27 +31,75 @@ export default function App() {
 
 function AppRoutes() {
   const [user, setUser] = useState(null);
+  const [booting, setBooting] = useState(true);
+
+  // Step 4: keep session after refresh
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await apiFetch("/api/auth/verify");
+        setUser(data.user);
+      } catch {
+        // invalid/expired token or no token
+        setUser(null);
+      } finally {
+        setBooting(false);
+      }
+    })();
+  }, []);
+
+  const signOut = () => {
+    clearToken();
+    setUser(null);
+  };
+
+  if (booting) {
+    return (
+      <div className="min-h-screen bg-slate-50 grid place-items-center">
+        <div className="rounded-2xl border bg-white px-5 py-4 text-sm text-slate-700 shadow-sm">
+          Loading…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
-      <Route path="/login" element={<AuthScreen onSignedIn={(u) => setUser(u)} />} />
+      <Route
+        path="/login"
+        element={
+          user ? (
+            <Navigate to="/" replace />
+          ) : (
+            <AuthScreen onSignedIn={(u) => setUser(u)} />
+          )
+        }
+      />
 
       <Route
         path="/"
-        element={user ? <Layout user={user} onSignOut={() => setUser(null)} /> : <Navigate to="/login" replace />}
+        element={
+          <Protected user={user}>
+            <Layout user={user} onSignOut={signOut} />
+          </Protected>
+        }
       >
         <Route index element={<Home user={user} />} />
-        <Route path="onboarding" element={<SimplePage titleKey="pages.onboardingTitle" />} />
-        <Route path="training" element={<SimplePage titleKey="pages.trainingTitle" />} />
-        <Route path="culture" element={<SimplePage titleKey="pages.cultureTitle" />} />
-        <Route path="assessments" element={<SimplePage titleKey="nav.assessments" />} />
-        <Route path="ai" element={<SimplePage titleKey="pages.aiCoachTitle" />} />
-        <Route path="progress" element={<SimplePage titleKey="pages.progressTitle" />} />
+
+        {/* OPTION B: real data pages */}
+        <Route path="onboarding" element={<ModulesListPage pageType="onboarding" />} />
+        <Route path="training" element={<ModulesListPage pageType="training" />} />
+        <Route path="assessments" element={<ModulesListPage pageType="assessments" />} />
+        <Route path="progress" element={<MyProgressPage />} />
+
+        {/* Module detail (Drive resources) */}
+        <Route path="modules/:id" element={<ModuleDetailPage />} />
+
         <Route path="settings" element={<SettingsPage />} />
 
-        {/* Admin shell pages (only shown in sidebar if role=admin) */}
-        <Route path="admin/users" element={<SimplePage titleKey="nav.users" />} />
-        <Route path="admin/content" element={<SimplePage titleKey="nav.content" />} />
+        {/* Keep admin placeholders for later */}
+        <Route path="admin/users" element={<ModulesListPage pageType="admin-users-placeholder" />} />
+        <Route path="admin/content" element={<ModulesListPage pageType="admin-content-placeholder" />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

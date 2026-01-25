@@ -1,33 +1,39 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Shield } from "lucide-react";
+
+import { apiFetch, setToken } from "../lib/api";
 
 export function AuthScreen({ onSignedIn }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [role, setRole] = useState("technician");
-  const [email, setEmail] = useState("demo@autotech.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const demoUser = useMemo(() => {
-    return {
-      email,
-      name:
-        role === "technician"
-          ? "Demo Technician"
-          : role === "administrative"
-          ? "Demo Admin Staff"
-          : "Demo Admin",
-      role
-    };
-  }, [role, email]);
-
-  const signIn = (e) => {
+  const signIn = async (e) => {
     e.preventDefault();
-    onSignedIn(demoUser);
-    navigate("/", { replace: true });
+    setErr("");
+    setLoading(true);
+
+    try {
+      const data = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: { email, password }
+      });
+
+      setToken(data.token);
+      onSignedIn(data.user);
+
+      navigate("/", { replace: true });
+    } catch (e2) {
+      setErr(e2.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,20 +53,13 @@ export function AuthScreen({ onSignedIn }) {
           <h1 className="mt-6 text-2xl font-extrabold tracking-tight">{t("auth.welcomeTitle")}</h1>
           <p className="mt-2 text-sm text-slate-600">{t("auth.welcomeSubtitle")}</p>
 
-          <form className="mt-6 space-y-4" onSubmit={signIn}>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">{t("auth.role")}</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-200"
-              >
-                <option value="technician">{t("auth.roleTechnician")}</option>
-                <option value="administrative">{t("auth.roleAdministrative")}</option>
-                <option value="admin">{t("auth.roleAdmin")}</option>
-              </select>
+          {err ? (
+            <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {err}
             </div>
+          ) : null}
 
+          <form className="mt-6 space-y-4" onSubmit={signIn}>
             <div>
               <label className="text-xs font-semibold text-slate-700">{t("auth.email")}</label>
               <input
@@ -68,6 +67,7 @@ export function AuthScreen({ onSignedIn }) {
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="name@company.com"
+                autoComplete="email"
               />
             </div>
 
@@ -79,19 +79,17 @@ export function AuthScreen({ onSignedIn }) {
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-200"
                 placeholder="••••••••"
+                autoComplete="current-password"
               />
             </div>
 
             <button
-              className="w-full rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-extrabold text-white shadow-sm hover:bg-slate-800"
+              className="w-full rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-extrabold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
               type="submit"
+              disabled={loading}
             >
-              {t("auth.demoSignIn")}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
-
-            <p className="text-xs text-slate-500">
-              Option A: demo login only. Next we’ll connect real auth.
-            </p>
           </form>
         </div>
       </div>
