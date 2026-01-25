@@ -1,0 +1,63 @@
+{
+  "appName": "AutoTech Training Hub",
+  "nav": {
+    "home": "Home",
+    "onboarding": "Onboarding",
+    "training": "Training",
+    "culture": "Culture",
+    "evaluations": "Evaluations",
+    "aiCoach": "AI Coach",
+    "myProgress": "My Progress",
+    "settings": "Settings",
+    "admin": "Admin",
+    "users": "Users",
+    "content": "Content"
+  },
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "spanish": "Spanish",
+    "search": "Search",
+    "comingSoon": "Coming soon"
+  },
+  "auth": {
+    "welcomeTitle": "Welcome back",
+    "welcomeSubtitle": "Sign in to access your training, onboarding, and company resources.",
+    "email": "Email",
+    "password": "Password",
+    "demoSignIn": "Demo sign in",
+    "role": "Role",
+    "roleTechnician": "Technician",
+    "roleAdministrative": "Administrative",
+    "roleAdmin": "Admin",
+    "signOut": "Sign out"
+  },
+  "home": {
+    "title": "Home",
+    "headline": "Your next steps, in one place",
+    "cards": {
+      "requiredThisWeek": "Required this week",
+      "onboarding": "New hire onboarding",
+      "training": "Role training",
+      "culture": "Culture & standards",
+      "evaluations": "Knowledge checks"
+    },
+    "blurbRequired": "Mandatory items for your role. Stay current and compliant.",
+    "blurbOnboarding": "Everything a new hire needs in the first days and weeks.",
+    "blurbTraining": "Role-specific learning paths with job-ready resources.",
+    "blurbCulture": "How we work: communication, quality, safety, and customer experience.",
+    "blurbEvaluations": "Low-pressure assessments to confirm understanding."
+  },
+  "pages": {
+    "onboardingTitle": "Onboarding",
+    "trainingTitle": "Training",
+    "cultureTitle": "Culture",
+    "evaluationsTitle": "Evaluations",
+    "aiCoachTitle": "AI Coach",
+    "progressTitle": "My Progress",
+    "settingsTitle": "Settings"
+  },
+  "settings": {
+    "languageHelp": "Switch the interface language. Content files can stay in Drive in any language."
+  }
+}

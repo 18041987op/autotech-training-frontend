@@ -1,0 +1,63 @@
+{
+  "appName": "Centro de Capacitación AutoTech",
+  "nav": {
+    "home": "Inicio",
+    "onboarding": "Onboarding",
+    "training": "Entrenamiento",
+    "culture": "Cultura",
+    "evaluations": "Evaluaciones",
+    "aiCoach": "Coach IA",
+    "myProgress": "Mi Progreso",
+    "settings": "Ajustes",
+    "admin": "Admin",
+    "users": "Usuarios",
+    "content": "Contenido"
+  },
+  "common": {
+    "language": "Idioma",
+    "english": "Inglés",
+    "spanish": "Español",
+    "search": "Buscar",
+    "comingSoon": "Próximamente"
+  },
+  "auth": {
+    "welcomeTitle": "Bienvenido de vuelta",
+    "welcomeSubtitle": "Inicia sesión para ver tu entrenamiento, onboarding y recursos de la empresa.",
+    "email": "Email",
+    "password": "Contraseña",
+    "demoSignIn": "Entrar demo",
+    "role": "Rol",
+    "roleTechnician": "Técnico",
+    "roleAdministrative": "Administrativo",
+    "roleAdmin": "Admin",
+    "signOut": "Cerrar sesión"
+  },
+  "home": {
+    "title": "Inicio",
+    "headline": "Tus próximos pasos, en un solo lugar",
+    "cards": {
+      "requiredThisWeek": "Obligatorio esta semana",
+      "onboarding": "Onboarding para nuevos",
+      "training": "Entrenamiento por rol",
+      "culture": "Cultura y estándares",
+      "evaluations": "Chequeos de conocimiento"
+    },
+    "blurbRequired": "Elementos mandatorios por rol. Mantente al día y en cumplimiento.",
+    "blurbOnboarding": "Todo lo que un nuevo empleado necesita en los primeros días y semanas.",
+    "blurbTraining": "Rutas de aprendizaje por rol con recursos prácticos.",
+    "blurbCulture": "Cómo trabajamos: comunicación, calidad, seguridad y experiencia del cliente.",
+    "blurbEvaluations": "Evaluaciones ligeras para confirmar comprensión."
+  },
+  "pages": {
+    "onboardingTitle": "Onboarding",
+    "trainingTitle": "Entrenamiento",
+    "cultureTitle": "Cultura",
+    "evaluationsTitle": "Evaluaciones",
+    "aiCoachTitle": "Coach IA",
+    "progressTitle": "Mi Progreso",
+    "settingsTitle": "Ajustes"
+  },
+  "settings": {
+    "languageHelp": "Cambia el idioma de la interfaz. Los archivos de contenido en Drive pueden estar en cualquier idioma."
+  }
+}
