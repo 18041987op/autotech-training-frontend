@@ -1,20 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
 
 export function ModuleDetailPage() {
   const { id } = useParams();
+  const { t } = useTranslation();
+
   const [module, setModule] = useState(null);
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
 
-  //const me = JSON.parse(localStorage.getItem("me") || "null"); // optional fallback if you store it
-  //const tokenPayloadRole = null; // UI doesn't need this; we use verify user in App state
-  // We'll infer admin by checking /api/auth/verify user role from App ideally, but keep it simple:
+  // Admin check (temporary global injected by App after verify)
   const isAdmin = (window.__APP_USER__?.role || "").toLowerCase() === "admin";
 
   async function load() {
@@ -24,7 +27,8 @@ export function ModuleDetailPage() {
       const mod = await apiFetch(`/api/modules/${id}`);
       setModule(mod.module);
 
-      const r = await apiFetch(`/api/modules/${id}/resources`);
+      // IMPORTANT: use cache endpoint (Drive -> Extract -> DB)
+      const r = await apiFetch(`/api/modules/${id}/resources-cache`);
       setResources(r.resources || []);
     } catch (e) {
       setErr(e.message || "Failed to load module");
@@ -44,7 +48,7 @@ export function ModuleDetailPage() {
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
       setSyncMsg(
-        `Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`
+        `${t("actions.sync")}: ${out.totalFiles} • ${out.extractedWithText}`
       );
       await load();
     } catch (e) {
@@ -64,7 +68,11 @@ export function ModuleDetailPage() {
   };
 
   if (loading) {
-    return <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">Loading…</div>;
+    return (
+      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+        {t("status.loading")}
+      </div>
+    );
   }
 
   if (err) {
@@ -91,8 +99,9 @@ export function ModuleDetailPage() {
                 className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
                 onClick={runSync}
                 disabled={syncing}
+                type="button"
               >
-                {syncing ? "Syncing…" : "Sync from Drive"}
+                {syncing ? t("actions.syncing") : t("actions.sync")}
               </button>
               {syncMsg ? <div className="mt-2 text-xs text-slate-600">{syncMsg}</div> : null}
             </div>
@@ -101,15 +110,11 @@ export function ModuleDetailPage() {
       </div>
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-extrabold">Resources (in-app preview)</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          These previews come from cached extracted text (Drive → Extract → DB).
-        </p>
+        <h2 className="text-lg font-extrabold">{t("moduleDetail.resourcesTitle")}</h2>
+        <p className="mt-1 text-sm text-slate-600">{t("moduleDetail.resourcesSubtitle")}</p>
 
         {resources.length === 0 ? (
-          <div className="mt-4 text-sm text-slate-600">
-            No cached resources yet. If you’re admin, click “Sync from Drive”.
-          </div>
+          <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noResources")}</div>
         ) : (
           <div className="mt-4 grid gap-3">
             {resources.map((r) => (
@@ -119,6 +124,7 @@ export function ModuleDetailPage() {
                     <div className="font-extrabold">{r.name}</div>
                     <div className="text-xs text-slate-500">{r.mimeType}</div>
                   </div>
+
                   <div className="flex gap-2">
                     {r.webViewLink ? (
                       <a
@@ -127,22 +133,28 @@ export function ModuleDetailPage() {
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Open in Drive
+                        {t("actions.openInDrive")}
                       </a>
                     ) : null}
+
                     <button
-                      className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                      className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
                       onClick={() => openFull(r.id)}
                       disabled={!r.hasText}
-                      title={!r.hasText ? "No extracted text available for this file yet" : ""}
+                      title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}
+                      type="button"
                     >
-                      Full text
+                      {t("moduleDetail.fullText")}
                     </button>
                   </div>
                 </div>
 
                 <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-                  {r.hasText ? r.previewText : <span className="text-slate-500">No text extracted.</span>}
+                  {r.hasText ? (
+                    r.previewText
+                  ) : (
+                    <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -157,11 +169,13 @@ export function ModuleDetailPage() {
               <h3 className="text-lg font-extrabold">{active.name}</h3>
               <p className="text-xs text-slate-500">{active.mimeType}</p>
             </div>
+
             <button
               className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
               onClick={() => setActive(null)}
+              type="button"
             >
-              Close
+              {t("actions.close")}
             </button>
           </div>
 
