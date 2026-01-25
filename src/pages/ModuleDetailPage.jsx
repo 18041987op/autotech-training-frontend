@@ -12,8 +12,8 @@ export function ModuleDetailPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
 
-  const me = JSON.parse(localStorage.getItem("me") || "null"); // optional fallback if you store it
-  const tokenPayloadRole = null; // UI doesn't need this; we use verify user in App state
+  //const me = JSON.parse(localStorage.getItem("me") || "null"); // optional fallback if you store it
+  //const tokenPayloadRole = null; // UI doesn't need this; we use verify user in App state
   // We'll infer admin by checking /api/auth/verify user role from App ideally, but keep it simple:
   const isAdmin = (window.__APP_USER__?.role || "").toLowerCase() === "admin";
 
