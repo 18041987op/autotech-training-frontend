@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
-import { useOutletContext } from "react-router-dom";
-
 
 export function ModuleDetailPage() {
   const { id } = useParams();
   const { t } = useTranslation();
+
+  // ✅ Hook always called (no condition)
+  const { user } = useOutletContext();
+  const isAdmin = (user?.role || "").toLowerCase() === "admin";
 
   const [module, setModule] = useState(null);
   const [resources, setResources] = useState([]);
@@ -18,13 +20,13 @@ export function ModuleDetailPage() {
 
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
-  const { user } = useOutletContext();
-  
 
+  const [genLoading, setGenLoading] = useState(false);
+  const [genMsg, setGenMsg] = useState("");
 
-  // Admin check (temporary global injected by App after verify)
-  //const isAdmin = (window.__APP_USER__?.role || "").toLowerCase() === "admin";
-  const isAdmin = (user?.role || "").toLowerCase() === "admin";
+  const headerSubtitle = useMemo(() => {
+    return t("moduleDetail.resourcesSubtitle");
+  }, [t]);
 
   async function load() {
     setErr("");
@@ -33,7 +35,6 @@ export function ModuleDetailPage() {
       const mod = await apiFetch(`/api/modules/${id}`);
       setModule(mod.module);
 
-      // IMPORTANT: use cache endpoint (Drive -> Extract -> DB)
       const r = await apiFetch(`/api/modules/${id}/resources-cache`);
       setResources(r.resources || []);
     } catch (e) {
@@ -53,14 +54,25 @@ export function ModuleDetailPage() {
     setSyncing(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
-      setSyncMsg(
-        `${t("actions.sync")}: ${out.totalFiles} • ${out.extractedWithText}`
-      );
+      setSyncMsg(`Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`);
       await load();
     } catch (e) {
       setSyncMsg(e.message || "Sync failed");
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const generateAssessment = async () => {
+    setGenMsg("");
+    setGenLoading(true);
+    try {
+      const out = await apiFetch(`/api/admin/modules/${id}/generate-assessment`, { method: "POST" });
+      setGenMsg(`${t("assessmentsUi.created")}: ${out.title}`);
+    } catch (e) {
+      setGenMsg(e.message || "Failed");
+    } finally {
+      setGenLoading(false);
     }
   };
 
@@ -98,9 +110,8 @@ export function ModuleDetailPage() {
             <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
           </div>
 
-          {/* Admin-only sync */}
           {isAdmin ? (
-            <div className="text-right">
+            <div className="text-right space-y-2">
               <button
                 className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
                 onClick={runSync}
@@ -109,7 +120,18 @@ export function ModuleDetailPage() {
               >
                 {syncing ? t("actions.syncing") : t("actions.sync")}
               </button>
-              {syncMsg ? <div className="mt-2 text-xs text-slate-600">{syncMsg}</div> : null}
+
+              <button
+                className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm font-extrabold hover:bg-slate-50 disabled:opacity-60"
+                onClick={generateAssessment}
+                disabled={genLoading}
+                type="button"
+              >
+                {genLoading ? t("assessmentsUi.generating") : t("assessmentsUi.generate")}
+              </button>
+
+              {syncMsg ? <div className="text-xs text-slate-600">{syncMsg}</div> : null}
+              {genMsg ? <div className="text-xs text-slate-600">{genMsg}</div> : null}
             </div>
           ) : null}
         </div>
@@ -117,7 +139,7 @@ export function ModuleDetailPage() {
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-extrabold">{t("moduleDetail.resourcesTitle")}</h2>
-        <p className="mt-1 text-sm text-slate-600">{t("moduleDetail.resourcesSubtitle")}</p>
+        <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
         {resources.length === 0 ? (
           <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noResources")}</div>
