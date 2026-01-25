@@ -5,28 +5,63 @@ import { apiFetch } from "../lib/api";
 export function ModuleDetailPage() {
   const { id } = useParams();
   const [module, setModule] = useState(null);
-  const [files, setFiles] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [active, setActive] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
+
+  const me = JSON.parse(localStorage.getItem("me") || "null"); // optional fallback if you store it
+  const tokenPayloadRole = null; // UI doesn't need this; we use verify user in App state
+  // We'll infer admin by checking /api/auth/verify user role from App ideally, but keep it simple:
+  const isAdmin = (window.__APP_USER__?.role || "").toLowerCase() === "admin";
+
+  async function load() {
+    setErr("");
+    setLoading(true);
+    try {
+      const mod = await apiFetch(`/api/modules/${id}`);
+      setModule(mod.module);
+
+      const r = await apiFetch(`/api/modules/${id}/resources`);
+      setResources(r.resources || []);
+    } catch (e) {
+      setErr(e.message || "Failed to load module");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    (async () => {
-      try {
-        setErr("");
-        setLoading(true);
-
-        const mod = await apiFetch(`/api/modules/${id}`);
-        setModule(mod.module);
-
-        const res = await apiFetch(`/api/modules/${id}/resources`);
-        setFiles(res.files || []);
-      } catch (e) {
-        setErr(e.message || "Failed to load module");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    load();
+    // eslint-disable-next-line
   }, [id]);
+
+  const runSync = async () => {
+    setSyncMsg("");
+    setSyncing(true);
+    try {
+      const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
+      setSyncMsg(
+        `Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`
+      );
+      await load();
+    } catch (e) {
+      setSyncMsg(e.message || "Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const openFull = async (rid) => {
+    try {
+      const d = await apiFetch(`/api/modules/${id}/resources/${rid}`);
+      setActive(d.resource);
+    } catch (e) {
+      alert(e.message || "Failed to open resource");
+    }
+  };
 
   if (loading) {
     return <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">Loading…</div>;
@@ -43,32 +78,98 @@ export function ModuleDetailPage() {
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{module?.title}</h1>
-        <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-extrabold">{module?.title}</h1>
+            <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
+          </div>
+
+          {/* Admin-only sync */}
+          {isAdmin ? (
+            <div className="text-right">
+              <button
+                className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
+                onClick={runSync}
+                disabled={syncing}
+              >
+                {syncing ? "Syncing…" : "Sync from Drive"}
+              </button>
+              {syncMsg ? <div className="mt-2 text-xs text-slate-600">{syncMsg}</div> : null}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-extrabold">Resources (Google Drive)</h2>
+        <h2 className="text-lg font-extrabold">Resources (in-app preview)</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          These previews come from cached extracted text (Drive → Extract → DB).
+        </p>
 
-        {files.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-600">No files found in the module folder yet.</p>
+        {resources.length === 0 ? (
+          <div className="mt-4 text-sm text-slate-600">
+            No cached resources yet. If you’re admin, click “Sync from Drive”.
+          </div>
         ) : (
-          <div className="mt-4 space-y-3">
-            {files.map((f) => (
-              <a
-                key={f.id}
-                href={f.webViewLink || "#"}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm hover:bg-slate-50"
-              >
-                <span className="font-semibold">{f.name}</span>
-                <span className="text-xs text-slate-500">{f.mimeType}</span>
-              </a>
+          <div className="mt-4 grid gap-3">
+            {resources.map((r) => (
+              <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-extrabold">{r.name}</div>
+                    <div className="text-xs text-slate-500">{r.mimeType}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {r.webViewLink ? (
+                      <a
+                        className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
+                        href={r.webViewLink}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Open in Drive
+                      </a>
+                    ) : null}
+                    <button
+                      className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                      onClick={() => openFull(r.id)}
+                      disabled={!r.hasText}
+                      title={!r.hasText ? "No extracted text available for this file yet" : ""}
+                    >
+                      Full text
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                  {r.hasText ? r.previewText : <span className="text-slate-500">No text extracted.</span>}
+                </div>
+              </div>
             ))}
           </div>
         )}
       </div>
+
+      {active ? (
+        <div className="rounded-3xl border bg-white p-6 shadow-sm">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-extrabold">{active.name}</h3>
+              <p className="text-xs text-slate-500">{active.mimeType}</p>
+            </div>
+            <button
+              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
+              onClick={() => setActive(null)}
+            >
+              Close
+            </button>
+          </div>
+
+          <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-sm text-slate-800">
+            {active.text || "—"}
+          </pre>
+        </div>
+      ) : null}
     </div>
   );
 }

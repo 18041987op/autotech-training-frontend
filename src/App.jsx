@@ -38,6 +38,7 @@ function AppRoutes() {
     (async () => {
       try {
         const data = await apiFetch("/api/auth/verify");
+        window.__APP_USER__ = data.user; // optional global for convenience
         setUser(data.user);
       } catch {
         // invalid/expired token or no token
@@ -49,6 +50,7 @@ function AppRoutes() {
   }, []);
 
   const signOut = () => {
+    window.__APP_USER__ = null;
     clearToken();
     setUser(null);
   };
