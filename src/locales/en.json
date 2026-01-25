@@ -37,20 +37,21 @@
   "home": {
     "title": "Home",
     "headline": "Your next steps, in one place",
+    "subtextTechnician": "Focus on required training and assessments for your role.",
+    "subtextAdmin": "Admin overview. Next we’ll wire real data.",
     "cards": {
       "requiredThisWeek": "Required this week",
       "onboarding": "New hire onboarding",
       "training": "Role training",
       "culture": "Culture & standards",
-      "evaluations": "Knowledge checks",
-      "subtextTechnician": "Focus on required training and assessments for your role.",
-      "subtextAdmin": "Admin overview. Next we’ll wire real data."
+      "evaluations": "Knowledge checks"
     },
     "blurbRequired": "Mandatory items for your role. Stay current and compliant.",
     "blurbOnboarding": "Everything a new hire needs in the first days and weeks.",
     "blurbTraining": "Role-specific learning paths with job-ready resources.",
     "blurbCulture": "How we work: communication, quality, safety, and customer experience.",
     "blurbEvaluations": "Low-pressure assessments to confirm understanding."
+    
   },
   "pages": {
     "onboardingTitle": "Onboarding",
