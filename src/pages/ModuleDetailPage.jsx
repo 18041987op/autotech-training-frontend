@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
+import { useOutletContext } from "react-router-dom";
+
 
 export function ModuleDetailPage() {
   const { id } = useParams();
@@ -16,9 +18,13 @@ export function ModuleDetailPage() {
 
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
+  const { user } = useOutletContext();
+  
+
 
   // Admin check (temporary global injected by App after verify)
-  const isAdmin = (window.__APP_USER__?.role || "").toLowerCase() === "admin";
+  //const isAdmin = (window.__APP_USER__?.role || "").toLowerCase() === "admin";
+  const isAdmin = (user?.role || "").toLowerCase() === "admin";
 
   async function load() {
     setErr("");

@@ -93,7 +93,7 @@ export function Layout({ user, onSignOut }) {
         <main className="flex-1">
           <TopBar onSignOut={onSignOut} />
           <div className="mx-auto max-w-6xl px-4 py-6">
-            <Outlet />
+            <Outlet context={{ user }} />
           </div>
         </main>
       </div>
