@@ -13,6 +13,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { ModulesListPage } from "./pages/ModulesListPage";
 import { ModuleDetailPage } from "./pages/ModuleDetailPage";
 import { MyProgressPage } from "./pages/MyProgressPage";
+import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 
 function Protected({ user, children }) {
   if (!user) return <Navigate to="/login" replace />;
@@ -96,6 +97,9 @@ function AppRoutes() {
 
         {/* Module detail (Drive resources) */}
         <Route path="modules/:id" element={<ModuleDetailPage />} />
+
+        {/* A4-2: Assessment runner */}
+        <Route path="modules/:id/assessments/:aid" element={<AssessmentRunnerPage />} />
 
         <Route path="settings" element={<SettingsPage />} />
 

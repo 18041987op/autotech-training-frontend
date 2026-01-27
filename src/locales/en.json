@@ -119,6 +119,33 @@
     "passingScore": "Passing score",
     "startAssessment": "Start"
   },
+  "assessmentRunner": {
+    "progress": "Question {{current}} of {{total}}",
+    "exit": "Exit",
+    "next": "Next",
+    "finish": "Finish",
+    "finishing": "Finishing…",
+    "score": "Score",
+    "passing": "Passing score",
+    "passedTitle": "Congrats — you passed.",
+    "passedBody": "Keep learning and apply this in your daily work.",
+    "failedTitle": "You need to review the material.",
+    "failedBody": "Passing score is {{passing}}%. Review the resources and try again.",
+    "tryAgain": "Try again",
+    "keepLearning": "Keep learning",
+    "backToModule": "Back to module",
+    "noQuestionsTitle": "No questions available",
+    "noQuestionsBody": "This assessment has no questions yet.",
+    "questionFallback": "Question",
+    "correctTitle": "Correct",
+    "correctBody": "Good choice. This is aligned with company expectations.",
+    "wrongTitle": "Not quite",
+    "wrongBody": "Review the material and try to understand why the correct option is best.",
+    "correctAnswer": "Correct answer"
+  },
+
+
+
   "progress": {
     "title": "My Progress",
     "subtitle": "Your completion and scores so far.",

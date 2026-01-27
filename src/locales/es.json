@@ -110,7 +110,13 @@
     "resourcesSubtitle": "Archivos listados desde Drive y vista previa del texto extraído (si existe).",
     "noResources": "Todavía no hay archivos para este módulo.",
     "fullText": "Texto completo",
-    "noExtractedText": "No se extrajo texto."
+    "noExtractedText": "No se extrajo texto.",
+    "assessmentsTitle": "Evaluaciones",
+    "assessmentsSubtitle": "Variaciones disponibles de evaluaciones para este módulo.",
+    "refreshAssessments": "Actualizar",
+    "noAssessments": "Todavía no hay evaluaciones para este módulo.",
+    "passingScore": "Puntaje para aprobar",
+    "startAssessment": "Comenzar"
   },
   "progress": {
     "title": "Mi Progreso",

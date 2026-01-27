@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useOutletContext } from "react-router-dom";
+import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
 
 export function ModuleDetailPage() {
   const { id } = useParams();
+  const nav = useNavigate();
   const { t } = useTranslation();
 
   // ✅ Hook always called (no condition)
@@ -210,12 +211,11 @@ export function ModuleDetailPage() {
                     </div>
                   </div>
 
-                  {/* A4-1: no "Start" yet. We’ll add it in A4-2 */}
+                  {/* "Start enabled" A4-2 */}
                   <button
-                    className="rounded-xl bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 cursor-not-allowed"
+                    className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
                     type="button"
-                    disabled
-                    title="A4-2 will add the assessment runner UI."
+                    onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
                   >
                     {t("moduleDetail.startAssessment")}
                   </button>
