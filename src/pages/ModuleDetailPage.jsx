@@ -15,6 +15,11 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
 
+  // NEW: assessments list (A4-1)
+  const [assessments, setAssessments] = useState([]);
+  const [assessLoading, setAssessLoading] = useState(false);
+  const [assessErr, setAssessErr] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -44,8 +49,24 @@ export function ModuleDetailPage() {
     }
   }
 
+  // NEW: load assessments list
+  async function loadAssessments() {
+    setAssessErr("");
+    setAssessLoading(true);
+    try {
+      const out = await apiFetch(`/api/modules/${id}/assessments`);
+      setAssessments(out.assessments || []);
+    } catch (e) {
+      setAssessErr(e.message || "Failed to load assessments");
+      setAssessments([]);
+    } finally {
+      setAssessLoading(false);
+    }
+  }
+
   useEffect(() => {
     load();
+    loadAssessments();
     // eslint-disable-next-line
   }, [id]);
 
@@ -69,6 +90,9 @@ export function ModuleDetailPage() {
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/generate-assessment`, { method: "POST" });
       setGenMsg(`${t("assessmentsUi.created")}: ${out.title}`);
+
+      // refresh list right after generating
+      await loadAssessments();
     } catch (e) {
       setGenMsg(e.message || "Failed");
     } finally {
@@ -135,6 +159,71 @@ export function ModuleDetailPage() {
             </div>
           ) : null}
         </div>
+      </div>
+
+      {/* =========================
+          A4-1: Assessments list
+         ========================= */}
+      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-extrabold">{t("moduleDetail.assessmentsTitle")}</h2>
+            <p className="mt-1 text-sm text-slate-600">{t("moduleDetail.assessmentsSubtitle")}</p>
+          </div>
+
+          <button
+            className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50 disabled:opacity-60"
+            onClick={loadAssessments}
+            disabled={assessLoading}
+            type="button"
+          >
+            {assessLoading ? t("status.loading") : t("moduleDetail.refreshAssessments")}
+          </button>
+        </div>
+
+        {assessErr ? (
+          <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {assessErr}
+          </div>
+        ) : null}
+
+        {assessLoading ? (
+          <div className="mt-4 text-sm text-slate-600">{t("status.loading")}</div>
+        ) : assessments.length === 0 ? (
+          <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noAssessments")}</div>
+        ) : (
+          <div className="mt-4 grid gap-3">
+            {assessments.map((a) => (
+              <div key={a.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
+                    <div className="mt-1 text-xs text-slate-500">
+                      {typeof a.passingScore === "number" ? (
+                        <span>
+                          {t("moduleDetail.passingScore")}: {a.passingScore}%
+                        </span>
+                      ) : (
+                        <span>{t("moduleDetail.passingScore")}: —</span>
+                      )}
+                      {a.createdAt ? <span className="ml-2">• {new Date(a.createdAt).toLocaleString()}</span> : null}
+                    </div>
+                  </div>
+
+                  {/* A4-1: no "Start" yet. We’ll add it in A4-2 */}
+                  <button
+                    className="rounded-xl bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 cursor-not-allowed"
+                    type="button"
+                    disabled
+                    title="A4-2 will add the assessment runner UI."
+                  >
+                    {t("moduleDetail.startAssessment")}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">

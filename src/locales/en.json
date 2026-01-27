@@ -111,7 +111,13 @@
     "resourcesSubtitle": "Files listed from Drive and extracted text preview (if available).",
     "noResources": "No files found for this module yet.",
     "fullText": "Full text",
-    "noExtractedText": "No text extracted."
+    "noExtractedText": "No text extracted.",
+    "assessmentsTitle": "Assessments",
+    "assessmentsSubtitle": "Available assessment variations for this module.",
+    "refreshAssessments": "Refresh",
+    "noAssessments": "No assessments found for this module yet.",
+    "passingScore": "Passing score",
+    "startAssessment": "Start"
   },
   "progress": {
     "title": "My Progress",
