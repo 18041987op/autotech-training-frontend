@@ -118,6 +118,31 @@
     "passingScore": "Puntaje para aprobar",
     "startAssessment": "Comenzar"
   },
+  "assessmentRunner": {
+    "progress": "Pregunta {{current}} de {{total}}",
+    "exit": "Salir",
+    "next": "Siguiente",
+    "finish": "Finalizar",
+    "finishing": "Finalizando…",
+    "score": "Puntaje",
+    "passing": "Puntaje para aprobar",
+    "passedTitle": "Felicidades — aprobaste.",
+    "passedBody": "Sigue aprendiendo y aplica esto en tu trabajo diario.",
+    "failedTitle": "Necesitas repasar el material.",
+    "failedBody": "El puntaje para aprobar es {{passing}}%. Revisa los recursos e inténtalo de nuevo.",
+    "tryAgain": "Intentar de nuevo",
+    "keepLearning": "Seguir aprendiendo",
+    "backToModule": "Volver al módulo",
+    "noQuestionsTitle": "No hay preguntas disponibles",
+    "noQuestionsBody": "Esta evaluación todavía no tiene preguntas.",
+    "questionFallback": "Pregunta",
+    "correctTitle": "Correcto",
+    "correctBody": "Buena elección. Esto está alineado con las expectativas de la empresa.",
+    "wrongTitle": "Casi",
+    "wrongBody": "Repasa el material e intenta entender por qué la opción correcta es la mejor.",
+    "correctAnswer": "Respuesta correcta"
+  },
+
   "progress": {
     "title": "Mi Progreso",
     "subtitle": "Tu progreso y resultados hasta ahora.",
