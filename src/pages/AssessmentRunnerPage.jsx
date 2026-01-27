@@ -129,7 +129,7 @@ export function AssessmentRunnerPage() {
     try {
       const out = await apiFetch(`/api/assessments/${aid}/attempt`, {
         method: "POST",
-        body: JSON.stringify({ answers }),
+        body: { answers },
       });
 
       // backend should return score/correct/total/passed/passingScore;
