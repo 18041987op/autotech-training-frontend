@@ -125,7 +125,11 @@
     "signIn": "Sign in",
     "signingIn": "Signing in…",
     "loginFailed": "Login failed"
-  }
-
-
+  },
+  "assessmentsUi": {
+    "generate": "Generate Assessment",
+    "generating": "Generating…",
+    "created": "Assessment created"
+    }
+  
 }

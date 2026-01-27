@@ -124,7 +124,11 @@
     "signIn": "Iniciar sesión",
     "signingIn": "Iniciando…",
     "loginFailed": "No se pudo iniciar sesión"
-  }
-
+  },
+  "assessmentsUi": {
+    "generate": "Generar Evaluación",
+    "generating": "Generando…",
+    "created": "Evaluación creada"
+    }
 
 }
