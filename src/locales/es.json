@@ -2,7 +2,7 @@
   "appName": "Centro de Capacitación AutoTech",
   "nav": {
     "home": "Inicio",
-    "onboarding": "Onboarding",
+    "onboarding": "Inducción",
     "training": "Entrenamiento",
     "culture": "Cultura",
     "assessments": "Evaluaciones",
@@ -24,7 +24,7 @@
   },
   "auth": {
     "welcomeTitle": "Bienvenido de vuelta",
-    "welcomeSubtitle": "Inicia sesión para ver tu entrenamiento, onboarding y recursos de la empresa.",
+    "welcomeSubtitle": "Inicia sesión para ver tu entrenamiento, inducción y recursos de la empresa.",
     "email": "Email",
     "password": "Contraseña",
     "demoSignIn": "Entrar demo",
@@ -32,7 +32,8 @@
     "roleTechnician": "Técnico",
     "roleAdministrative": "Administrativo",
     "roleAdmin": "Admin",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "roleServiceAdvisor": "Asesor de Servicio (SA)"
   },
   "home": {
     "title": "Inicio",
@@ -41,7 +42,7 @@
     "subtextAdmin": "Vista de administrador. Luego conectaremos datos reales.",
     "cards": {
       "requiredThisWeek": "Obligatorio esta semana",
-      "onboarding": "Onboarding para nuevos",
+      "onboarding": "Inducción para nuevos",
       "training": "Entrenamiento por rol",
       "culture": "Cultura y estándares",
       "evaluations": "Chequeos de conocimiento"
@@ -53,7 +54,7 @@
     "blurbEvaluations": "Evaluaciones ligeras para confirmar comprensión."
   },
   "pages": {
-    "onboardingTitle": "Onboarding",
+    "onboardingTitle": "Inducción",
     "trainingTitle": "Entrenamiento",
     "cultureTitle": "Cultura",
     "evaluationsTitle": "Evaluaciones",
@@ -96,8 +97,8 @@
   },
   "modules": {
     "onboarding": {
-      "title": "Onboarding",
-      "subtitle": "Módulos de onboarding disponibles para ti."
+      "title": "Inducción" ,
+      "subtitle": "Módulos de inducción disponibles para ti."
     },
     "training": {
       "title": "Entrenamiento",
@@ -163,7 +164,7 @@
     "subtitle": "Tu progreso y resultados hasta ahora.",
     "modulesStarted": "Módulos iniciados",
     "avgCompletion": "Promedio de progreso",
-    "passed": "Aprobadas (>=80)",
+    "passed": "Aprobadas (>=70)",
     "detail": "Detalle"
   },
   "auth2": {
@@ -191,7 +192,7 @@
     "technician": "Técnico", 
     "administrative": "Administrativo", 
     "serviceAdvisor": "Asesor de Servicio (SA)",
-    "admin": "Admin" 
+    "admin": "Admin"
   },
   "adminModules": {
     "title": "Módulos",

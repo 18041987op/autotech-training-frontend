@@ -32,7 +32,8 @@
     "roleTechnician": "Technician",
     "roleAdministrative": "Administrative",
     "roleAdmin": "Admin",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "roleServiceAdvisor": "Service Advisor (SA)"
   },
   "home": {
     "title": "Home",
@@ -98,12 +99,7 @@
   "modules": {
     "onboarding": {
       "title": "Onboarding",
-      "subtitle": "Company onboarding modules available to you.",
-    "categories": {
-      "universal": "Universal",
-      "technician": "Technician",
-      "serviceAdvisor": "Service Advisor (SA)",
-      "administrative": "Administrative"
+      "subtitle": "Company onboarding modules available to you."
     },
     "training": {
       "title": "Training",
@@ -117,7 +113,12 @@
       "title": "No modules found",
       "hint": "Tip: create modules like “Onboarding: …” or “Knowledge Check: …”."
     },
-    "completion": "Completion"
+    "completion": "Completion",
+    "categories": {
+      "universal": "Universal",
+      "technician": "Technician",
+      "serviceAdvisor": "Service Advisor (SA)",
+      "administrative": "Administrative"
     }
   },
   "moduleDetail": {
@@ -163,7 +164,7 @@
     "subtitle": "Your completion and scores so far.",
     "modulesStarted": "Modules started",
     "avgCompletion": "Average completion",
-    "passed": "Passed checks (>=80)",
+    "passed": "Passed checks (>=70)",
     "detail": "Detail"
   },
   "auth2": {
