@@ -63,7 +63,13 @@
     "settingsTitle": "Settings"
   },
   "settings": {
-    "languageHelp": "Switch the interface language. Content files can stay in Drive in any language."
+    "languageHelp": "Switch the interface language. Content files can stay in Drive in any language.",
+    "adminToolsTitle": "Admin tools",
+    "adminToolsSubtitle": "Manage users and modules.",
+    "manageUsers": "Manage users",
+    "manageUsersHelp": "Approve accounts and change roles.",
+    "manageModules": "Manage modules",
+    "manageModulesHelp": "Create and edit training modules."
   },
   "brand": {
     "tagline": "Company learning + culture"
@@ -80,7 +86,9 @@
     "sync": "Sync from Drive",
     "syncing": "Syncing…",
     "openInDrive": "Open in Drive",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "edit": "Edit",
+    "cancel": "Cancel"
   },
   "status": {
     "loading": "Loading…",
@@ -90,7 +98,12 @@
   "modules": {
     "onboarding": {
       "title": "Onboarding",
-      "subtitle": "Company onboarding modules available to you."
+      "subtitle": "Company onboarding modules available to you.",
+    "categories": {
+      "universal": "Universal",
+      "technician": "Technician",
+      "serviceAdvisor": "Service Advisor (SA)",
+      "administrative": "Administrative"
     },
     "training": {
       "title": "Training",
@@ -105,6 +118,7 @@
       "hint": "Tip: create modules like “Onboarding: …” or “Knowledge Check: …”."
     },
     "completion": "Completion"
+    }
   },
   "moduleDetail": {
     "title": "Module",
@@ -178,6 +192,23 @@
     "administrative": "Administrative",
     "serviceAdvisor": "Service Advisor (SA)",
     "admin": "Admin"
+  },
+  "adminModules": {
+    "title": "Modules",
+    "subtitle": "Create and edit modules used in Training, Onboarding, Culture, and Assessments.",
+    "create": "Create",
+    "edit": "Edit",
+    "creating": "Creating module",
+    "editing": "Editing module",
+    "total": "Modules",
+    "fields": {
+      "title": "Title",
+      "description": "Description",
+      "category": "Category",
+      "required": "Required",
+      "icon": "Icon",
+      "color": "Color",
+      "driveFolder": "Drive folder name"
+    }
   }
-
 }

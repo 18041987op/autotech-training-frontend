@@ -62,7 +62,13 @@
     "settingsTitle": "Ajustes"
   },
   "settings": {
-    "languageHelp": "Cambia el idioma de la interfaz. Los archivos de contenido en Drive pueden estar en cualquier idioma."
+    "languageHelp": "Cambia el idioma de la interfaz. Los archivos de contenido en Drive pueden estar en cualquier idioma.",
+    "adminToolsTitle": "Herramientas de admin",
+    "adminToolsSubtitle": "Administra usuarios y módulos.",
+    "manageUsers": "Administrar usuarios",
+    "manageUsersHelp": "Aprobar cuentas y cambiar roles.",
+    "manageModules": "Administrar módulos",
+    "manageModulesHelp": "Crear y editar módulos."
   },
   "brand": {
     "tagline": "Aprendizaje + cultura"
@@ -79,7 +85,9 @@
     "sync": "Sincronizar desde Drive",
     "syncing": "Sincronizando…",
     "openInDrive": "Abrir en Drive",
-    "refresh": "Actualizar" 
+    "refresh": "Actualizar",
+    "edit": "Editar",
+    "cancel": "Cancelar"
   },
   "status": {
     "loading": "Cargando…",
@@ -103,7 +111,13 @@
       "title": "No se encontraron módulos",
       "hint": "Tip: crea módulos como “Onboarding: …” o “Knowledge Check: …”."
     },
-    "completion": "Progreso"
+    "completion": "Progreso",
+    "categories": {
+      "universal": "Universal",
+      "technician": "Técnico",
+      "serviceAdvisor": "Asesor de Servicio (SA)",
+      "administrative": "Administrativo"
+    }
   },
   "moduleDetail": {
     "title": "Módulo",
@@ -178,6 +192,24 @@
     "administrative": "Administrativo", 
     "serviceAdvisor": "Asesor de Servicio (SA)",
     "admin": "Admin" 
+  },
+  "adminModules": {
+    "title": "Módulos",
+    "subtitle": "Crea y edita módulos usados en Entrenamiento, Onboarding, Cultura y Evaluaciones.",
+    "create": "Crear",
+    "edit": "Editar",
+    "creating": "Creando módulo",
+    "editing": "Editando módulo",
+    "total": "Módulos",
+    "fields": {
+      "title": "Título",
+      "description": "Descripción",
+      "category": "Categoría",
+      "required": "Requerido",
+      "icon": "Ícono",
+      "color": "Color",
+      "driveFolder": "Nombre del folder en Drive"
+    }
   }
 
 }

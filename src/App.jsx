@@ -15,6 +15,8 @@ import { ModuleDetailPage } from "./pages/ModuleDetailPage";
 import { MyProgressPage } from "./pages/MyProgressPage";
 import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { AdminModulesPage } from "./pages/AdminModulesPage";
+
 
 function Protected({ user, children }) {
   if (!user) return <Navigate to="/login" replace />;
@@ -101,8 +103,13 @@ function AppRoutes() {
 
         {/* A4-2: Assessment runner */}
         <Route path="modules/:id/assessments/:aid" element={<AssessmentRunnerPage />} />
-
+        
+        {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />
+
+        {/* Admin modules management */}
+        <Route path="admin/modules" element={<AdminModulesPage />} />
+
 
         {/* Keep admin placeholders for later */}
         <Route path="admin/users" element={<AdminUsersPage />} />
