@@ -174,7 +174,10 @@
     "lastLogin": "Último acceso"
   },
   "roles": { 
-    "technician": "Técnico", "administrative": "Administrativo", "admin": "Admin" 
+    "technician": "Técnico", 
+    "administrative": "Administrativo", 
+    "serviceAdvisor": "Asesor de Servicio (SA)",
+    "admin": "Admin" 
   }
 
 }

@@ -159,6 +159,7 @@ export function AdminUsersPage() {
                     >
                       <option value="technician">{t("roles.technician")}</option>
                       <option value="administrative">{t("roles.administrative")}</option>
+                      <option value="service_advisor">{t("roles.serviceAdvisor")}</option>
                       <option value="admin">{t("roles.admin")}</option>
                     </select>
                   </div>

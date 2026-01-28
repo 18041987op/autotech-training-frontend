@@ -79,7 +79,8 @@
     "save": "Save",
     "sync": "Sync from Drive",
     "syncing": "Syncing…",
-    "openInDrive": "Open in Drive"
+    "openInDrive": "Open in Drive",
+    "refresh": "Refresh"
   },
   "status": {
     "loading": "Loading…",
@@ -143,9 +144,6 @@
     "wrongBody": "Review the material and try to understand why the correct option is best.",
     "correctAnswer": "Correct answer"
   },
-
-
-
   "progress": {
     "title": "My Progress",
     "subtitle": "Your completion and scores so far.",
@@ -163,6 +161,23 @@
     "generate": "Generate Assessment",
     "generating": "Generating…",
     "created": "Assessment created"
-    }
-  
+  },
+  "adminUsers": {
+    "title": "Users",
+    "subtitle": "Manage registered users, approvals, and roles.",
+    "total": "Users",
+    "pending": "Pending",
+    "admins": "Admins",
+    "pendingTag": "Pending",
+    "activeTag": "Active",
+    "approve": "Approve",
+    "lastLogin": "Last login"
+  },
+  "roles": { 
+    "technician": "Technician", 
+    "administrative": "Administrative",
+    "serviceAdvisor": "Service Advisor (SA)",
+    "admin": "Admin"
+  }
+
 }
