@@ -219,7 +219,7 @@ export function AssessmentRunnerPage() {
         <div className="flex flex-wrap gap-2">
           {!passed ? (
             <button
-              className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800"
+              className="rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800"
               onClick={tryAgain}
               type="button"
             >
@@ -343,7 +343,7 @@ export function AssessmentRunnerPage() {
 
       <div className="flex justify-end">
         <button
-          className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
+          className="rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
           onClick={next}
           disabled={!revealed || submitting}
           type="button"

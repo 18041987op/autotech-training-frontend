@@ -138,7 +138,7 @@ export function ModuleDetailPage() {
           {isAdmin ? (
             <div className="text-right space-y-2">
               <button
-                className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
+                className="rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
                 onClick={runSync}
                 disabled={syncing}
                 type="button"
@@ -213,7 +213,7 @@ export function ModuleDetailPage() {
 
                   {/* "Start enabled" A4-2 */}
                   <button
-                    className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                    className="rounded-xl bg-[#1E6FAE] hover:bg-[#155A8A] px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
                     type="button"
                     onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
                   >
@@ -255,7 +255,7 @@ export function ModuleDetailPage() {
                     ) : null}
 
                     <button
-                      className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                      className="rounded-xl bg-[#1E6FAE] hover:bg-[#155A8A] px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
                       onClick={() => openFull(r.id)}
                       disabled={!r.hasText}
                       title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}

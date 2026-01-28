@@ -16,6 +16,31 @@ export function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  // Add User modal state
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "technician",
+    approved: true,
+  });
+
+  const openCreateUser = () => {
+    setNewUser({
+      name: "",
+      email: "",
+      password: "",
+      role: "technician",
+      approved: true,
+    });
+    setShowCreateUser(true);
+  };
+
+  const closeCreateUser = () => setShowCreateUser(false);
+
   const load = async () => {
     setErr("");
     setLoading(true);
@@ -61,6 +86,39 @@ export function AdminUsersPage() {
     }
   };
 
+  const createUser = async () => {
+    if (creating) return;
+
+    const name = (newUser.name || "").trim();
+    const email = (newUser.email || "").trim();
+    const password = newUser.password || "";
+
+    if (!name) return alert("Name is required");
+    if (!email) return alert("Email is required");
+    if (!password || password.length < 6) return alert("Password must be at least 6 characters");
+
+    setCreating(true);
+    try {
+      await apiFetch("/api/admin/users", {
+        method: "POST",
+        body: {
+          name,
+          email,
+          password,
+          role: newUser.role,
+          approved: !!newUser.approved,
+        },
+      });
+
+      closeCreateUser();
+      await load();
+    } catch (e) {
+      alert(e.message || "Failed to create user");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
@@ -85,13 +143,24 @@ export function AdminUsersPage() {
             <h1 className="text-2xl font-extrabold">{t("adminUsers.title")}</h1>
             <p className="mt-2 text-sm text-slate-600">{t("adminUsers.subtitle")}</p>
           </div>
-          <button
-            className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-            onClick={load}
-            type="button"
-          >
-            {t("actions.refresh")}
-          </button>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              className="rounded-xl bg-[#1E6FAE] px-3 py-2 text-xs font-semibold text-white hover:bg-[#155A8A]"
+              onClick={openCreateUser}
+              type="button"
+            >
+              + Add User
+            </button>
+
+            <button
+              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
+              onClick={load}
+              type="button"
+            >
+              {t("actions.refresh")}
+            </button>
+          </div>
         </div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -118,7 +187,7 @@ export function AdminUsersPage() {
             {users.map((u) => (
               <div
                 key={u.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100"
+                className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-[#1E6FAE] hover:ring-2 hover:ring-[#E6F1FA]"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
@@ -144,7 +213,7 @@ export function AdminUsersPage() {
                   <div className="flex flex-wrap gap-2">
                     {!u.approved ? (
                       <button
-                        className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
+                        className="rounded-xl bg-[#F7941D] px-3 py-2 text-xs font-semibold text-black hover:bg-[#E88412]"
                         onClick={() => approve(u.id)}
                         type="button"
                       >
@@ -169,6 +238,109 @@ export function AdminUsersPage() {
           </div>
         )}
       </div>
+
+      {/* Create User Modal */}
+      {showCreateUser ? (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={closeCreateUser} />
+
+          <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-extrabold">Add User</h2>
+                <p className="mt-1 text-sm text-slate-600">Create a new user and assign a role.</p>
+              </div>
+
+              <button
+                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
+                onClick={closeCreateUser}
+                type="button"
+              >
+                {t("actions.close")}
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Full name</label>
+                <input
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="e.g., Juan Perez"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Email</label>
+                <input
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
+                  placeholder="name@autorxcenter.com"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">Temporary password</label>
+                <input
+                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
+                  placeholder="Min 6 characters"
+                  type="password"
+                />
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <div>
+                  <label className="text-xs font-semibold text-slate-600">Role</label>
+                  <select
+                    className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm"
+                    value={newUser.role}
+                    onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}
+                  >
+                    <option value="technician">{t("roles.technician")}</option>
+                    <option value="service_advisor">{t("roles.serviceAdvisor")}</option>
+                    <option value="administrative">{t("roles.administrative")}</option>
+                    <option value="admin">{t("roles.admin")}</option>
+                  </select>
+                </div>
+
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={newUser.approved}
+                      onChange={(e) => setNewUser((p) => ({ ...p, approved: e.target.checked }))}
+                    />
+                    Approved
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
+                onClick={closeCreateUser}
+                type="button"
+              >
+                {t("actions.cancel")}
+              </button>
+
+              <button
+                className="rounded-xl bg-[#1E6FAE] px-4 py-2 text-xs font-semibold text-white hover:bg-[#155A8A] disabled:opacity-60"
+                onClick={createUser}
+                type="button"
+                disabled={creating}
+              >
+                {creating ? "Creating…" : "Create user"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

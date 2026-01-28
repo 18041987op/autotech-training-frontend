@@ -30,7 +30,7 @@ export function MyProgressPage() {
         ? 0
         : Math.round(progress.reduce((sum, p) => sum + (p.completion_rate || 0), 0) / started);
 
-    const passed = progress.filter((p) => (p.quiz_score || 0) >= 80).length;
+    const passed = progress.filter((p) => (p.quiz_score || 0) >= 70).length;
     return { started, avg, passed };
   }, [progress]);
 
@@ -89,7 +89,7 @@ export function MyProgressPage() {
                 </div>
                 <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-slate-900"
+                    className="h-2 rounded-full bg-[#1E6FAE]"
                     style={{ width: `${Math.min(100, Math.max(0, p.completion_rate || 0))}%` }}
                   />
                 </div>

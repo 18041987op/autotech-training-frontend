@@ -41,7 +41,7 @@ export function AuthScreen({ onSignedIn }) {
       <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-10">
         <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-900 text-white">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#1E6FAE] text-white">
               <Shield className="h-5 w-5" />
             </div>
             <div>
@@ -84,7 +84,7 @@ export function AuthScreen({ onSignedIn }) {
             </div>
 
             <button
-              className="w-full rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-extrabold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
+              className="w-full rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2.5 text-sm font-extrabold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
               type="submit"
               disabled={loading}
             >

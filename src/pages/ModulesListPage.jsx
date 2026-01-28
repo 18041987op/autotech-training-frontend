@@ -117,7 +117,7 @@ export function ModulesListPage({ pageType }) {
               </div>
 
               <button
-                className="mt-4 w-full rounded-2xl bg-slate-900 px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800"
+                className="mt-4 w-full rounded-2xl bg-[#1E6FAE] px-4 py-2 text-sm font-extrabold text-white hover:bg-[#155A8A]"
                 onClick={() => navigate(`/modules/${m.id}`)}
               >
                 {t("actions.open")}
