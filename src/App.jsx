@@ -14,6 +14,7 @@ import { ModulesListPage } from "./pages/ModulesListPage";
 import { ModuleDetailPage } from "./pages/ModuleDetailPage";
 import { MyProgressPage } from "./pages/MyProgressPage";
 import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
+import { AdminUsersPage } from "./pages/AdminUsersPage";
 
 function Protected({ user, children }) {
   if (!user) return <Navigate to="/login" replace />;
@@ -104,7 +105,7 @@ function AppRoutes() {
         <Route path="settings" element={<SettingsPage />} />
 
         {/* Keep admin placeholders for later */}
-        <Route path="admin/users" element={<ModulesListPage pageType="admin-users-placeholder" />} />
+        <Route path="admin/users" element={<AdminUsersPage />} />
         <Route path="admin/content" element={<ModulesListPage pageType="admin-content-placeholder" />} />
       </Route>
 

@@ -8,8 +8,8 @@ function Card({ icon: Icon, title, blurb, to }) {
   const { t } = useTranslation();
 
   return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm">
-      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-slate-900 text-white">
+    <div className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100">
+      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-indigo-600 text-white">
         <Icon className="h-5 w-5" />
       </div>
       <h3 className="mt-4 font-extrabold">{title}</h3>

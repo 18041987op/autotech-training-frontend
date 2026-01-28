@@ -78,7 +78,8 @@
     "save": "Guardar",
     "sync": "Sincronizar desde Drive",
     "syncing": "Sincronizando…",
-    "openInDrive": "Abrir en Drive"
+    "openInDrive": "Abrir en Drive",
+    "refresh": "Actualizar" 
   },
   "status": {
     "loading": "Cargando…",
@@ -160,6 +161,20 @@
     "generate": "Generar Evaluación",
     "generating": "Generando…",
     "created": "Evaluación creada"
-    }
+  },
+  "adminUsers": {
+    "title": "Usuarios",
+    "subtitle": "Administra usuarios registrados, aprobaciones y roles.",
+    "total": "Usuarios",
+    "pending": "Pendientes",
+    "admins": "Admins",
+    "pendingTag": "Pendiente",
+    "activeTag": "Activo",
+    "approve": "Aprobar",
+    "lastLogin": "Último acceso"
+  },
+  "roles": { 
+    "technician": "Técnico", "administrative": "Administrativo", "admin": "Admin" 
+  }
 
 }

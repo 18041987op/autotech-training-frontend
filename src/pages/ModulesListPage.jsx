@@ -89,7 +89,10 @@ export function ModulesListPage({ pageType }) {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((m) => (
-            <div key={m.id} className="rounded-3xl border bg-white p-5 shadow-sm">
+            <div
+              key={m.id}
+              className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100"
+            >
               <div className="flex items-start justify-between gap-3">
                 <h3 className="font-extrabold leading-tight">{m.title}</h3>
                 {m.required ? (
@@ -108,7 +111,7 @@ export function ModulesListPage({ pageType }) {
 
               <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
                 <div
-                  className="h-2 rounded-full bg-slate-900"
+                  className="h-2 rounded-full bg-indigo-600"
                   style={{ width: `${Math.min(100, Math.max(0, m.completionRate || 0))}%` }}
                 />
               </div>
