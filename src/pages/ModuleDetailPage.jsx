@@ -213,7 +213,7 @@ export function ModuleDetailPage() {
 
                   {/* "Start enabled" A4-2 */}
                   <button
-                    className="rounded-xl bg-[#1E6FAE] hover:bg-[#155A8A] px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                    className="rounded-xl bg-[#F7941D] hover:bg-[#E88412] px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
                     type="button"
                     onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
                   >
