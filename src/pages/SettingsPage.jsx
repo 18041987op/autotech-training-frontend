@@ -28,7 +28,7 @@ export function SettingsPage() {
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <Link
               to="/admin/users"
-              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100"
+              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
             >
               <div className="text-sm font-extrabold">{t("settings.manageUsers")}</div>
               <div className="mt-1 text-sm text-slate-600">{t("settings.manageUsersHelp")}</div>
@@ -36,7 +36,7 @@ export function SettingsPage() {
 
             <Link
               to="/admin/modules"
-              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100"
+              className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
             >
               <div className="text-sm font-extrabold">{t("settings.manageModules")}</div>
               <div className="mt-1 text-sm text-slate-600">{t("settings.manageModulesHelp")}</div>

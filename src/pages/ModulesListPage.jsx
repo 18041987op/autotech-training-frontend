@@ -91,7 +91,7 @@ export function ModulesListPage({ pageType }) {
           {filtered.map((m) => (
             <div
               key={m.id}
-              className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100"
+              className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
             >
               <div className="flex items-start justify-between gap-3">
                 <h3 className="font-extrabold leading-tight">{m.title}</h3>
@@ -111,13 +111,13 @@ export function ModulesListPage({ pageType }) {
 
               <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
                 <div
-                  className="h-2 rounded-full bg-indigo-600"
+                  className="h-2 rounded-full bg-brand-primary"
                   style={{ width: `${Math.min(100, Math.max(0, m.completionRate || 0))}%` }}
                 />
               </div>
 
               <button
-                className="mt-4 w-full rounded-2xl bg-[#1E6FAE] px-4 py-2 text-sm font-extrabold text-white hover:bg-[#155A8A]"
+                className="mt-4 w-full btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold"
                 onClick={() => navigate(`/modules/${m.id}`)}
               >
                 {t("actions.open")}

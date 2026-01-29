@@ -89,7 +89,7 @@ export function MyProgressPage() {
                 </div>
                 <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
                   <div
-                    className="h-2 rounded-full bg-[#1E6FAE]"
+                    className="h-2 rounded-full bg-brand-primary"
                     style={{ width: `${Math.min(100, Math.max(0, p.completion_rate || 0))}%` }}
                   />
                 </div>

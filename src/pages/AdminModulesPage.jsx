@@ -22,7 +22,7 @@ export function AdminModulesPage() {
     category: "universal",
     required: true,
     icon: "Shield",
-    color: "#1E6FAE", // ✅ AutoRx default (instead of indigo)
+    color: "#1E6FAE", // ✅ AutoRx default
     drive_folder: null
   });
 
