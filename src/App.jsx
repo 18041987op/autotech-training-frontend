@@ -16,6 +16,8 @@ import { MyProgressPage } from "./pages/MyProgressPage";
 import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AdminModulesPage } from "./pages/AdminModulesPage";
+import { AssessmentsPage } from "./pages/AssessmentsPage";
+
 
 
 function Protected({ user, children }) {
@@ -95,7 +97,7 @@ function AppRoutes() {
         {/* OPTION B: real data pages */}
         <Route path="onboarding" element={<ModulesListPage pageType="onboarding" />} />
         <Route path="training" element={<ModulesListPage pageType="training" />} />
-        <Route path="assessments" element={<ModulesListPage pageType="assessments" />} />
+        <Route path="assessments" element={<AssessmentsPage />} />
         <Route path="progress" element={<MyProgressPage />} />
 
         {/* Module detail (Drive resources) */}
