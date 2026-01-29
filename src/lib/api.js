@@ -1,6 +1,6 @@
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
-function getToken() {
+export function getToken() {
   try {
     return localStorage.getItem("token") || localStorage.getItem("authToken");
   } catch {
