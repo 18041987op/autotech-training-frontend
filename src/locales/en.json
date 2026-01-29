@@ -157,7 +157,14 @@
     "correctBody": "Good choice. This is aligned with company expectations.",
     "wrongTitle": "Not quite",
     "wrongBody": "Review the material and try to understand why the correct option is best.",
-    "correctAnswer": "Correct answer"
+    "correctAnswer": "Correct answer",
+    "historyTitle": "Recent attempts (this module)",
+    "historySubtitle": "Shows your last 10 attempts across all assessments in this module.",
+    "historyNone": "No attempts found yet.",
+    "passedTag": "Passed",
+    "failedTag": "Failed",
+    "questionCountLine": "Questions this attempt: {{count}}",
+    "policyLine": "Last 7 days: {{failedCount}} failed • Rule in effect: {{limit}} questions"
   },
   "progress": {
     "title": "My Progress",

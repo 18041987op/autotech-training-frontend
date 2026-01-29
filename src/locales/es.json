@@ -156,7 +156,14 @@
     "correctBody": "Buena elección. Esto está alineado con las expectativas de la empresa.",
     "wrongTitle": "Casi",
     "wrongBody": "Repasa el material e intenta entender por qué la opción correcta es la mejor.",
-    "correctAnswer": "Respuesta correcta"
+    "correctAnswer": "Respuesta correcta",
+    "historyTitle": "Intentos recientes (este módulo)",
+    "historySubtitle": "Muestra tus últimos 10 intentos en todos los assessments de este módulo.",
+    "historyNone": "Aún no hay intentos registrados.",
+    "passedTag": "Aprobado",
+    "failedTag": "Falló",
+    "questionCountLine": "Preguntas en este intento: {{count}}",
+    "policyLine": "Últimos 7 días: {{failedCount}} fallidos • Regla activa: {{limit}} preguntas"
   },
 
   "progress": {
