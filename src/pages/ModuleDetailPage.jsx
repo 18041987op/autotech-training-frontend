@@ -16,7 +16,7 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
 
-  // A4-1: assessments list
+  // Assessments list
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
   const [assessErr, setAssessErr] = useState("");
@@ -107,6 +107,25 @@ export function ModuleDetailPage() {
     }
   };
 
+  // ✅ Admin: deactivate / activate assessment (soft delete)
+  const deactivateAssessment = async (assessmentId) => {
+    try {
+      await apiFetch(`/api/admin/assessments/${assessmentId}/deactivate`, { method: "PATCH" });
+      await loadAssessments();
+    } catch (e) {
+      alert(e.message || "Failed to deactivate");
+    }
+  };
+
+  const activateAssessment = async (assessmentId) => {
+    try {
+      await apiFetch(`/api/admin/assessments/${assessmentId}/activate`, { method: "PATCH" });
+      await loadAssessments();
+    } catch (e) {
+      alert(e.message || "Failed to activate");
+    }
+  };
+
   if (loading) {
     return (
       <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
@@ -160,12 +179,17 @@ export function ModuleDetailPage() {
         </div>
       </div>
 
-      {/* A4-1: Assessments list */}
+      {/* Assessments list */}
       <div className="card p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-extrabold">{t("moduleDetail.assessmentsTitle")}</h2>
             <p className="mt-1 text-sm text-slate-600">{t("moduleDetail.assessmentsSubtitle")}</p>
+            {isAdmin ? (
+              <p className="mt-2 text-xs text-slate-500">
+                Admin view: you can see active + inactive assessments. Users only see active ones.
+              </p>
+            ) : null}
           </div>
 
           <button
@@ -190,35 +214,74 @@ export function ModuleDetailPage() {
           <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noAssessments")}</div>
         ) : (
           <div className="mt-4 grid gap-3">
-            {assessments.map((a) => (
-              <div key={a.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      {typeof a.passingScore === "number" ? (
-                        <span>
-                          {t("moduleDetail.passingScore")}: {a.passingScore}%
-                        </span>
-                      ) : (
-                        <span>{t("moduleDetail.passingScore")}: —</span>
-                      )}
-                      {a.createdAt ? (
-                        <span className="ml-2">• {new Date(a.createdAt).toLocaleString()}</span>
+            {assessments.map((a) => {
+              const isActive = a.isActive !== false; // treat null as active
+              return (
+                <div
+                  key={a.id}
+                  className="rounded-2xl border border-slate-200 bg-white p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
+
+                        {!isActive ? (
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold">
+                            Inactive
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-1 text-xs text-slate-500">
+                        {typeof a.passingScore === "number" ? (
+                          <span>
+                            {t("moduleDetail.passingScore")}: {a.passingScore}%
+                          </span>
+                        ) : (
+                          <span>{t("moduleDetail.passingScore")}: —</span>
+                        )}
+                        {a.createdAt ? (
+                          <span className="ml-2">• {new Date(a.createdAt).toLocaleString()}</span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 justify-end">
+                      {/* Start: allow admin to start even if inactive (optional).
+                          Users won't see inactive anyway due to A2 filter server-side. */}
+                      <button
+                        className="btn-accent btn-sm px-3 py-1.5 text-xs font-semibold"
+                        type="button"
+                        onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
+                      >
+                        {t("moduleDetail.startAssessment")}
+                      </button>
+
+                      {isAdmin ? (
+                        isActive ? (
+                          <button
+                            className="btn-outline-sm"
+                            type="button"
+                            onClick={() => deactivateAssessment(a.id)}
+                          >
+                            Deactivate
+                          </button>
+                        ) : (
+                          <button
+                            className="btn-outline-sm"
+                            type="button"
+                            onClick={() => activateAssessment(a.id)}
+                          >
+                            Activate
+                          </button>
+                        )
                       ) : null}
                     </div>
                   </div>
-
-                  <button
-                    className="btn-accent btn-sm px-3 py-1.5 text-xs font-semibold"
-                    type="button"
-                    onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
-                  >
-                    {t("moduleDetail.startAssessment")}
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
