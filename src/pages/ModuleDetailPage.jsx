@@ -16,7 +16,7 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
 
-  // NEW: assessments list (A4-1)
+  // A4-1: assessments list
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
   const [assessErr, setAssessErr] = useState("");
@@ -30,9 +30,7 @@ export function ModuleDetailPage() {
   const [genLoading, setGenLoading] = useState(false);
   const [genMsg, setGenMsg] = useState("");
 
-  const headerSubtitle = useMemo(() => {
-    return t("moduleDetail.resourcesSubtitle");
-  }, [t]);
+  const headerSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
 
   async function load() {
     setErr("");
@@ -50,7 +48,6 @@ export function ModuleDetailPage() {
     }
   }
 
-  // NEW: load assessments list
   async function loadAssessments() {
     setAssessErr("");
     setAssessLoading(true);
@@ -76,7 +73,9 @@ export function ModuleDetailPage() {
     setSyncing(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
-      setSyncMsg(`Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`);
+      setSyncMsg(
+        `Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`
+      );
       await load();
     } catch (e) {
       setSyncMsg(e.message || "Sync failed");
@@ -91,8 +90,6 @@ export function ModuleDetailPage() {
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/generate-assessment`, { method: "POST" });
       setGenMsg(`${t("assessmentsUi.created")}: ${out.title}`);
-
-      // refresh list right after generating
       await loadAssessments();
     } catch (e) {
       setGenMsg(e.message || "Failed");
@@ -128,7 +125,8 @@ export function ModuleDetailPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      {/* Header */}
+      <div className="card p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-extrabold">{module?.title}</h1>
@@ -138,7 +136,7 @@ export function ModuleDetailPage() {
           {isAdmin ? (
             <div className="text-right space-y-2">
               <button
-                className="rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
+                className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
                 onClick={runSync}
                 disabled={syncing}
                 type="button"
@@ -147,7 +145,7 @@ export function ModuleDetailPage() {
               </button>
 
               <button
-                className="w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm font-extrabold hover:bg-slate-50 disabled:opacity-60"
+                className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
                 onClick={generateAssessment}
                 disabled={genLoading}
                 type="button"
@@ -162,10 +160,8 @@ export function ModuleDetailPage() {
         </div>
       </div>
 
-      {/* =========================
-          A4-1: Assessments list
-         ========================= */}
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      {/* A4-1: Assessments list */}
+      <div className="card p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-extrabold">{t("moduleDetail.assessmentsTitle")}</h2>
@@ -173,7 +169,7 @@ export function ModuleDetailPage() {
           </div>
 
           <button
-            className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50 disabled:opacity-60"
+            className="btn-outline-sm disabled:opacity-60"
             onClick={loadAssessments}
             disabled={assessLoading}
             type="button"
@@ -207,13 +203,14 @@ export function ModuleDetailPage() {
                       ) : (
                         <span>{t("moduleDetail.passingScore")}: —</span>
                       )}
-                      {a.createdAt ? <span className="ml-2">• {new Date(a.createdAt).toLocaleString()}</span> : null}
+                      {a.createdAt ? (
+                        <span className="ml-2">• {new Date(a.createdAt).toLocaleString()}</span>
+                      ) : null}
                     </div>
                   </div>
 
-                  {/* "Start enabled" A4-2 */}
                   <button
-                    className="rounded-xl bg-[#F7941D] hover:bg-[#E88412] px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800"
+                    className="btn-accent btn-sm px-3 py-1.5 text-xs font-semibold"
                     type="button"
                     onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
                   >
@@ -226,7 +223,8 @@ export function ModuleDetailPage() {
         )}
       </div>
 
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      {/* Resources */}
+      <div className="card p-6">
         <h2 className="text-lg font-extrabold">{t("moduleDetail.resourcesTitle")}</h2>
         <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
@@ -245,7 +243,7 @@ export function ModuleDetailPage() {
                   <div className="flex gap-2">
                     {r.webViewLink ? (
                       <a
-                        className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
+                        className="btn-outline-sm px-3 py-1.5"
                         href={r.webViewLink}
                         target="_blank"
                         rel="noreferrer"
@@ -255,7 +253,7 @@ export function ModuleDetailPage() {
                     ) : null}
 
                     <button
-                      className="rounded-xl bg-[#1E6FAE] hover:bg-[#155A8A] px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                      className="btn-primary btn-sm px-3 py-1.5 disabled:opacity-60"
                       onClick={() => openFull(r.id)}
                       disabled={!r.hasText}
                       title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}
@@ -279,19 +277,16 @@ export function ModuleDetailPage() {
         )}
       </div>
 
+      {/* Full resource */}
       {active ? (
-        <div className="rounded-3xl border bg-white p-6 shadow-sm">
+        <div className="card p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-extrabold">{active.name}</h3>
               <p className="text-xs text-slate-500">{active.mimeType}</p>
             </div>
 
-            <button
-              className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
-              onClick={() => setActive(null)}
-              type="button"
-            >
+            <button className="btn-outline-sm" onClick={() => setActive(null)} type="button">
               {t("actions.close")}
             </button>
           </div>
