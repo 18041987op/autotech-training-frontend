@@ -41,16 +41,20 @@ export function AuthScreen({ onSignedIn }) {
       <div className="mx-auto flex min-h-screen max-w-6xl items-center justify-center px-4 py-10">
         <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <div className="flex items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#1E6FAE] text-white">
+            {/* ✅ standard brand icon */}
+            <div className="brand-icon h-11 w-11">
               <Shield className="h-5 w-5" />
             </div>
+
             <div>
               <p className="text-sm font-extrabold tracking-tight">{t("appName")}</p>
               <p className="text-xs text-slate-500">Onboarding • Training • Culture</p>
             </div>
           </div>
 
-          <h1 className="mt-6 text-2xl font-extrabold tracking-tight">{t("auth.welcomeTitle")}</h1>
+          <h1 className="mt-6 text-2xl font-extrabold tracking-tight">
+            {t("auth.welcomeTitle")}
+          </h1>
           <p className="mt-2 text-sm text-slate-600">{t("auth.welcomeSubtitle")}</p>
 
           {err ? (
@@ -62,10 +66,11 @@ export function AuthScreen({ onSignedIn }) {
           <form className="mt-6 space-y-4" onSubmit={signIn}>
             <div>
               <label className="text-xs font-semibold text-slate-700">{t("auth.email")}</label>
+              {/* ✅ standard input (brand soft ring) */}
               <input
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-200"
+                className="mt-1 input"
                 placeholder="name@company.com"
                 autoComplete="email"
               />
@@ -73,18 +78,20 @@ export function AuthScreen({ onSignedIn }) {
 
             <div>
               <label className="text-xs font-semibold text-slate-700">{t("auth.password")}</label>
+              {/* ✅ standard input (brand soft ring) */}
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-200"
+                className="mt-1 input"
                 placeholder="••••••••"
                 autoComplete="current-password"
               />
             </div>
 
+            {/* ✅ remove hover black, use btn-primary */}
             <button
-              className="w-full rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2.5 text-sm font-extrabold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
+              className="w-full btn-primary rounded-2xl py-2.5 text-sm font-extrabold shadow-sm disabled:opacity-60"
               type="submit"
               disabled={loading}
             >
