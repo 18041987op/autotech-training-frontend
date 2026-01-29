@@ -52,7 +52,6 @@ export function Layout({ user, onSignOut }) {
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:w-72 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5">
           <Brand />
-
           <UserCard user={user} onSignOut={onSignOut} />
 
           <NavSection
@@ -90,7 +89,7 @@ export function Layout({ user, onSignOut }) {
           <div className="absolute left-0 top-0 h-full w-[86%] max-w-[320px] bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
               <div className="flex items-center gap-3">
-                <div className="grid h-9 w-9 place-items-center rounded-2xl bg-[#1E6FAE] text-white">
+                <div className="brand-icon h-9 w-9">
                   <Shield className="h-5 w-5" />
                 </div>
                 <div className="leading-tight">
@@ -102,7 +101,7 @@ export function Layout({ user, onSignOut }) {
               <button
                 type="button"
                 onClick={closeMobile}
-                className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-50"
+                className={cx("btn-outline-sm", "px-3")}
                 aria-label="Close menu"
               >
                 <X className="h-4 w-4" />
@@ -131,7 +130,7 @@ function Brand() {
   const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3 px-2">
-      <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[#1E6FAE] text-white">
+      <div className="brand-icon h-10 w-10">
         <Shield className="h-5 w-5" />
       </div>
       <div>
@@ -146,7 +145,7 @@ function UserCard({ user, onSignOut }) {
   const { t } = useTranslation();
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+    <div className="card p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold">{user?.name}</p>
@@ -159,10 +158,7 @@ function UserCard({ user, onSignOut }) {
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <LanguageToggle />
-        <button
-          onClick={onSignOut}
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-        >
+        <button onClick={onSignOut} className="btn-outline-sm">
           <LogOut className="h-4 w-4" />
           {t("auth.signOut")}
         </button>
@@ -200,12 +196,7 @@ function SideItem({ to, label, icon: Icon, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        cx(
-          "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
-          isActive
-            ? "bg-[#1E6FAE] text-white"
-            : "text-slate-800 hover:bg-[#E6F1FA] hover:text-[#1E6FAE]"
-        )
+        isActive ? "nav-item-active" : "nav-item-idle"
       }
     >
       <Icon className="h-4 w-4" />
@@ -224,7 +215,7 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
         <button
           type="button"
           onClick={onOpenMobileMenu}
-          className="md:hidden inline-flex items-center gap-2 rounded-xl border border-[#1E6FAE] px-3 py-2 text-xs font-semibold hover:bg-slate-50"
+          className={cx("md:hidden", "btn-outline-sm")}
           aria-label="Open menu"
         >
           <Menu className="h-4 w-4" />
@@ -232,14 +223,11 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
         </button>
 
         <input
-          className="hidden md:block w-[420px] rounded-2xl border border-[#1E6FAE] px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#E6F1FA]"
+          className="hidden md:block w-[420px] input-brand"
           placeholder={t("common.search")}
         />
 
-        <button
-          onClick={onSignOut}
-          className="rounded-xl border border-[#1E6FAE] px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-        >
+        <button onClick={onSignOut} className="btn-outline-sm">
           {t("auth.signOut")}
         </button>
       </div>
