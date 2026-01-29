@@ -52,7 +52,8 @@ export function Layout({ user, onSignOut }) {
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex md:w-72 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5">
           <Brand />
-          <UserCard user={user} onSignOut={onSignOut} />
+
+          <UserCard user={user} />
 
           <NavSection
             baseNav={baseNav}
@@ -103,13 +104,14 @@ export function Layout({ user, onSignOut }) {
                 onClick={closeMobile}
                 className={cx("btn-outline-sm", "px-3")}
                 aria-label="Close menu"
+                title="Close"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="p-4 space-y-4">
-              <UserCard user={user} onSignOut={onSignOut} />
+              <UserCard user={user} />
 
               <div onClick={closeMobile}>
                 <NavSection
@@ -118,6 +120,19 @@ export function Layout({ user, onSignOut }) {
                   showAdmin={adminExtra.length > 0}
                 />
               </div>
+
+              {/* Mobile-only sign out (optional but useful) */}
+              <button
+                onClick={() => {
+                  closeMobile();
+                  onSignOut();
+                }}
+                className="btn-outline-sm w-full"
+                type="button"
+              >
+                <LogOut className="h-4 w-4" />
+                {t("auth.signOut")}
+              </button>
             </div>
           </div>
         </div>
@@ -141,7 +156,7 @@ function Brand() {
   );
 }
 
-function UserCard({ user, onSignOut }) {
+function UserCard({ user }) {
   const { t } = useTranslation();
 
   return (
@@ -158,6 +173,9 @@ function UserCard({ user, onSignOut }) {
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <LanguageToggle />
+        <span className="text-xs font-semibold text-slate-500">
+          {t("common.language")}
+        </span>
       </div>
     </div>
   );
@@ -191,9 +209,7 @@ function SideItem({ to, label, icon: Icon, end }) {
     <NavLink
       to={to}
       end={end}
-      className={({ isActive }) =>
-        isActive ? "nav-item-active" : "nav-item-idle"
-      }
+      className={({ isActive }) => (isActive ? "nav-item-active" : "nav-item-idle")}
     >
       <Icon className="h-4 w-4" />
       {label}
@@ -213,6 +229,7 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
           onClick={onOpenMobileMenu}
           className={cx("md:hidden", "btn-outline-sm")}
           aria-label="Open menu"
+          title="Menu"
         >
           <Menu className="h-4 w-4" />
           Menu
@@ -223,11 +240,13 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
           placeholder={t("common.search")}
         />
 
+        {/* Top-right: icon-only logout */}
         <button
           onClick={onSignOut}
           className="btn-outline-sm"
           title={t("auth.signOut")}
           aria-label={t("auth.signOut")}
+          type="button"
         >
           <LogOut className="h-4 w-4" />
         </button>
