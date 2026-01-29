@@ -8,7 +8,6 @@ export function ModuleDetailPage() {
   const nav = useNavigate();
   const { t } = useTranslation();
 
-  // ✅ Hook always called (no condition)
   const { user } = useOutletContext();
   const isAdmin = (user?.role || "").toLowerCase() === "admin";
 
@@ -16,10 +15,11 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
 
-  // Assessments list
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
   const [assessErr, setAssessErr] = useState("");
+
+  const [showInactive, setShowInactive] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -68,14 +68,24 @@ export function ModuleDetailPage() {
     // eslint-disable-next-line
   }, [id]);
 
+  const inactiveCount = useMemo(() => {
+    return (assessments || []).filter((a) => a.isActive === false).length;
+  }, [assessments]);
+
+  const visibleAssessments = useMemo(() => {
+    const activeOnes = (assessments || []).filter((a) => a.isActive !== false);
+    const inactiveOnes = (assessments || []).filter((a) => a.isActive === false);
+
+    if (!isAdmin) return activeOnes;
+    return showInactive ? [...activeOnes, ...inactiveOnes] : activeOnes;
+  }, [assessments, isAdmin, showInactive]);
+
   const runSync = async () => {
     setSyncMsg("");
     setSyncing(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
-      setSyncMsg(
-        `Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`
-      );
+      setSyncMsg(`Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`);
       await load();
     } catch (e) {
       setSyncMsg(e.message || "Sync failed");
@@ -107,7 +117,6 @@ export function ModuleDetailPage() {
     }
   };
 
-  // ✅ Admin: deactivate / activate assessment (soft delete)
   const deactivateAssessment = async (assessmentId) => {
     try {
       await apiFetch(`/api/admin/assessments/${assessmentId}/deactivate`, { method: "PATCH" });
@@ -185,10 +194,18 @@ export function ModuleDetailPage() {
           <div>
             <h2 className="text-lg font-extrabold">{t("moduleDetail.assessmentsTitle")}</h2>
             <p className="mt-1 text-sm text-slate-600">{t("moduleDetail.assessmentsSubtitle")}</p>
-            {isAdmin ? (
-              <p className="mt-2 text-xs text-slate-500">
-                Admin view: you can see active + inactive assessments. Users only see active ones.
-              </p>
+
+            {isAdmin && inactiveCount > 0 ? (
+              <div className="mt-3">
+                <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={showInactive}
+                    onChange={(e) => setShowInactive(e.target.checked)}
+                  />
+                  Show inactive ({inactiveCount})
+                </label>
+              </div>
             ) : null}
           </div>
 
@@ -210,24 +227,27 @@ export function ModuleDetailPage() {
 
         {assessLoading ? (
           <div className="mt-4 text-sm text-slate-600">{t("status.loading")}</div>
-        ) : assessments.length === 0 ? (
+        ) : visibleAssessments.length === 0 ? (
           <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noAssessments")}</div>
         ) : (
           <div className="mt-4 grid gap-3">
-            {assessments.map((a) => {
-              const isActive = a.isActive !== false; // treat null as active
+            {visibleAssessments.map((a) => {
+              const isActive = a.isActive !== false;
               return (
                 <div
                   key={a.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-4"
+                  className={
+                    isActive
+                      ? "rounded-2xl border border-slate-200 bg-white p-4"
+                      : "rounded-2xl border border-slate-200 bg-slate-50 p-4 opacity-70"
+                  }
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
-
                         {!isActive ? (
-                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold">
+                          <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold">
                             Inactive
                           </span>
                         ) : null}
@@ -248,31 +268,23 @@ export function ModuleDetailPage() {
                     </div>
 
                     <div className="flex flex-wrap gap-2 justify-end">
-                      {/* Start: allow admin to start even if inactive (optional).
-                          Users won't see inactive anyway due to A2 filter server-side. */}
                       <button
                         className="btn-accent btn-sm px-3 py-1.5 text-xs font-semibold"
                         type="button"
                         onClick={() => nav(`/modules/${id}/assessments/${a.id}`)}
+                        disabled={!isActive && !isAdmin}
+                        title={!isActive && !isAdmin ? "Inactive assessment" : ""}
                       >
                         {t("moduleDetail.startAssessment")}
                       </button>
 
                       {isAdmin ? (
                         isActive ? (
-                          <button
-                            className="btn-outline-sm"
-                            type="button"
-                            onClick={() => deactivateAssessment(a.id)}
-                          >
+                          <button className="btn-outline-sm" type="button" onClick={() => deactivateAssessment(a.id)}>
                             Deactivate
                           </button>
                         ) : (
-                          <button
-                            className="btn-outline-sm"
-                            type="button"
-                            onClick={() => activateAssessment(a.id)}
-                          >
+                          <button className="btn-outline-sm" type="button" onClick={() => activateAssessment(a.id)}>
                             Activate
                           </button>
                         )
@@ -305,12 +317,7 @@ export function ModuleDetailPage() {
 
                   <div className="flex gap-2">
                     {r.webViewLink ? (
-                      <a
-                        className="btn-outline-sm px-3 py-1.5"
-                        href={r.webViewLink}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
+                      <a className="btn-outline-sm px-3 py-1.5" href={r.webViewLink} target="_blank" rel="noreferrer">
                         {t("actions.openInDrive")}
                       </a>
                     ) : null}
@@ -328,11 +335,7 @@ export function ModuleDetailPage() {
                 </div>
 
                 <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-                  {r.hasText ? (
-                    r.previewText
-                  ) : (
-                    <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
-                  )}
+                  {r.hasText ? r.previewText : <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>}
                 </div>
               </div>
             ))}
@@ -340,7 +343,6 @@ export function ModuleDetailPage() {
         )}
       </div>
 
-      {/* Full resource */}
       {active ? (
         <div className="card p-6">
           <div className="flex items-start justify-between gap-4">
