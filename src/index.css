@@ -22,3 +22,70 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* =========================================================
+   AutoRx UI tokens (reusable classes)
+   ========================================================= */
+@layer components {
+  /* ===== Buttons ===== */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-primary text-white hover:bg-brand-primaryHover;
+  }
+
+  .btn-accent {
+    @apply btn bg-brand-accent text-black hover:bg-brand-accentHover;
+  }
+
+  .btn-outline {
+    @apply btn border border-brand-primary text-slate-900 hover:bg-brand-soft;
+  }
+
+  .btn-ghost {
+    @apply btn hover:bg-brand-soft;
+  }
+
+  /* Smaller button (for top bar + compact areas) */
+  .btn-sm {
+    @apply rounded-xl px-3 py-2 text-xs font-semibold;
+  }
+
+  .btn-outline-sm {
+    @apply btn-outline btn-sm;
+  }
+
+  /* ===== Inputs ===== */
+  .input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-soft;
+  }
+
+  .input-brand {
+    @apply input border-brand-primary;
+  }
+
+  /* ===== Cards / Containers ===== */
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  /* ===== Sidebar nav ===== */
+  .nav-item {
+    @apply flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors;
+  }
+
+  .nav-item-active {
+    @apply nav-item bg-brand-primary text-white;
+  }
+
+  .nav-item-idle {
+    @apply nav-item text-slate-800 hover:bg-brand-soft hover:text-brand-primary;
+  }
+
+  /* ===== Brand icon block ===== */
+  .brand-icon {
+    @apply grid place-items-center rounded-2xl bg-brand-primary text-white;
+  }
+}
