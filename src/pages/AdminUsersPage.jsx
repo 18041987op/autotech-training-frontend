@@ -25,7 +25,7 @@ export function AdminUsersPage() {
     email: "",
     password: "",
     role: "technician",
-    approved: true,
+    approved: true
   });
 
   const openCreateUser = () => {
@@ -34,7 +34,7 @@ export function AdminUsersPage() {
       email: "",
       password: "",
       role: "technician",
-      approved: true,
+      approved: true
     });
     setShowCreateUser(true);
   };
@@ -78,7 +78,7 @@ export function AdminUsersPage() {
     try {
       await apiFetch(`/api/admin/users/${id}/role`, {
         method: "PATCH",
-        body: { role },
+        body: { role }
       });
       await load();
     } catch (e) {
@@ -95,7 +95,8 @@ export function AdminUsersPage() {
 
     if (!name) return alert("Name is required");
     if (!email) return alert("Email is required");
-    if (!password || password.length < 6) return alert("Password must be at least 6 characters");
+    if (!password || password.length < 6)
+      return alert("Password must be at least 6 characters");
 
     setCreating(true);
     try {
@@ -106,8 +107,8 @@ export function AdminUsersPage() {
           email,
           password,
           role: newUser.role,
-          approved: !!newUser.approved,
-        },
+          approved: !!newUser.approved
+        }
       });
 
       closeCreateUser();
@@ -145,19 +146,11 @@ export function AdminUsersPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button
-              className="rounded-xl bg-[#1E6FAE] px-3 py-2 text-xs font-semibold text-white hover:bg-[#155A8A]"
-              onClick={openCreateUser}
-              type="button"
-            >
+            <button className="btn-primary btn-sm" onClick={openCreateUser} type="button">
               + Add User
             </button>
 
-            <button
-              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-              onClick={load}
-              type="button"
-            >
+            <button className="btn-outline-sm" onClick={load} type="button">
               {t("actions.refresh")}
             </button>
           </div>
@@ -165,15 +158,23 @@ export function AdminUsersPage() {
 
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("adminUsers.total")}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {t("adminUsers.total")}
+            </p>
             <p className="mt-2 text-2xl font-extrabold">{stats.total}</p>
           </div>
+
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("adminUsers.pending")}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {t("adminUsers.pending")}
+            </p>
             <p className="mt-2 text-2xl font-extrabold">{stats.pending}</p>
           </div>
+
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("adminUsers.admins")}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              {t("adminUsers.admins")}
+            </p>
             <p className="mt-2 text-2xl font-extrabold">{stats.admins}</p>
           </div>
         </div>
@@ -187,13 +188,14 @@ export function AdminUsersPage() {
             {users.map((u) => (
               <div
                 key={u.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-[#1E6FAE] hover:ring-2 hover:ring-[#E6F1FA]"
+                className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <div className="font-extrabold truncate">{u.name}</div>
                       <Pill>{u.role}</Pill>
+
                       {!u.approved ? (
                         <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
                           {t("adminUsers.pendingTag")}
@@ -204,16 +206,18 @@ export function AdminUsersPage() {
                         </span>
                       )}
                     </div>
+
                     <div className="mt-1 text-xs text-slate-500 truncate">{u.email}</div>
                     <div className="mt-2 text-xs text-slate-500">
-                      {t("adminUsers.lastLogin")}: {u.last_login ? new Date(u.last_login).toLocaleString() : "—"}
+                      {t("adminUsers.lastLogin")}:{" "}
+                      {u.last_login ? new Date(u.last_login).toLocaleString() : "—"}
                     </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2">
                     {!u.approved ? (
                       <button
-                        className="rounded-xl bg-[#F7941D] px-3 py-2 text-xs font-semibold text-black hover:bg-[#E88412]"
+                        className="btn-accent btn-sm"
                         onClick={() => approve(u.id)}
                         type="button"
                       >
@@ -222,7 +226,7 @@ export function AdminUsersPage() {
                     ) : null}
 
                     <select
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold hover:bg-slate-50"
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold transition-colors hover:bg-brand-soft focus:outline-none focus:ring-2 focus:ring-brand-soft"
                       value={u.role}
                       onChange={(e) => setRole(u.id, e.target.value)}
                     >
@@ -248,14 +252,12 @@ export function AdminUsersPage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-xl font-extrabold">Add User</h2>
-                <p className="mt-1 text-sm text-slate-600">Create a new user and assign a role.</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  Create a new user and assign a role.
+                </p>
               </div>
 
-              <button
-                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                onClick={closeCreateUser}
-                type="button"
-              >
+              <button className="btn-outline-sm" onClick={closeCreateUser} type="button">
                 {t("actions.close")}
               </button>
             </div>
@@ -264,7 +266,7 @@ export function AdminUsersPage() {
               <div>
                 <label className="text-xs font-semibold text-slate-600">Full name</label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={newUser.name}
                   onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))}
                   placeholder="e.g., Juan Perez"
@@ -274,7 +276,7 @@ export function AdminUsersPage() {
               <div>
                 <label className="text-xs font-semibold text-slate-600">Email</label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={newUser.email}
                   onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
                   placeholder="name@autorxcenter.com"
@@ -282,9 +284,11 @@ export function AdminUsersPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">Temporary password</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  Temporary password
+                </label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={newUser.password}
                   onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
                   placeholder="Min 6 characters"
@@ -296,7 +300,7 @@ export function AdminUsersPage() {
                 <div>
                   <label className="text-xs font-semibold text-slate-600">Role</label>
                   <select
-                    className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm"
+                    className="mt-1 input bg-white"
                     value={newUser.role}
                     onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}
                   >
@@ -312,7 +316,9 @@ export function AdminUsersPage() {
                     <input
                       type="checkbox"
                       checked={newUser.approved}
-                      onChange={(e) => setNewUser((p) => ({ ...p, approved: e.target.checked }))}
+                      onChange={(e) =>
+                        setNewUser((p) => ({ ...p, approved: e.target.checked }))
+                      }
                     />
                     Approved
                   </label>
@@ -321,16 +327,12 @@ export function AdminUsersPage() {
             </div>
 
             <div className="mt-6 flex justify-end gap-2">
-              <button
-                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                onClick={closeCreateUser}
-                type="button"
-              >
+              <button className="btn-outline-sm" onClick={closeCreateUser} type="button">
                 {t("actions.cancel")}
               </button>
 
               <button
-                className="rounded-xl bg-[#1E6FAE] px-4 py-2 text-xs font-semibold text-white hover:bg-[#155A8A] disabled:opacity-60"
+                className="btn-primary btn-sm px-4 disabled:opacity-60"
                 onClick={createUser}
                 type="button"
                 disabled={creating}
