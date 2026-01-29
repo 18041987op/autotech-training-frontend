@@ -6,7 +6,7 @@ const CATEGORIES = [
   { value: "universal", labelKey: "modules.categories.universal" },
   { value: "technician", labelKey: "modules.categories.technician" },
   { value: "service_advisor", labelKey: "modules.categories.serviceAdvisor" },
-  { value: "administrative", labelKey: "modules.categories.administrative" },
+  { value: "administrative", labelKey: "modules.categories.administrative" }
 ];
 
 export function AdminModulesPage() {
@@ -22,8 +22,8 @@ export function AdminModulesPage() {
     category: "universal",
     required: true,
     icon: "Shield",
-    color: "#4f46e5",
-    drive_folder: null,
+    color: "#1E6FAE", // ✅ AutoRx default (instead of indigo)
+    drive_folder: null
   });
 
   const load = async () => {
@@ -51,8 +51,8 @@ export function AdminModulesPage() {
       category: "universal",
       required: true,
       icon: "Shield",
-      color: "#4f46e5",
-      drive_folder: null,
+      color: "#1E6FAE",
+      drive_folder: null
     });
   };
 
@@ -64,8 +64,8 @@ export function AdminModulesPage() {
       category: m.category || "universal",
       required: !!m.required,
       icon: m.icon || "Shield",
-      color: m.color || "#4f46e5",
-      drive_folder: m.drive_folder ?? null,
+      color: m.color || "#1E6FAE",
+      drive_folder: m.drive_folder ?? null
     });
   };
 
@@ -79,15 +79,14 @@ export function AdminModulesPage() {
       }
 
       if (!editing?.id) {
-        // Create uses your existing endpoint
         await apiFetch("/api/admin/modules", {
           method: "POST",
           body: {
             title: form.title.trim(),
             description: form.description.trim() || null,
             category: form.category,
-            required: form.required,
-          },
+            required: form.required
+          }
         });
       } else {
         await apiFetch(`/api/admin/modules/${editing.id}`, {
@@ -99,8 +98,8 @@ export function AdminModulesPage() {
             required: form.required,
             icon: form.icon || null,
             color: form.color || null,
-            drive_folder: form.drive_folder || null,
-          },
+            drive_folder: form.drive_folder || null
+          }
         });
       }
 
@@ -144,19 +143,13 @@ export function AdminModulesPage() {
             <h1 className="text-2xl font-extrabold">{t("adminModules.title")}</h1>
             <p className="mt-2 text-sm text-slate-600">{t("adminModules.subtitle")}</p>
           </div>
+
           <div className="flex gap-2">
-            <button
-              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-              onClick={load}
-              type="button"
-            >
+            <button className="btn-outline-sm" onClick={load} type="button">
               {t("actions.refresh")}
             </button>
-            <button
-              className="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
-              onClick={openCreate}
-              type="button"
-            >
+
+            <button className="btn-primary btn-sm" onClick={openCreate} type="button">
               {t("adminModules.create")}
             </button>
           </div>
@@ -164,12 +157,17 @@ export function AdminModulesPage() {
 
         <div className="mt-4 grid gap-3 md:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <div className="text-xs font-semibold uppercase text-slate-500">{t("adminModules.total")}</div>
+            <div className="text-xs font-semibold uppercase text-slate-500">
+              {t("adminModules.total")}
+            </div>
             <div className="mt-2 text-2xl font-extrabold">{stats.total}</div>
           </div>
+
           {CATEGORIES.map((c) => (
             <div key={c.value} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <div className="text-xs font-semibold uppercase text-slate-500">{t(c.labelKey)}</div>
+              <div className="text-xs font-semibold uppercase text-slate-500">
+                {t(c.labelKey)}
+              </div>
               <div className="mt-2 text-2xl font-extrabold">{stats.byCat[c.value] || 0}</div>
             </div>
           ))}
@@ -180,22 +178,21 @@ export function AdminModulesPage() {
         {modules.map((m) => (
           <div
             key={m.id}
-            className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-indigo-200 hover:ring-2 hover:ring-indigo-100"
+            className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="font-extrabold truncate">{m.title}</div>
                 <div className="mt-1 text-xs text-slate-500">
-                  {t(CATEGORIES.find((c) => c.value === m.category)?.labelKey || "modules.categories.universal")}
+                  {t(
+                    CATEGORIES.find((c) => c.value === m.category)?.labelKey ||
+                      "modules.categories.universal"
+                  )}
                   {m.required ? ` • ${t("status.required")}` : ""}
                 </div>
               </div>
 
-              <button
-                className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold hover:bg-slate-50"
-                onClick={() => openEdit(m)}
-                type="button"
-              >
+              <button className="btn-outline-sm" onClick={() => openEdit(m)} type="button">
                 {t("actions.edit")}
               </button>
             </div>
@@ -213,6 +210,7 @@ export function AdminModulesPage() {
       {editing ? (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={close} />
+
           <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -223,29 +221,30 @@ export function AdminModulesPage() {
                   {editing.id ? t("adminModules.edit") : t("adminModules.create")}
                 </div>
               </div>
-              <button
-                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                onClick={close}
-                type="button"
-              >
+
+              <button className="btn-outline-sm" onClick={close} type="button">
                 {t("actions.close")}
               </button>
             </div>
 
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">{t("adminModules.fields.title")}</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.title")}
+                </label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={form.title}
                   onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">{t("adminModules.fields.description")}</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.description")}
+                </label>
                 <textarea
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   rows={3}
                   value={form.description}
                   onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
@@ -253,9 +252,11 @@ export function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">{t("adminModules.fields.category")}</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.category")}
+                </label>
                 <select
-                  className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm"
+                  className="mt-1 input bg-white"
                   value={form.category}
                   onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
                 >
@@ -279,27 +280,34 @@ export function AdminModulesPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">{t("adminModules.fields.icon")}</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.icon")}
+                </label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={form.icon}
                   onChange={(e) => setForm((p) => ({ ...p, icon: e.target.value }))}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">{t("adminModules.fields.color")}</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.color")}
+                </label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={form.color}
                   onChange={(e) => setForm((p) => ({ ...p, color: e.target.value }))}
+                  placeholder="#1E6FAE"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-semibold text-slate-600">{t("adminModules.fields.driveFolder")}</label>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.driveFolder")}
+                </label>
                 <input
-                  className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-2 text-sm"
+                  className="mt-1 input"
                   value={form.drive_folder || ""}
                   onChange={(e) => setForm((p) => ({ ...p, drive_folder: e.target.value }))}
                   placeholder="Optional (e.g., Warranty-Procedures)"
@@ -308,18 +316,10 @@ export function AdminModulesPage() {
             </div>
 
             <div className="mt-5 flex justify-end gap-2">
-              <button
-                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-                onClick={close}
-                type="button"
-              >
+              <button className="btn-outline-sm" onClick={close} type="button">
                 {t("actions.cancel")}
               </button>
-              <button
-                className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700"
-                onClick={save}
-                type="button"
-              >
+              <button className="btn-primary btn-sm px-4" onClick={save} type="button">
                 {t("actions.save")}
               </button>
             </div>
