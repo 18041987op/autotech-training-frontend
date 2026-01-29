@@ -71,8 +71,9 @@ export function AssessmentRunnerPage() {
           questionNo: q.question_no,
           text: q.question,
           options: normalizeOptions(q.options),
-          correctIndex: typeof q.correct_index === "number" ? q.correct_index : Number(q.correct_index),
-          explanation: q.explanation || "",
+          correctIndex:
+            typeof q.correct_index === "number" ? q.correct_index : Number(q.correct_index),
+          explanation: q.explanation || ""
         }));
 
         setQuestions(normalized);
@@ -129,11 +130,9 @@ export function AssessmentRunnerPage() {
     try {
       const out = await apiFetch(`/api/assessments/${aid}/attempt`, {
         method: "POST",
-        body: { answers },
+        body: { answers }
       });
 
-      // backend should return score/correct/total/passed/passingScore;
-      // if not, we still show attempt only (but you already planned to adjust backend)
       setResult(out);
     } catch (e) {
       setErr(e.message || "Failed to submit attempt");
@@ -145,13 +144,12 @@ export function AssessmentRunnerPage() {
   const backToModule = () => nav(`/modules/${moduleId}`);
 
   const tryAgain = () => {
-    // simplest: reload same route (fresh state)
     nav(0);
   };
 
   if (loading) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+      <div className="card p-6 text-sm text-slate-600">
         {t("status.loading")}
       </div>
     );
@@ -163,8 +161,9 @@ export function AssessmentRunnerPage() {
         <div className="rounded-3xl border border-red-200 bg-red-50 p-6 shadow-sm text-sm text-red-700">
           {err}
         </div>
+
         <button
-          className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-extrabold hover:bg-slate-50"
+          className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
           onClick={backToModule}
           type="button"
         >
@@ -177,14 +176,13 @@ export function AssessmentRunnerPage() {
   // Final screen
   if (result) {
     const score = typeof result.score === "number" ? result.score : result.attempt?.score;
-    const passed =
-      typeof result.passed === "boolean" ? result.passed : result.attempt?.passed;
+    const passed = typeof result.passed === "boolean" ? result.passed : result.attempt?.passed;
 
     const correct = result.correct ?? result.attempt?.correct;
     const totalRes = result.total ?? result.attempt?.total ?? total;
 
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm space-y-4">
+      <div className="card p-6 space-y-4">
         <div>
           <h1 className="text-2xl font-extrabold">{assessment?.title || "Assessment"}</h1>
           <div className="mt-1 text-sm text-slate-600">
@@ -219,7 +217,7 @@ export function AssessmentRunnerPage() {
         <div className="flex flex-wrap gap-2">
           {!passed ? (
             <button
-              className="rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800"
+              className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold"
               onClick={tryAgain}
               type="button"
             >
@@ -228,7 +226,7 @@ export function AssessmentRunnerPage() {
           ) : null}
 
           <button
-            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-extrabold hover:bg-slate-50"
+            className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
             onClick={backToModule}
             type="button"
           >
@@ -242,11 +240,11 @@ export function AssessmentRunnerPage() {
   // No questions
   if (!current) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm space-y-3">
+      <div className="card p-6 space-y-3">
         <h1 className="text-2xl font-extrabold">{t("assessmentRunner.noQuestionsTitle")}</h1>
         <div className="text-sm text-slate-600">{t("assessmentRunner.noQuestionsBody")}</div>
         <button
-          className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-extrabold hover:bg-slate-50"
+          className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
           onClick={backToModule}
           type="button"
         >
@@ -257,7 +255,7 @@ export function AssessmentRunnerPage() {
   }
 
   return (
-    <div className="rounded-3xl border bg-white p-6 shadow-sm space-y-4">
+    <div className="card p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold">{assessment?.title || "Assessment"}</h1>
@@ -265,7 +263,7 @@ export function AssessmentRunnerPage() {
         </div>
 
         <button
-          className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-extrabold hover:bg-slate-50"
+          className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
           onClick={backToModule}
           type="button"
         >
@@ -303,7 +301,7 @@ export function AssessmentRunnerPage() {
           return (
             <button
               key={optIndex}
-              className={`text-left rounded-2xl border ${border} ${bg} px-4 py-3 hover:bg-slate-50 disabled:opacity-70`}
+              className={`text-left rounded-2xl border ${border} ${bg} px-4 py-3 hover:bg-brand-soft disabled:opacity-70`}
               disabled={revealed}
               onClick={() => pick(optIndex)}
               type="button"
@@ -343,7 +341,7 @@ export function AssessmentRunnerPage() {
 
       <div className="flex justify-end">
         <button
-          className="rounded-2xl bg-[#1E6FAE] hover:bg-[#155A8A] px-4 py-2 text-sm font-extrabold text-white hover:bg-slate-800 disabled:opacity-60"
+          className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
           onClick={next}
           disabled={!revealed || submitting}
           type="button"
