@@ -158,10 +158,6 @@ function UserCard({ user, onSignOut }) {
 
       <div className="mt-3 flex items-center justify-between gap-2">
         <LanguageToggle />
-        <button onClick={onSignOut} className="btn-outline-sm">
-          <LogOut className="h-4 w-4" />
-          {t("auth.signOut")}
-        </button>
       </div>
     </div>
   );
@@ -227,8 +223,13 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
           placeholder={t("common.search")}
         />
 
-        <button onClick={onSignOut} className="btn-outline-sm">
-          {t("auth.signOut")}
+        <button
+          onClick={onSignOut}
+          className="btn-outline-sm"
+          title={t("auth.signOut")}
+          aria-label={t("auth.signOut")}
+        >
+          <LogOut className="h-4 w-4" />
         </button>
       </div>
     </div>
