@@ -17,6 +17,7 @@ import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AdminModulesPage } from "./pages/AdminModulesPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
+import { AICoachPage } from "./pages/AICoachPage";
 
 
 
@@ -105,6 +106,9 @@ function AppRoutes() {
 
         {/* A4-2: Assessment runner */}
         <Route path="modules/:id/assessments/:aid" element={<AssessmentRunnerPage />} />
+
+        {/* AI Coach page */}
+        <Route path="ai" element={<AICoachPage />} />
         
         {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />
