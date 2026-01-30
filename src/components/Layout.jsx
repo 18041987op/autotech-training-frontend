@@ -26,6 +26,8 @@ export function Layout({ user, onSignOut }) {
   const isAdmin = user?.role === "admin";
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // ✅ Culture moved OUT of Admin -> now normal navigation
+  // ✅ Settings moved INTO Admin -> now admin-only navigation group
   const baseNav = [
     { to: "/", label: t("nav.home"), icon: HomeIcon, end: true },
     { to: "/onboarding", label: t("nav.onboarding"), icon: BookOpen },
@@ -33,12 +35,12 @@ export function Layout({ user, onSignOut }) {
     { to: "/assessments", label: t("nav.assessments"), icon: Layers },
     { to: "/ai", label: t("nav.aiCoach"), icon: MessageSquare },
     { to: "/progress", label: t("nav.myProgress"), icon: LineChart },
-    { to: "/settings", label: t("nav.settings"), icon: SettingsIcon }
+    { to: "/culture", label: t("nav.culture"), icon: Shield }
   ];
 
   const adminExtra = isAdmin
     ? [
-        { to: "/culture", label: t("nav.culture"), icon: Shield },
+        { to: "/settings", label: t("nav.settings"), icon: SettingsIcon },
         { to: "/admin/users", label: t("nav.users"), icon: Users },
         { to: "/admin/content", label: t("nav.content"), icon: FolderKanban }
       ]
