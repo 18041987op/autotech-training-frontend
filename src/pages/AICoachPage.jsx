@@ -1,4 +1,3 @@
-// src/pages/AICoachPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
@@ -9,14 +8,20 @@ export function AICoachPage() {
   const [modules, setModules] = useState([]);
   const [contextOpen, setContextOpen] = useState(false);
 
-  // null = Auto
+  // null = Auto (recommended)
   const [selectedModuleId, setSelectedModuleId] = useState(null);
 
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [result, setResult] = useState(null);
-  // { answer, takeaways:[], nextStep, context:{ requestedModule, usedModules:[] }, notice, suggestedModules:[] }
+  // result shape:
+  // {
+  //   answer, takeaways, nextStep,
+  //   notice,
+  //   context: { requestedModule, usedModules },
+  //   suggestedModules: [{id,title}]
+  // }
 
   const selectedLabel = useMemo(() => {
     if (!selectedModuleId) return "Auto (recommended)";
@@ -24,18 +29,17 @@ export function AICoachPage() {
     return m ? m.title : "Selected module";
   }, [selectedModuleId, modules]);
 
+  // Load role-accessible modules + hasContent
   useEffect(() => {
     (async () => {
-      // módulos accesibles para el rol + bandera hasContent (nuevo endpoint que haremos)
       const data = await apiFetch("/api/ai/context-options");
       setModules(data.modules || []);
-    })().catch((e) => {
-      console.error(e);
-    });
+    })().catch((e) => console.error("AI context-options failed:", e));
   }, []);
 
   const ask = async () => {
     if (!question.trim()) return;
+
     setLoading(true);
     setResult(null);
 
@@ -44,17 +48,17 @@ export function AICoachPage() {
         method: "POST",
         body: {
           question: question.trim(),
-          // null = Auto
-          moduleId: selectedModuleId,
+          moduleId: selectedModuleId, // null => Auto
         },
       });
       setResult(data);
     } catch (e) {
+      console.error(e);
       setResult({
         answer: "",
         takeaways: [],
         nextStep: "",
-        notice: e.message || "Failed to get AI response",
+        notice: e?.message || "Failed to get AI response",
         context: { requestedModule: null, usedModules: [] },
         suggestedModules: [],
       });
@@ -63,29 +67,28 @@ export function AICoachPage() {
     }
   };
 
+  // IMPORTANT: name cannot start with "use" (eslint thinks it's a hook)
   const selectSuggestedModule = (mid) => {
     setSelectedModuleId(mid);
     setContextOpen(false);
-    };
+  };
 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold">{t("pages.aiCoachTitle")}</h1>
-          <p className="text-sm text-slate-600">Your personal training assistant</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Context: <span className="font-semibold text-slate-700">{selectedLabel}</span>
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-extrabold">{t("pages.aiCoachTitle") || "AI Coach"}</h1>
+        <p className="text-sm text-slate-600">Your personal training assistant</p>
+        <p className="mt-1 text-xs text-slate-500">
+          Context: <span className="font-semibold text-slate-700">{selectedLabel}</span>
+        </p>
       </div>
 
-      {/* Context selector (collapsible) */}
+      {/* Context selector (collapsed by default) */}
       <div className="card p-4">
         <button
-          className="w-full flex items-center justify-between text-sm font-semibold"
           type="button"
+          className="w-full flex items-center justify-between text-sm font-semibold"
           onClick={() => setContextOpen((v) => !v)}
         >
           <span>Context Module (optional)</span>
@@ -114,7 +117,6 @@ export function AICoachPage() {
                     />
                     <span>{m.title}</span>
                   </span>
-
                   <span className="text-xs text-slate-500">
                     {m.hasContent ? "content ✓" : "no content"}
                   </span>
@@ -128,12 +130,14 @@ export function AICoachPage() {
       {/* Main input */}
       <div className="card p-4 space-y-3">
         <p className="text-sm font-semibold">How can I help you today?</p>
+
         <textarea
           className="input-brand h-28"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ask about the module, what to review, or what to do next..."
         />
+
         <div className="flex justify-end">
           <button className="btn-primary" type="button" disabled={loading} onClick={ask}>
             {loading ? "Thinking…" : "Ask AI Coach"}
@@ -141,7 +145,7 @@ export function AICoachPage() {
         </div>
       </div>
 
-      {/* Case C: no content notice + suggested modules */}
+      {/* Notice (Case C improved) */}
       {result?.notice ? (
         <div className="card p-4 border border-amber-200 bg-amber-50">
           <p className="text-sm font-semibold text-amber-900">Notice</p>
