@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
+import { AICoachWidget } from "../components/AICoachWidget";
 
 export function ModuleDetailPage() {
   const { id } = useParams();
@@ -29,6 +30,9 @@ export function ModuleDetailPage() {
 
   const [genLoading, setGenLoading] = useState(false);
   const [genMsg, setGenMsg] = useState("");
+
+  // ✅ Modal state for AI Coach (keeps user on this page)
+  const [aiOpen, setAiOpen] = useState(false);
 
   const headerSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
 
@@ -85,7 +89,9 @@ export function ModuleDetailPage() {
     setSyncing(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
-      setSyncMsg(`Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`);
+      setSyncMsg(
+        `Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`
+      );
       await load();
     } catch (e) {
       setSyncMsg(e.message || "Sync failed");
@@ -160,12 +166,12 @@ export function ModuleDetailPage() {
             <h1 className="text-2xl font-extrabold">{module?.title}</h1>
             <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
 
-            {/* ✅ New: Ask AI Coach button (module context) */}
+            {/* ✅ Open AI Coach modal (stay on module page) */}
             <div className="mt-4">
               <button
                 className="btn-outline-sm"
                 type="button"
-                onClick={() => nav(`/ai?moduleId=${id}`)}
+                onClick={() => setAiOpen(true)}
                 title="Ask AI Coach about this module"
               >
                 Ask AI Coach
@@ -388,6 +394,28 @@ export function ModuleDetailPage() {
           <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-sm text-slate-800">
             {active.text || "—"}
           </pre>
+        </div>
+      ) : null}
+
+      {/* ✅ AI Coach Modal */}
+      {aiOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <button
+            type="button"
+            aria-label="Close AI Coach"
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setAiOpen(false)}
+          />
+
+          {/* Panel */}
+          <div className="relative w-[94%] max-w-3xl max-h-[86vh] overflow-auto rounded-3xl bg-white shadow-xl border border-slate-200 p-4 md:p-6">
+            <AICoachWidget
+              initialModuleId={id}
+              showHeader={false}
+              onClose={() => setAiOpen(false)}
+            />
+          </div>
         </div>
       ) : null}
     </div>
