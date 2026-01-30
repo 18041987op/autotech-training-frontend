@@ -159,6 +159,18 @@ export function ModuleDetailPage() {
           <div>
             <h1 className="text-2xl font-extrabold">{module?.title}</h1>
             <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
+
+            {/* ✅ New: Ask AI Coach button (module context) */}
+            <div className="mt-4">
+              <button
+                className="btn-outline-sm"
+                type="button"
+                onClick={() => nav(`/ai?moduleId=${id}`)}
+                title="Ask AI Coach about this module"
+              >
+                Ask AI Coach
+              </button>
+            </div>
           </div>
 
           {isAdmin ? (
@@ -280,11 +292,19 @@ export function ModuleDetailPage() {
 
                       {isAdmin ? (
                         isActive ? (
-                          <button className="btn-outline-sm" type="button" onClick={() => deactivateAssessment(a.id)}>
+                          <button
+                            className="btn-outline-sm"
+                            type="button"
+                            onClick={() => deactivateAssessment(a.id)}
+                          >
                             Deactivate
                           </button>
                         ) : (
-                          <button className="btn-outline-sm" type="button" onClick={() => activateAssessment(a.id)}>
+                          <button
+                            className="btn-outline-sm"
+                            type="button"
+                            onClick={() => activateAssessment(a.id)}
+                          >
                             Activate
                           </button>
                         )
@@ -317,7 +337,12 @@ export function ModuleDetailPage() {
 
                   <div className="flex gap-2">
                     {r.webViewLink ? (
-                      <a className="btn-outline-sm px-3 py-1.5" href={r.webViewLink} target="_blank" rel="noreferrer">
+                      <a
+                        className="btn-outline-sm px-3 py-1.5"
+                        href={r.webViewLink}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         {t("actions.openInDrive")}
                       </a>
                     ) : null}
@@ -335,7 +360,11 @@ export function ModuleDetailPage() {
                 </div>
 
                 <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
-                  {r.hasText ? r.previewText : <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>}
+                  {r.hasText ? (
+                    r.previewText
+                  ) : (
+                    <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
+                  )}
                 </div>
               </div>
             ))}
