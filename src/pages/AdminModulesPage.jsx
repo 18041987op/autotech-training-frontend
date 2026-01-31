@@ -9,6 +9,16 @@ const CATEGORIES = [
   { value: "administrative", labelKey: "modules.categories.administrative" }
 ];
 
+// Drive domains (anchors) — used only when CREATING a module
+const DRIVE_ANCHORS = [
+  { value: "00_GLOBAL", label: "00_GLOBAL" },
+  { value: "01_ONBOARDING", label: "01_ONBOARDING" },
+  { value: "02_TRAINING", label: "02_TRAINING" },
+  { value: "03_CULTURE", label: "03_CULTURE" },
+  { value: "04_EVALUATIONS", label: "04_EVALUATIONS" },
+  { value: "99_ARCHIVE", label: "99_ARCHIVE" }
+];
+
 export function AdminModulesPage() {
   const { t } = useTranslation();
   const [modules, setModules] = useState([]);
@@ -23,7 +33,11 @@ export function AdminModulesPage() {
     required: true,
     icon: "Shield",
     color: "#1E6FAE", // ✅ AutoRx default
-    drive_folder: null
+    drive_folder: null,
+
+    // NEW: only used when creating a module
+    drive_anchor: "02_TRAINING",
+    drive_subfolder: ""
   });
 
   const load = async () => {
@@ -52,7 +66,11 @@ export function AdminModulesPage() {
       required: true,
       icon: "Shield",
       color: "#1E6FAE",
-      drive_folder: null
+      drive_folder: null,
+
+      // defaults for new module creation
+      drive_anchor: "02_TRAINING",
+      drive_subfolder: ""
     });
   };
 
@@ -65,7 +83,11 @@ export function AdminModulesPage() {
       required: !!m.required,
       icon: m.icon || "Shield",
       color: m.color || "#1E6FAE",
-      drive_folder: m.drive_folder ?? null
+      drive_folder: m.drive_folder ?? null,
+
+      // keep values but they won't be used on PATCH
+      drive_anchor: "02_TRAINING",
+      drive_subfolder: ""
     });
   };
 
@@ -78,17 +100,26 @@ export function AdminModulesPage() {
         return;
       }
 
+      // normalize optional subfolder
+      const subfolder = (form.drive_subfolder || "").trim();
+
       if (!editing?.id) {
+        // CREATE
         await apiFetch("/api/admin/modules", {
           method: "POST",
           body: {
             title: form.title.trim(),
             description: form.description.trim() || null,
             category: form.category,
-            required: form.required
+            required: form.required,
+
+            // NEW fields (backend should ignore if not supported)
+            drive_anchor: form.drive_anchor || "02_TRAINING",
+            drive_subfolder: subfolder || null
           }
         });
       } else {
+        // UPDATE (keep existing behavior)
         await apiFetch(`/api/admin/modules/${editing.id}`, {
           method: "PATCH",
           body: {
@@ -134,6 +165,8 @@ export function AdminModulesPage() {
       </div>
     );
   }
+
+  const isCreating = !!editing && !editing.id;
 
   return (
     <div className="space-y-5">
@@ -250,6 +283,43 @@ export function AdminModulesPage() {
                   onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 />
               </div>
+
+              {/* NEW: Domain + subfolder only when CREATING */}
+              {isCreating ? (
+                <>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">
+                      Drive Domain (Anchor)
+                    </label>
+                    <select
+                      className="mt-1 input bg-white"
+                      value={form.drive_anchor}
+                      onChange={(e) => setForm((p) => ({ ...p, drive_anchor: e.target.value }))}
+                    >
+                      {DRIVE_ANCHORS.map((a) => (
+                        <option key={a.value} value={a.value}>
+                          {a.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-1">
+                    <label className="text-xs font-semibold text-slate-600">
+                      Drive Subfolder (optional)
+                    </label>
+                    <input
+                      className="mt-1 input"
+                      value={form.drive_subfolder}
+                      onChange={(e) => setForm((p) => ({ ...p, drive_subfolder: e.target.value }))}
+                      placeholder='e.g., "Universal" or "Universal/Brakes"'
+                    />
+                    <div className="mt-1 text-[11px] text-slate-500">
+                      Folder will be created if it doesn&apos;t exist.
+                    </div>
+                  </div>
+                </>
+              ) : null}
 
               <div>
                 <label className="text-xs font-semibold text-slate-600">
