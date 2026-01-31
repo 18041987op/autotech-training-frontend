@@ -262,7 +262,7 @@ function TrackCar({ percent, momentum }) {
         }
       `}</style>
 
-      <div className="relative rounded-3xl overflow-hidden shadow-lg" style={{ height: "160px" }}>
+      <div className="relative rounded-3xl overflow-hidden shadow-lg" style={{ height: "160px", isolation: "isolate" }}>
         {/* SKY - Softer Blue */}
         <div
           className="absolute inset-0"
@@ -594,7 +594,7 @@ export function MyProgressPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 overflow-x-hidden">
       {/* Summary */}
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-extrabold">{t("progress.title")}</h1>

@@ -161,7 +161,7 @@ export function ModuleDetailPage() {
     <div className="space-y-5">
       {/* Header */}
       <div className="card p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-extrabold">{module?.title}</h1>
             <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
@@ -208,7 +208,7 @@ export function ModuleDetailPage() {
 
       {/* Assessments list */}
       <div className="card p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h2 className="text-lg font-extrabold">{t("moduleDetail.assessmentsTitle")}</h2>
             <p className="mt-1 text-sm text-slate-600">{t("moduleDetail.assessmentsSubtitle")}</p>
@@ -260,7 +260,7 @@ export function ModuleDetailPage() {
                       : "rounded-2xl border border-slate-200 bg-slate-50 p-4 opacity-70"
                   }
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
@@ -285,7 +285,7 @@ export function ModuleDetailPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-2 justify-end">
+                    <div className="flex flex-wrap gap-2 md:justify-end">
                       <button
                         className="btn-accent btn-sm px-3 py-1.5 text-xs font-semibold"
                         type="button"

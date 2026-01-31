@@ -23,6 +23,25 @@ body {
   box-sizing: border-box;
 }
 
+/* === Mobile horizontal overflow guard === */
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ensure media never forces overflow */
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Helps with long text in flex containers */
+* {
+  min-width: 0;
+}
+
+
 /* =========================================================
    AutoRx UI tokens (reusable classes)
    ========================================================= */

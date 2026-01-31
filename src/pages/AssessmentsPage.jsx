@@ -82,7 +82,7 @@ export function AssessmentsPage() {
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-extrabold">{t("modules.assessments.title")}</h1>
             <p className="mt-2 text-sm text-slate-600">{t("modules.assessments.subtitle")}</p>
@@ -124,7 +124,7 @@ export function AssessmentsPage() {
 
             return (
               <div key={m.id} className="card p-6">
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0">
                     <div className="text-lg font-extrabold truncate">{m.title}</div>
                     <div className="mt-1 text-sm text-slate-600">{m.description || "—"}</div>
