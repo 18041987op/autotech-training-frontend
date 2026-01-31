@@ -26,17 +26,41 @@ function getMomentum({ completionRate, quizScore }) {
 function getMomentumCopy(momentum) {
   // IMPORTANT: even "stalled" still animates, just slower.
   if (momentum === "fast") {
-    return { badge: "Fast", line: "You're moving fast. Keep momentum and finish this module.", roadSec: 1.2, wheelSec: 0.3, bounceSec: 0.8, cloudSec: 8 };
+    return {
+      badge: "Fast",
+      line: "You're moving fast. Keep momentum and finish this module.",
+      roadSec: 1.2,
+      wheelSec: 0.3,
+      bounceSec: 0.8,
+      cloudSec: 8,
+    };
   }
   if (momentum === "steady") {
-    return { badge: "Steady", line: "Steady progress. One more quiz session will push you forward.", roadSec: 2.0, wheelSec: 0.6, bounceSec: 1.4, cloudSec: 15 };
+    return {
+      badge: "Steady",
+      line: "Steady progress. One more quiz session will push you forward.",
+      roadSec: 2.0,
+      wheelSec: 0.6,
+      bounceSec: 1.4,
+      cloudSec: 15,
+    };
   }
-  return { badge: "Stalled", line: "Looks stalled. Do a quick review + one short assessment attempt today.", roadSec: 3.5, wheelSec: 1.0, bounceSec: 2.2, cloudSec: 25 };
+  return {
+    badge: "Stalled",
+    line: "Looks stalled. Do a quick review + one short assessment attempt today.",
+    roadSec: 3.5,
+    wheelSec: 1.0,
+    bounceSec: 2.2,
+    cloudSec: 25,
+  };
 }
 
+/**
+ * ✅ Keep your car exactly as-is
+ */
 function CarIcon({ wheelSec, momentum }) {
   const speedLines = momentum === "fast" ? 5 : momentum === "steady" ? 3 : 1;
-  
+
   return (
     <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
@@ -59,10 +83,10 @@ function CarIcon({ wheelSec, momentum }) {
           <stop offset="100%" stopColor="#111827" />
         </radialGradient>
         <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feGaussianBlur stdDeviation="2" result="coloredBlur" />
           <feMerge>
-            <feMergeNode in="coloredBlur"/>
-            <feMergeNode in="SourceGraphic"/>
+            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
       </defs>
@@ -73,14 +97,14 @@ function CarIcon({ wheelSec, momentum }) {
       {/* Speed Lines - Behind Car */}
       <g opacity={momentum === "fast" ? "0.6" : momentum === "steady" ? "0.4" : "0.2"}>
         {[...Array(speedLines)].map((_, i) => (
-          <line 
+          <line
             key={i}
-            x1={8 - i * 4} 
-            y1={28 + i * 5} 
-            x2={18 - i * 4} 
-            y2={28 + i * 5} 
-            stroke="#EF4444" 
-            strokeWidth={3 - i * 0.5} 
+            x1={8 - i * 4}
+            y1={28 + i * 5}
+            x2={18 - i * 4}
+            y2={28 + i * 5}
+            stroke="#EF4444"
+            strokeWidth={3 - i * 0.5}
             strokeLinecap="round"
             opacity={1 - i * 0.2}
           />
@@ -95,10 +119,10 @@ function CarIcon({ wheelSec, momentum }) {
           stroke="#991B1B"
           strokeWidth="2"
         />
-        
+
         {/* Spoiler */}
-        <rect x="22" y="30" width="8" height="3" rx="1" fill="#6D28D9" stroke="#5B21B6" strokeWidth="1"/>
-        
+        <rect x="22" y="30" width="8" height="3" rx="1" fill="#6D28D9" stroke="#5B21B6" strokeWidth="1" />
+
         {/* Hood Scoop / Roof */}
         <path
           d="M50 17 L56 11 Q58 9 62 9 L72 9 Q76 9 78 11 L82 17 Z"
@@ -114,48 +138,47 @@ function CarIcon({ wheelSec, momentum }) {
           stroke="#1E40AF"
           strokeWidth="1.2"
         />
-        
+
         {/* Side Windows */}
-        <polygon points="84,23 96,23 96,30 86,30" fill="url(#windowGrad)" stroke="#1E40AF" strokeWidth="1"/>
-        
+        <polygon points="84,23 96,23 96,30 86,30" fill="url(#windowGrad)" stroke="#1E40AF" strokeWidth="1" />
+
         {/* Racing Stripe */}
-        <rect x="55" y="17" width="3" height="23" fill="#FBBF24" opacity="0.8"/>
-        <rect x="70" y="17" width="3" height="23" fill="#FBBF24" opacity="0.8"/>
+        <rect x="55" y="17" width="3" height="23" fill="#FBBF24" opacity="0.8" />
+        <rect x="70" y="17" width="3" height="23" fill="#FBBF24" opacity="0.8" />
 
         {/* Front Bumper Details */}
-        <rect x="98" y="31" width="8" height="6" rx="1" fill="#1F2937" opacity="0.7"/>
-        <line x1="100" y1="32" x2="100" y2="36" stroke="#4B5563" strokeWidth="0.8"/>
-        <line x1="102" y1="32" x2="102" y2="36" stroke="#4B5563" strokeWidth="0.8"/>
-        <line x1="104" y1="32" x2="104" y2="36" stroke="#4B5563" strokeWidth="0.8"/>
+        <rect x="98" y="31" width="8" height="6" rx="1" fill="#1F2937" opacity="0.7" />
+        <line x1="100" y1="32" x2="100" y2="36" stroke="#4B5563" strokeWidth="0.8" />
+        <line x1="102" y1="32" x2="102" y2="36" stroke="#4B5563" strokeWidth="0.8" />
+        <line x1="104" y1="32" x2="104" y2="36" stroke="#4B5563" strokeWidth="0.8" />
 
-        {/* Headlights - Bright and glowing */}
-        <ellipse cx="102" cy="27" rx="3" ry="2.5" fill="#FEF08A" filter="url(#glow)"/>
-        <ellipse cx="102" cy="27" rx="1.5" ry="1.2" fill="#FFFFFF"/>
-        <circle cx="102" cy="24" r="1.5" fill="#FDE047" opacity="0.9"/>
-        
+        {/* Headlights */}
+        <ellipse cx="102" cy="27" rx="3" ry="2.5" fill="#FEF08A" filter="url(#glow)" />
+        <ellipse cx="102" cy="27" rx="1.5" ry="1.2" fill="#FFFFFF" />
+        <circle cx="102" cy="24" r="1.5" fill="#FDE047" opacity="0.9" />
+
         {/* Tail Lights */}
-        <ellipse cx="27" cy="27" rx="2" ry="2.5" fill="#FCA5A5" stroke="#DC2626" strokeWidth="1"/>
-        <ellipse cx="27" cy="27" rx="0.8" ry="1" fill="#FEE2E2"/>
-        
+        <ellipse cx="27" cy="27" rx="2" ry="2.5" fill="#FCA5A5" stroke="#DC2626" strokeWidth="1" />
+        <ellipse cx="27" cy="27" rx="0.8" ry="1" fill="#FEE2E2" />
+
         {/* Side Mirror */}
-        <path d="M86 24 L90 22 L91 25 L87 26 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1"/>
-        
+        <path d="M86 24 L90 22 L91 25 L87 26 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1" />
+
         {/* Door Lines */}
-        <line x1="68" y1="28" x2="68" y2="39" stroke="#991B1B" strokeWidth="1.5" opacity="0.6"/>
-        
+        <line x1="68" y1="28" x2="68" y2="39" stroke="#991B1B" strokeWidth="1.5" opacity="0.6" />
+
         {/* Exhaust Pipe */}
-        <ellipse cx="28" cy="39" rx="2" ry="1.5" fill="#374151" stroke="#1F2937" strokeWidth="1"/>
-        
+        <ellipse cx="28" cy="39" rx="2" ry="1.5" fill="#374151" stroke="#1F2937" strokeWidth="1" />
+
         {/* Bottom Diffuser */}
-        <path d="M30 40 L100 40 L98 42 L32 42 Z" fill="#1F2937" opacity="0.6"/>
+        <path d="M30 40 L100 40 L98 42 L32 42 Z" fill="#1F2937" opacity="0.6" />
       </g>
 
       {/* Front Wheel */}
       <g style={{ transformOrigin: "85px 43px", animation: `wheelSpin ${wheelSec}s linear infinite` }}>
-        <circle cx="85" cy="43" r="9" fill="url(#tire)" stroke="#0F172A" strokeWidth="2"/>
-        <circle cx="85" cy="43" r="5" fill="#52525B" stroke="#3F3F46" strokeWidth="1.5"/>
-        <circle cx="85" cy="43" r="2" fill="#A1A1AA"/>
-        {/* Rim Spokes */}
+        <circle cx="85" cy="43" r="9" fill="url(#tire)" stroke="#0F172A" strokeWidth="2" />
+        <circle cx="85" cy="43" r="5" fill="#52525B" stroke="#3F3F46" strokeWidth="1.5" />
+        <circle cx="85" cy="43" r="2" fill="#A1A1AA" />
         {[0, 60, 120, 180, 240, 300].map((angle) => (
           <line
             key={angle}
@@ -172,10 +195,9 @@ function CarIcon({ wheelSec, momentum }) {
 
       {/* Rear Wheel */}
       <g style={{ transformOrigin: "38px 43px", animation: `wheelSpin ${wheelSec}s linear infinite` }}>
-        <circle cx="38" cy="43" r="9" fill="url(#tire)" stroke="#0F172A" strokeWidth="2"/>
-        <circle cx="38" cy="43" r="5" fill="#52525B" stroke="#3F3F46" strokeWidth="1.5"/>
-        <circle cx="38" cy="43" r="2" fill="#A1A1AA"/>
-        {/* Rim Spokes */}
+        <circle cx="38" cy="43" r="9" fill="url(#tire)" stroke="#0F172A" strokeWidth="2" />
+        <circle cx="38" cy="43" r="5" fill="#52525B" stroke="#3F3F46" strokeWidth="1.5" />
+        <circle cx="38" cy="43" r="2" fill="#A1A1AA" />
         {[0, 60, 120, 180, 240, 300].map((angle) => (
           <line
             key={angle}
@@ -194,8 +216,8 @@ function CarIcon({ wheelSec, momentum }) {
       {momentum !== "stalled" && (
         <g opacity="0.4">
           <circle cx="24" cy="39" r="3" fill="#9CA3AF">
-            <animate attributeName="r" values="2;4;1" dur="0.6s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.5;0.2;0" dur="0.6s" repeatCount="indefinite"/>
+            <animate attributeName="r" values="2;4;1" dur="0.6s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.5;0.2;0" dur="0.6s" repeatCount="indefinite" />
           </circle>
         </g>
       )}
@@ -203,6 +225,10 @@ function CarIcon({ wheelSec, momentum }) {
   );
 }
 
+/**
+ * ✅ Keep your animation exactly as you pasted it.
+ * Only light formatting; no behavior changes.
+ */
 function TrackCar({ percent, momentum }) {
   const pct = clampPct(percent);
   const carPct = safeCarPct(pct);
@@ -238,73 +264,83 @@ function TrackCar({ percent, momentum }) {
 
       <div className="relative rounded-3xl overflow-hidden shadow-lg" style={{ height: "160px" }}>
         {/* SKY - Softer Blue */}
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(to bottom, #7DD3FC 0%, #BAE6FD 50%, #E0F2FE 100%)",
-        }}>
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(to bottom, #7DD3FC 0%, #BAE6FD 50%, #E0F2FE 100%)",
+          }}
+        >
           {/* Sun */}
-          <div className="absolute top-4 right-10 w-12 h-12 rounded-full bg-yellow-200 shadow-lg" style={{
-            boxShadow: "0 0 30px rgba(253, 224, 71, 0.5)"
-          }}/>
+          <div
+            className="absolute top-4 right-10 w-12 h-12 rounded-full bg-yellow-200 shadow-lg"
+            style={{ boxShadow: "0 0 30px rgba(253, 224, 71, 0.5)" }}
+          />
 
           {/* Realistic Clouds */}
-          <div style={{
-            position: "absolute",
-            top: "8%",
-            left: "0",
-            width: "200%",
-            animation: `cloudDrift ${cloudSec}s linear infinite`,
-          }}>
+          <div
+            style={{
+              position: "absolute",
+              top: "8%",
+              left: "0",
+              width: "200%",
+              animation: `cloudDrift ${cloudSec}s linear infinite`,
+            }}
+          >
             {[5, 35, 70].map((offset) => (
-              <div key={offset} style={{
-                position: "absolute",
-                left: `${offset}%`,
-              }}>
-                {/* Cloud made of overlapping circles for realistic puffy look */}
+              <div key={offset} style={{ position: "absolute", left: `${offset}%` }}>
                 <div style={{ position: "relative", width: "120px", height: "45px" }}>
-                  <div style={{
-                    position: "absolute",
-                    left: "10px",
-                    top: "20px",
-                    width: "50px",
-                    height: "30px",
-                    background: "white",
-                    borderRadius: "50%",
-                    opacity: 0.9,
-                    filter: "blur(1px)"
-                  }}/>
-                  <div style={{
-                    position: "absolute",
-                    left: "35px",
-                    top: "10px",
-                    width: "45px",
-                    height: "35px",
-                    background: "white",
-                    borderRadius: "50%",
-                    opacity: 0.95,
-                    filter: "blur(1px)"
-                  }}/>
-                  <div style={{
-                    position: "absolute",
-                    left: "55px",
-                    top: "18px",
-                    width: "40px",
-                    height: "28px",
-                    background: "white",
-                    borderRadius: "50%",
-                    opacity: 0.88,
-                    filter: "blur(1px)"
-                  }}/>
-                  <div style={{
-                    position: "absolute",
-                    left: "75px",
-                    top: "23px",
-                    width: "35px",
-                    height: "25px",
-                    background: "white",
-                    borderRadius: "50%",
-                    opacity: 0.85,
-                    filter: "blur(1px)"
-                  }}/>
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "10px",
+                      top: "20px",
+                      width: "50px",
+                      height: "30px",
+                      background: "white",
+                      borderRadius: "50%",
+                      opacity: 0.9,
+                      filter: "blur(1px)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "35px",
+                      top: "10px",
+                      width: "45px",
+                      height: "35px",
+                      background: "white",
+                      borderRadius: "50%",
+                      opacity: 0.95,
+                      filter: "blur(1px)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "55px",
+                      top: "18px",
+                      width: "40px",
+                      height: "28px",
+                      background: "white",
+                      borderRadius: "50%",
+                      opacity: 0.88,
+                      filter: "blur(1px)",
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: "75px",
+                      top: "23px",
+                      width: "35px",
+                      height: "25px",
+                      background: "white",
+                      borderRadius: "50%",
+                      opacity: 0.85,
+                      filter: "blur(1px)",
+                    }}
+                  />
                 </div>
               </div>
             ))}
@@ -314,22 +350,30 @@ function TrackCar({ percent, momentum }) {
         {/* MOUNTAINS */}
         <div className="absolute bottom-0 left-0 right-0" style={{ height: "28%" }}>
           <svg viewBox="0 0 1200 200" className="w-full h-full" preserveAspectRatio="none">
-            <path d="M0,200 L0,120 L200,60 L400,100 L600,40 L800,90 L1000,70 L1200,110 L1200,200 Z" 
-                  fill="#9CA3AF" opacity="0.35"/>
-            <path d="M0,200 L0,140 L150,100 L350,130 L550,80 L750,120 L950,100 L1200,140 L1200,200 Z" 
-                  fill="#D1D5DB" opacity="0.4"/>
+            <path
+              d="M0,200 L0,120 L200,60 L400,100 L600,40 L800,90 L1000,70 L1200,110 L1200,200 Z"
+              fill="#9CA3AF"
+              opacity="0.35"
+            />
+            <path
+              d="M0,200 L0,140 L150,100 L350,130 L550,80 L750,120 L950,100 L1200,140 L1200,200 Z"
+              fill="#D1D5DB"
+              opacity="0.4"
+            />
           </svg>
         </div>
 
-        {/* GREEN LANDSCAPE - No fence posts */}
+        {/* GREEN LANDSCAPE */}
         <div className="absolute bottom-0 left-0 right-0" style={{ height: "42%" }}>
-          <div style={{
-            height: "100%",
-            background: "linear-gradient(to bottom, #22C55E 0%, #16A34A 60%, #15803D 100%)",
-          }}/>
+          <div
+            style={{
+              height: "100%",
+              background: "linear-gradient(to bottom, #22C55E 0%, #16A34A 60%, #15803D 100%)",
+            }}
+          />
         </div>
 
-        {/* ROAD - Narrower (half height) */}
+        {/* ROAD */}
         <div
           className="absolute bottom-0 left-0 right-0"
           style={{
@@ -339,86 +383,100 @@ function TrackCar({ percent, momentum }) {
           }}
         >
           {/* Road Subtle Texture */}
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage: `
-              radial-gradient(circle at 25% 75%, rgba(212,212,216,0.2) 1px, transparent 1px),
-              radial-gradient(circle at 75% 25%, rgba(212,212,216,0.15) 1px, transparent 1px)
-            `,
-            backgroundSize: "25px 25px, 30px 30px",
-            backgroundPosition: "0 0, 12px 12px",
-          }}/>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `
+                radial-gradient(circle at 25% 75%, rgba(212,212,216,0.2) 1px, transparent 1px),
+                radial-gradient(circle at 75% 25%, rgba(212,212,216,0.15) 1px, transparent 1px)
+              `,
+              backgroundSize: "25px 25px, 30px 30px",
+              backgroundPosition: "0 0, 12px 12px",
+            }}
+          />
 
-          {/* CENTER LINE - Main animation focus, faster/slower based on momentum */}
-          <div style={{
-            position: "absolute",
-            top: "50%",
-            left: 0,
-            right: 0,
-            height: "4px",
-            transform: "translateY(-50%)",
-            backgroundImage: `
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 35px,
-                #FDE047 35px,
-                #FDE047 100px,
-                transparent 100px,
-                transparent 140px
-              )
-            `,
-            animation: `roadScroll ${roadSec}s linear infinite`,
-          }}/>
+          {/* CENTER LINE */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: 0,
+              right: 0,
+              height: "4px",
+              transform: "translateY(-50%)",
+              backgroundImage: `
+                repeating-linear-gradient(
+                  90deg,
+                  transparent,
+                  transparent 35px,
+                  #FDE047 35px,
+                  #FDE047 100px,
+                  transparent 100px,
+                  transparent 140px
+                )
+              `,
+              animation: `roadScroll ${roadSec}s linear infinite`,
+            }}
+          />
 
-          {/* Road Edge Lines - Thinner */}
-          <div className="absolute left-0 right-0 bg-white" style={{ top: "20%", height: "2px" }}/>
-          <div className="absolute left-0 right-0 bg-white" style={{ bottom: "20%", height: "2px" }}/>
+          {/* Road Edge Lines */}
+          <div className="absolute left-0 right-0 bg-white" style={{ top: "20%", height: "2px" }} />
+          <div className="absolute left-0 right-0 bg-white" style={{ bottom: "20%", height: "2px" }} />
 
-          {/* Grass Tufts on Roadside - Left side */}
-          <div style={{
-            position: "absolute",
-            top: "-8px",
-            left: "100%",
-            width: "200%",
-            height: "15px",
-            animation: `grassPass ${roadSec * 0.8}s linear infinite`,
-          }}>
-            {[0, 12, 25, 38, 52, 65, 80, 95].map((pos) => (
-              <div key={`left-${pos}`} style={{
-                position: "absolute",
-                left: `${pos}%`,
-                bottom: 0,
-                width: "3px",
-                height: `${8 + Math.random() * 6}px`,
-                background: "linear-gradient(to top, #15803D, #22C55E)",
-                transformOrigin: "bottom center",
-                transform: `rotate(${-15 + Math.random() * 30}deg)`,
-              }}/>
+          {/* Grass Tufts - top */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-8px",
+              left: "100%",
+              width: "200%",
+              height: "15px",
+              animation: `grassPass ${roadSec * 0.8}s linear infinite`,
+            }}
+          >
+            {[0, 12, 25, 38, 52, 65, 80, 95].map((pos, idx) => (
+              <div
+                key={`left-${idx}-${pos}`}
+                style={{
+                  position: "absolute",
+                  left: `${pos}%`,
+                  bottom: 0,
+                  width: "3px",
+                  height: `${8 + ((idx % 5) * 2)}px`,
+                  background: "linear-gradient(to top, #15803D, #22C55E)",
+                  transformOrigin: "bottom center",
+                  transform: `rotate(${(-15 + (idx % 7) * 5)}deg)`,
+                }}
+              />
             ))}
           </div>
 
-          {/* Grass Tufts on Roadside - Right side */}
-          <div style={{
-            position: "absolute",
-            bottom: "-8px",
-            left: "100%",
-            width: "200%",
-            height: "15px",
-            animation: `grassPass ${roadSec * 0.8}s linear infinite`,
-          }}>
-            {[3, 18, 31, 45, 58, 72, 87].map((pos) => (
-              <div key={`right-${pos}`} style={{
-                position: "absolute",
-                left: `${pos}%`,
-                top: 0,
-                width: "3px",
-                height: `${8 + Math.random() * 6}px`,
-                background: "linear-gradient(to top, #15803D, #22C55E)",
-                transformOrigin: "top center",
-                transform: `rotate(${-15 + Math.random() * 30}deg)`,
-              }}/>
+          {/* Grass Tufts - bottom */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-8px",
+              left: "100%",
+              width: "200%",
+              height: "15px",
+              animation: `grassPass ${roadSec * 0.8}s linear infinite`,
+            }}
+          >
+            {[3, 18, 31, 45, 58, 72, 87].map((pos, idx) => (
+              <div
+                key={`right-${idx}-${pos}`}
+                style={{
+                  position: "absolute",
+                  left: `${pos}%`,
+                  top: 0,
+                  width: "3px",
+                  height: `${8 + ((idx % 5) * 2)}px`,
+                  background: "linear-gradient(to top, #15803D, #22C55E)",
+                  transformOrigin: "top center",
+                  transform: `rotate(${(-15 + (idx % 7) * 5)}deg)`,
+                }}
+              />
             ))}
           </div>
 
@@ -430,7 +488,7 @@ function TrackCar({ percent, momentum }) {
               background: "linear-gradient(90deg, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 100%)",
               transition: "width 800ms cubic-bezier(0.4, 0, 0.2, 1)",
               borderRight: "2px solid #22C55E",
-              boxShadow: "inset -4px 0 12px rgba(34,197,94,0.35)"
+              boxShadow: "inset -4px 0 12px rgba(34,197,94,0.35)",
             }}
           />
 
@@ -441,7 +499,7 @@ function TrackCar({ percent, momentum }) {
               left: `${carPct}%`,
               bottom: "30%",
               animation: `carBounce ${bounceSec}s ease-in-out infinite`,
-              filter: "drop-shadow(0 5px 10px rgba(0,0,0,0.35))"
+              filter: "drop-shadow(0 5px 10px rgba(0,0,0,0.35))",
             }}
           >
             <CarIcon wheelSec={wheelSec} momentum={momentum} />
@@ -451,9 +509,7 @@ function TrackCar({ percent, momentum }) {
         {/* Progress Labels */}
         <div className="absolute bottom-1 left-3 right-3 flex items-center justify-between text-xs font-bold">
           <span className="px-2 py-0.5 bg-white/90 rounded-lg shadow text-slate-700">0%</span>
-          <span className="px-3 py-0.5 bg-blue-600 text-white rounded-lg shadow-lg">
-            {pct}%
-          </span>
+          <span className="px-3 py-0.5 bg-blue-600 text-white rounded-lg shadow-lg">{pct}%</span>
           <span className="px-2 py-0.5 bg-white/90 rounded-lg shadow text-slate-700">100%</span>
         </div>
       </div>
@@ -539,6 +595,7 @@ export function MyProgressPage() {
 
   return (
     <div className="space-y-5">
+      {/* Summary */}
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-extrabold">{t("progress.title")}</h1>
         <p className="mt-2 text-sm text-slate-600">{t("progress.subtitle")}</p>
@@ -550,6 +607,7 @@ export function MyProgressPage() {
         </div>
       </div>
 
+      {/* Detail */}
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
         <h2 className="text-lg font-extrabold">{t("progress.detail")}</h2>
 
@@ -574,8 +632,7 @@ export function MyProgressPage() {
 
                   <div className="text-right text-xs text-slate-600">
                     <div>
-                      {t("modules.completion")}:{" "}
-                      <span className="font-semibold">{r.completion}%</span>
+                      {t("modules.completion")}: <span className="font-semibold">{r.completion}%</span>
                     </div>
                     <div>
                       Score: <span className="font-semibold">{r.score ?? "—"}</span>
