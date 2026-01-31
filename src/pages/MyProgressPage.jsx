@@ -11,7 +11,9 @@ function clampPct(n) {
 // Prevent clipping at 0% / 100% by keeping the car within safe bounds.
 function safeCarPct(pct) {
   const p = clampPct(pct);
-  return Math.min(96, Math.max(4, p));
+  // Car SVG is ~120px wide. On mobile with overflow-hidden, 96% still clips.
+  // This range keeps the car fully visible across typical phone widths.
+  return Math.min(85, Math.max(10, p));
 }
 
 function getMomentum({ completionRate, quizScore }) {

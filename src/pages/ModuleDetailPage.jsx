@@ -335,13 +335,13 @@ export function ModuleDetailPage() {
           <div className="mt-4 grid gap-3">
             {resources.map((r) => (
               <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="font-extrabold">{r.name}</div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                  <div className="min-w-0">
+                    <div className="font-extrabold truncate">{r.name}</div>
                     <div className="text-xs text-slate-500">{r.mimeType}</div>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2 sm:justify-end">
                     {r.webViewLink ? (
                       <a
                         className="btn-outline-sm px-3 py-1.5"
