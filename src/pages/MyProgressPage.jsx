@@ -362,11 +362,11 @@ function TrackCar({ percent, momentum }) {
               repeating-linear-gradient(
                 90deg,
                 transparent,
-                transparent 20px,
-                #FDE047 20px,
-                #FDE047 45px,
-                transparent 45px,
-                transparent 70px
+                transparent 35px,
+                #FDE047 35px,
+                #FDE047 100px,
+                transparent 100px,
+                transparent 140px
               )
             `,
             animation: `roadScroll ${roadSec}s linear infinite`,
