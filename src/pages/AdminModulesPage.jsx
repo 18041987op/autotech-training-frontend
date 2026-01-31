@@ -9,7 +9,6 @@ const CATEGORIES = [
   { value: "administrative", labelKey: "modules.categories.administrative" }
 ];
 
-// Drive domains (anchors) — used only when CREATING a module
 const DRIVE_ANCHORS = [
   { value: "00_GLOBAL", label: "00_GLOBAL" },
   { value: "01_ONBOARDING", label: "01_ONBOARDING" },
@@ -25,20 +24,25 @@ export function AdminModulesPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  const [editing, setEditing] = useState(null); // module object or null
+  const [editing, setEditing] = useState(null); // module object or {id:null} for create
   const [form, setForm] = useState({
     title: "",
     description: "",
     category: "universal",
     required: true,
     icon: "Shield",
-    color: "#1E6FAE", // ✅ AutoRx default
+    color: "#1E6FAE",
     drive_folder: null,
 
-    // NEW: only used when creating a module
+    // create-only
     drive_anchor: "02_TRAINING",
     drive_subfolder: ""
   });
+
+  // edit-only actions
+  const [moveAnchor, setMoveAnchor] = useState("02_TRAINING");
+  const [moveSubfolder, setMoveSubfolder] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   const load = async () => {
     setErr("");
@@ -67,11 +71,12 @@ export function AdminModulesPage() {
       icon: "Shield",
       color: "#1E6FAE",
       drive_folder: null,
-
-      // defaults for new module creation
       drive_anchor: "02_TRAINING",
       drive_subfolder: ""
     });
+    setMoveAnchor("02_TRAINING");
+    setMoveSubfolder("");
+    setDeleteConfirm("");
   };
 
   const openEdit = (m) => {
@@ -84,14 +89,16 @@ export function AdminModulesPage() {
       icon: m.icon || "Shield",
       color: m.color || "#1E6FAE",
       drive_folder: m.drive_folder ?? null,
-
-      // keep values but they won't be used on PATCH
       drive_anchor: "02_TRAINING",
       drive_subfolder: ""
     });
+    setMoveAnchor("02_TRAINING");
+    setMoveSubfolder("");
+    setDeleteConfirm("");
   };
 
   const close = () => setEditing(null);
+  const isCreating = !!editing && !editing.id;
 
   const save = async () => {
     try {
@@ -100,11 +107,9 @@ export function AdminModulesPage() {
         return;
       }
 
-      // normalize optional subfolder
       const subfolder = (form.drive_subfolder || "").trim();
 
-      if (!editing?.id) {
-        // CREATE
+      if (isCreating) {
         await apiFetch("/api/admin/modules", {
           method: "POST",
           body: {
@@ -112,14 +117,11 @@ export function AdminModulesPage() {
             description: form.description.trim() || null,
             category: form.category,
             required: form.required,
-
-            // NEW fields (backend should ignore if not supported)
             drive_anchor: form.drive_anchor || "02_TRAINING",
             drive_subfolder: subfolder || null
           }
         });
       } else {
-        // UPDATE (keep existing behavior)
         await apiFetch(`/api/admin/modules/${editing.id}`, {
           method: "PATCH",
           body: {
@@ -138,6 +140,47 @@ export function AdminModulesPage() {
       await load();
     } catch (e) {
       alert(e.message || "Failed to save");
+    }
+  };
+
+  const moveModule = async () => {
+    try {
+      if (!editing?.id) return;
+
+      await apiFetch(`/api/admin/modules/${editing.id}/move`, {
+        method: "POST",
+        body: {
+          drive_anchor: moveAnchor,
+          drive_subfolder: (moveSubfolder || "").trim() || null
+        }
+      });
+
+      alert("Moved. Check Drive and re-sync if needed.");
+    } catch (e) {
+      alert(e.message || "Failed to move module");
+    }
+  };
+
+  const deleteModule = async () => {
+    try {
+      if (!editing?.id) return;
+
+      if (deleteConfirm.trim().toUpperCase() !== "DELETE") {
+        window.alert('Type "DELETE" to confirm.');
+        return;
+      }
+
+      const ok = window.confirm(
+        "This will delete the module from the app (DB) and move its Drive folder to 99_ARCHIVE/DELETED_MODULES.\n\nContinue?"
+      );
+      if (!ok) return;
+
+      await apiFetch(`/api/admin/modules/${editing.id}`, { method: "DELETE" });
+
+      close();
+      await load();
+    } catch (e) {
+      alert(e.message || "Failed to delete module");
     }
   };
 
@@ -166,8 +209,6 @@ export function AdminModulesPage() {
     );
   }
 
-  const isCreating = !!editing && !editing.id;
-
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
@@ -181,7 +222,6 @@ export function AdminModulesPage() {
             <button className="btn-outline-sm" onClick={load} type="button">
               {t("actions.refresh")}
             </button>
-
             <button className="btn-primary btn-sm" onClick={openCreate} type="button">
               {t("adminModules.create")}
             </button>
@@ -244,7 +284,7 @@ export function AdminModulesPage() {
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={close} />
 
-          <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[720px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
+          <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm text-slate-500">
@@ -284,13 +324,10 @@ export function AdminModulesPage() {
                 />
               </div>
 
-              {/* NEW: Domain + subfolder only when CREATING */}
               {isCreating ? (
                 <>
                   <div>
-                    <label className="text-xs font-semibold text-slate-600">
-                      Drive Domain (Anchor)
-                    </label>
+                    <label className="text-xs font-semibold text-slate-600">Drive Domain (Anchor)</label>
                     <select
                       className="mt-1 input bg-white"
                       value={form.drive_anchor}
@@ -304,19 +341,14 @@ export function AdminModulesPage() {
                     </select>
                   </div>
 
-                  <div className="md:col-span-1">
-                    <label className="text-xs font-semibold text-slate-600">
-                      Drive Subfolder (optional)
-                    </label>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">Drive Subfolder (optional)</label>
                     <input
                       className="mt-1 input"
                       value={form.drive_subfolder}
                       onChange={(e) => setForm((p) => ({ ...p, drive_subfolder: e.target.value }))}
                       placeholder='e.g., "Universal" or "Universal/Brakes"'
                     />
-                    <div className="mt-1 text-[11px] text-slate-500">
-                      Folder will be created if it doesn&apos;t exist.
-                    </div>
                   </div>
                 </>
               ) : null}
@@ -384,6 +416,77 @@ export function AdminModulesPage() {
                 />
               </div>
             </div>
+
+            {/* Edit-only actions */}
+            {!isCreating ? (
+              <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                <div className="text-sm font-extrabold text-slate-800">Drive Maintenance</div>
+
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">Move to Domain (Anchor)</label>
+                    <select
+                      className="mt-1 input bg-white"
+                      value={moveAnchor}
+                      onChange={(e) => setMoveAnchor(e.target.value)}
+                    >
+                      {DRIVE_ANCHORS.map((a) => (
+                        <option key={a.value} value={a.value}>
+                          {a.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600">Subfolder (optional)</label>
+                    <input
+                      className="mt-1 input"
+                      value={moveSubfolder}
+                      onChange={(e) => setMoveSubfolder(e.target.value)}
+                      placeholder='e.g., "Universal" or "Onboarding: Shop Tour & Expectations"'
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 flex items-center justify-between gap-3">
+                    <div className="text-xs text-slate-600">
+                      This moves the module folder in Drive (does not change module ID).
+                    </div>
+                    <button className="btn-outline-sm" onClick={moveModule} type="button">
+                      Move Module Folder
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-5 border-t pt-4">
+                  <div className="text-sm font-extrabold text-red-700">Delete Module</div>
+                  <div className="mt-1 text-xs text-slate-600">
+                    Deletes the module from the app (DB) and moves its Drive folder to{" "}
+                    <b>99_ARCHIVE/DELETED_MODULES</b>.
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                    <div className="w-full md:max-w-[320px]">
+                      <label className="text-xs font-semibold text-slate-600">Type DELETE to confirm</label>
+                      <input
+                        className="mt-1 input"
+                        value={deleteConfirm}
+                        onChange={(e) => setDeleteConfirm(e.target.value)}
+                        placeholder="DELETE"
+                      />
+                    </div>
+
+                    <button
+                      className="btn-sm rounded-2xl bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
+                      onClick={deleteModule}
+                      type="button"
+                    >
+                      Delete Module
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="mt-5 flex justify-end gap-2">
               <button className="btn-outline-sm" onClick={close} type="button">
