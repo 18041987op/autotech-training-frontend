@@ -12,7 +12,7 @@ function getMomentum({ completionRate, quizScore }) {
   const c = clampPct(completionRate);
   const s = typeof quizScore === "number" ? quizScore : null;
 
-  // Simple tiers (no timestamps yet)
+  // MVP tiers (no timestamps yet)
   if (c >= 80 || (s !== null && s >= 85)) return "fast";
   if (c >= 40 || (s !== null && s >= 70)) return "steady";
   return "stalled";
@@ -23,45 +23,95 @@ function getMomentumCopy(momentum) {
     return {
       badge: "Fast",
       line: "You’re moving fast. Keep momentum and finish this module.",
-      roadSpeedSec: 1.4,
-      carBounce: 1.2,
+      roadSpeedSec: 1.2,
+      wheelSpinSec: 0.45,
+      bounceSec: 1.0,
     };
   }
   if (momentum === "steady") {
     return {
       badge: "Steady",
       line: "Steady progress. One more quiz session will push you forward.",
-      roadSpeedSec: 2.4,
-      carBounce: 1.8,
+      roadSpeedSec: 2.0,
+      wheelSpinSec: 0.65,
+      bounceSec: 1.5,
     };
   }
   return {
     badge: "Stalled",
     line: "Looks stalled. Do a quick review + one short assessment attempt today.",
-    roadSpeedSec: 4.0,
-    carBounce: 2.6,
+    roadSpeedSec: 3.2,
+    wheelSpinSec: 0.85,
+    bounceSec: 2.2,
   };
+}
+
+function CarIcon({ wheelSpinSec, stalled }) {
+  // Simple “car” SVG facing RIGHT
+  return (
+    <svg
+      width="54"
+      height="28"
+      viewBox="0 0 54 28"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ display: "block" }}
+      aria-hidden="true"
+    >
+      {/* Body */}
+      <path
+        d="M12 18.5h33.5c2.2 0 4-1.8 4-4v-2.2c0-1.3-.7-2.6-1.9-3.2l-6.9-3.4c-1-.5-2.1-.7-3.2-.7H21c-1.3 0-2.6.5-3.5 1.4l-4.8 4.8c-.8.8-1.2 1.8-1.2 2.9V18.5Z"
+        fill="#FFFFFF"
+        stroke="#CBD5E1"
+      />
+      {/* Window */}
+      <path
+        d="M22 6.8h12.6c.9 0 1.8.3 2.5.8l4.9 3.4H24.2c-1.1 0-2.2-.4-3-1.2l-.7-.7c-.6-.6-.2-2.3 1.5-2.3Z"
+        fill="#E2E8F0"
+        stroke="#CBD5E1"
+      />
+
+      {/* Wheels */}
+      <g
+        style={{
+          transformOrigin: "18px 20.5px",
+          animation: stalled ? "none" : `wheelSpin ${wheelSpinSec}s linear infinite`,
+        }}
+      >
+        <circle cx="18" cy="20.5" r="4.6" fill="#0F172A" />
+        <circle cx="18" cy="20.5" r="2.0" fill="#94A3B8" />
+      </g>
+      <g
+        style={{
+          transformOrigin: "40px 20.5px",
+          animation: stalled ? "none" : `wheelSpin ${wheelSpinSec}s linear infinite`,
+        }}
+      >
+        <circle cx="40" cy="20.5" r="4.6" fill="#0F172A" />
+        <circle cx="40" cy="20.5" r="2.0" fill="#94A3B8" />
+      </g>
+
+      {/* Front light */}
+      <circle cx="49" cy="13.2" r="1.2" fill="#FBBF24" />
+    </svg>
+  );
 }
 
 function TrackCar({ percent, momentum }) {
   const pct = clampPct(percent);
-  const { roadSpeedSec, carBounce } = getMomentumCopy(momentum);
-
-  // Keep car within visual track bounds
-  const left = `calc(${pct}% - 18px)`; // 18px ~ half of the larger car container
+  const { roadSpeedSec, wheelSpinSec, bounceSec } = getMomentumCopy(momentum);
+  const stalled = momentum === "stalled";
 
   return (
     <div className="mt-4">
-      {/* Local CSS for road + car animation */}
       <style>{`
-        @keyframes roadMove {
+        @keyframes roadDrift {
           0% { background-position: 0 0, 0 0, 0 0; }
-          100% { background-position: -320px 0, -160px 0, -240px 0; }
+          100% { background-position: -420px 0, -260px 0, 0 0; }
         }
         @keyframes carBounce {
-          0% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-2px) scale(1); }
-          100% { transform: translateY(0) scale(1); }
+          0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+          50% { transform: translate(-50%, -50%) translateY(-2px); }
         }
         @keyframes wheelSpin {
           0% { transform: rotate(0deg); }
@@ -70,85 +120,56 @@ function TrackCar({ percent, momentum }) {
       `}</style>
 
       <div className="relative">
-        {/* Road container */}
+        {/* ROAD */}
         <div
-          className="relative h-14 rounded-2xl overflow-hidden border border-slate-200"
+          className="relative h-16 rounded-2xl overflow-hidden border border-slate-200"
           style={{
-            // Road layers:
-            // 1) asphalt texture: repeating diagonal subtle
-            // 2) center dashed line
-            // 3) edge highlights
+            // Asphalt base + subtle texture + center dashed line
+            backgroundColor: "#0B1220",
             backgroundImage: `
-              repeating-linear-gradient(135deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 20px),
-              repeating-linear-gradient(90deg, rgba(255,255,255,0.9) 0px, rgba(255,255,255,0.9) 18px, rgba(255,255,255,0) 18px, rgba(255,255,255,0) 38px),
-              linear-gradient(to bottom, rgba(255,255,255,0.10), rgba(0,0,0,0.12))
+              repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 8px, rgba(0,0,0,0.08) 8px, rgba(0,0,0,0.08) 16px),
+              repeating-linear-gradient(90deg, rgba(255,255,255,0.85) 0px, rgba(255,255,255,0.85) 26px, rgba(255,255,255,0) 26px, rgba(255,255,255,0) 54px),
+              linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(0,0,0,0.20))
             `,
-            backgroundSize: "160px 100%, 80px 6px, 100% 100%",
+            backgroundSize: "160px 100%, 110px 6px, 100% 100%",
             backgroundPosition: "0 0, 0 50%, 0 0",
             backgroundRepeat: "repeat, repeat, no-repeat",
-            backgroundColor: "#0f172a", // slate-900-ish
-            animation: momentum === "stalled" ? "none" : `roadMove ${roadSpeedSec}s linear infinite`,
+            animation: stalled ? "none" : `roadDrift ${roadSpeedSec}s linear infinite`,
           }}
         >
-          {/* Progress fill overlay (subtle) */}
+          {/* Progress tint (keeps it subtle, not overpowering) */}
           <div
             className="absolute inset-y-0 left-0"
             style={{
               width: `${pct}%`,
-              background: "rgba(255,255,255,0.08)",
-              transition: "width 600ms ease",
+              background: "rgba(56,189,248,0.10)", // subtle highlight
+              transition: "width 650ms ease",
             }}
           />
 
-          {/* Milestones */}
-          <div className="absolute left-2 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-white/40" />
-          <div className="absolute left-1/2 top-1/2 -translate-y-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-white/40" />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-white/40" />
+          {/* Guard rails */}
+          <div className="absolute left-0 right-0 top-2 h-[2px] bg-white/10" />
+          <div className="absolute left-0 right-0 bottom-2 h-[2px] bg-white/10" />
 
-          {/* Car */}
+          {/* CAR (moves left->right based on pct) */}
           <div
-            className="absolute top-1/2 -translate-y-1/2"
+            className="absolute top-1/2"
             style={{
-              left,
-              transition: "left 700ms ease",
+              left: `${pct}%`,
+              // keep inside road edges
+              paddingLeft: "18px",
+              paddingRight: "18px",
+              animation: stalled ? "none" : `carBounce ${bounceSec}s ease-in-out infinite`,
             }}
           >
             <div
-              className="relative"
               style={{
-                animation: `carBounce ${carBounce}s ease-in-out infinite`,
+                position: "relative",
+                transform: "translate(-50%, -50%)",
+                filter: "drop-shadow(0 6px 10px rgba(0,0,0,0.25))",
               }}
-              title={`${pct}%`}
             >
-              {/* Car body (bigger + facing right) */}
-              <div
-                className="grid place-items-center h-9 w-9 rounded-full bg-white border border-slate-200 shadow"
-                style={{
-                  transform: "scale(1.15)", // slightly larger
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 18,
-                    lineHeight: "18px",
-                    transform: "scaleX(1)", // ensure facing right (no flip)
-                  }}
-                >
-                  🚗
-                </span>
-              </div>
-
-              {/* Wheels (animated) */}
-              <div
-                className="absolute -bottom-2 left-1.5 h-3 w-3 rounded-full bg-slate-800 border border-white/30"
-                style={{ animation: momentum === "stalled" ? "none" : "wheelSpin 0.7s linear infinite" }}
-                aria-hidden="true"
-              />
-              <div
-                className="absolute -bottom-2 right-1.5 h-3 w-3 rounded-full bg-slate-800 border border-white/30"
-                style={{ animation: momentum === "stalled" ? "none" : "wheelSpin 0.7s linear infinite" }}
-                aria-hidden="true"
-              />
+              <CarIcon wheelSpinSec={wheelSpinSec} stalled={stalled} />
             </div>
           </div>
         </div>
@@ -286,7 +307,7 @@ export function MyProgressPage() {
                   </div>
                 </div>
 
-                {/* Animated road + car */}
+                {/* Road + animated car */}
                 <TrackCar percent={r.completion} momentum={r.momentum} />
               </div>
             ))}
