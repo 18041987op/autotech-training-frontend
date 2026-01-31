@@ -212,8 +212,8 @@ function TrackCar({ percent, momentum }) {
     <div className="mt-5">
       <style>{`
         @keyframes roadScroll {
-          0% { background-position: 0% 0, 0 center; }
-          100% { background-position: 100% 0, -600px center; }
+          0% { background-position: 0 center; }
+          100% { background-position: -800px center; }
         }
         @keyframes wheelSpin {
           0% { transform: rotate(0deg); }
@@ -225,148 +225,212 @@ function TrackCar({ percent, momentum }) {
           50% { transform: translate(-50%, -50%) translateY(-5px) rotate(0deg); }
           75% { transform: translate(-50%, -50%) translateY(-3px) rotate(0.8deg); }
         }
-        @keyframes treePass {
-          0% { transform: translateX(0) scale(1); opacity: 1; }
-          100% { transform: translateX(-120%) scale(0.8); opacity: 0.5; }
+        @keyframes grassPass {
+          0% { transform: translateX(0) scaleY(1); opacity: 1; }
+          50% { transform: translateX(-50%) scaleY(1.1); opacity: 0.9; }
+          100% { transform: translateX(-100%) scaleY(0.95); opacity: 0.7; }
         }
         @keyframes cloudDrift {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-100%); }
+          0% { transform: translateX(0); opacity: 0.85; }
+          100% { transform: translateX(-100%); opacity: 0.6; }
         }
       `}</style>
 
-      <div className="relative rounded-3xl overflow-hidden shadow-lg" style={{ height: "200px" }}>
-        {/* SKY */}
+      <div className="relative rounded-3xl overflow-hidden shadow-lg" style={{ height: "160px" }}>
+        {/* SKY - Softer Blue */}
         <div className="absolute inset-0" style={{
-          background: "linear-gradient(to bottom, #38BDF8 0%, #7DD3FC 40%, #BAE6FD 100%)",
+          background: "linear-gradient(to bottom, #7DD3FC 0%, #BAE6FD 50%, #E0F2FE 100%)",
         }}>
           {/* Sun */}
-          <div className="absolute top-6 right-12 w-16 h-16 rounded-full bg-yellow-300 shadow-lg" style={{
-            boxShadow: "0 0 40px rgba(253, 224, 71, 0.6)"
+          <div className="absolute top-4 right-10 w-12 h-12 rounded-full bg-yellow-200 shadow-lg" style={{
+            boxShadow: "0 0 30px rgba(253, 224, 71, 0.5)"
           }}/>
 
-          {/* Clouds */}
+          {/* Realistic Clouds */}
           <div style={{
             position: "absolute",
-            top: "15%",
+            top: "8%",
             left: "0",
             width: "200%",
             animation: `cloudDrift ${cloudSec}s linear infinite`,
           }}>
-            {[0, 30, 60, 90].map((offset) => (
+            {[5, 35, 70].map((offset) => (
               <div key={offset} style={{
                 position: "absolute",
                 left: `${offset}%`,
-                width: "100px",
-                height: "35px",
-                background: "white",
-                borderRadius: "50px",
-                opacity: 0.8,
-                boxShadow: "50px 0 0 -12px white, 25px 0 0 -6px white, 75px 0 0 -15px white"
-              }}/>
+              }}>
+                {/* Cloud made of overlapping circles for realistic puffy look */}
+                <div style={{ position: "relative", width: "120px", height: "45px" }}>
+                  <div style={{
+                    position: "absolute",
+                    left: "10px",
+                    top: "20px",
+                    width: "50px",
+                    height: "30px",
+                    background: "white",
+                    borderRadius: "50%",
+                    opacity: 0.9,
+                    filter: "blur(1px)"
+                  }}/>
+                  <div style={{
+                    position: "absolute",
+                    left: "35px",
+                    top: "10px",
+                    width: "45px",
+                    height: "35px",
+                    background: "white",
+                    borderRadius: "50%",
+                    opacity: 0.95,
+                    filter: "blur(1px)"
+                  }}/>
+                  <div style={{
+                    position: "absolute",
+                    left: "55px",
+                    top: "18px",
+                    width: "40px",
+                    height: "28px",
+                    background: "white",
+                    borderRadius: "50%",
+                    opacity: 0.88,
+                    filter: "blur(1px)"
+                  }}/>
+                  <div style={{
+                    position: "absolute",
+                    left: "75px",
+                    top: "23px",
+                    width: "35px",
+                    height: "25px",
+                    background: "white",
+                    borderRadius: "50%",
+                    opacity: 0.85,
+                    filter: "blur(1px)"
+                  }}/>
+                </div>
+              </div>
             ))}
           </div>
         </div>
 
         {/* MOUNTAINS */}
-        <div className="absolute bottom-0 left-0 right-0" style={{ height: "35%" }}>
+        <div className="absolute bottom-0 left-0 right-0" style={{ height: "28%" }}>
           <svg viewBox="0 0 1200 200" className="w-full h-full" preserveAspectRatio="none">
             <path d="M0,200 L0,120 L200,60 L400,100 L600,40 L800,90 L1000,70 L1200,110 L1200,200 Z" 
-                  fill="#6B7280" opacity="0.4"/>
+                  fill="#9CA3AF" opacity="0.35"/>
             <path d="M0,200 L0,140 L150,100 L350,130 L550,80 L750,120 L950,100 L1200,140 L1200,200 Z" 
-                  fill="#9CA3AF" opacity="0.5"/>
+                  fill="#D1D5DB" opacity="0.4"/>
           </svg>
         </div>
 
-        {/* GREEN LANDSCAPE */}
-        <div className="absolute bottom-0 left-0 right-0" style={{ height: "45%" }}>
+        {/* GREEN LANDSCAPE - No fence posts */}
+        <div className="absolute bottom-0 left-0 right-0" style={{ height: "42%" }}>
           <div style={{
             height: "100%",
-            background: "linear-gradient(to bottom, #22C55E 0%, #16A34A 50%, #15803D 100%)",
-          }}>
-            {/* Animated Trees */}
-            <div style={{
-              position: "absolute",
-              bottom: "50%",
-              left: "100%",
-              width: "200%",
-              height: "40px",
-              animation: `treePass ${roadSec * 1.5}s linear infinite`,
-            }}>
-              {[0, 15, 30, 45, 60, 75, 90].map((pos) => (
-                <div key={pos} style={{
-                  position: "absolute",
-                  left: `${pos}%`,
-                  bottom: 0,
-                }}>
-                  {/* Tree */}
-                  <div style={{
-                    width: 0,
-                    height: 0,
-                    borderLeft: "8px solid transparent",
-                    borderRight: "8px solid transparent",
-                    borderBottom: "30px solid #15803D",
-                    position: "relative",
-                  }}>
-                    <div style={{
-                      position: "absolute",
-                      bottom: "-35px",
-                      left: "-2px",
-                      width: "4px",
-                      height: "8px",
-                      background: "#78350F"
-                    }}/>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+            background: "linear-gradient(to bottom, #22C55E 0%, #16A34A 60%, #15803D 100%)",
+          }}/>
         </div>
 
-        {/* ROAD - Much lighter and clearer */}
+        {/* ROAD - Narrower (half height) */}
         <div
           className="absolute bottom-0 left-0 right-0"
           style={{
-            height: "32%",
+            height: "22%",
             background: "linear-gradient(to bottom, #71717A 0%, #52525B 100%)",
-            borderTop: "3px solid #3F3F46",
+            borderTop: "2px solid #3F3F46",
           }}
         >
-          {/* Road Texture */}
+          {/* Road Subtle Texture */}
           <div style={{
             position: "absolute",
             inset: 0,
             backgroundImage: `
-              radial-gradient(circle at 25% 75%, rgba(212,212,216,0.3) 1px, transparent 1px),
-              radial-gradient(circle at 75% 25%, rgba(212,212,216,0.2) 1px, transparent 1px),
+              radial-gradient(circle at 25% 75%, rgba(212,212,216,0.2) 1px, transparent 1px),
+              radial-gradient(circle at 75% 25%, rgba(212,212,216,0.15) 1px, transparent 1px)
+            `,
+            backgroundSize: "25px 25px, 30px 30px",
+            backgroundPosition: "0 0, 12px 12px",
+          }}/>
+
+          {/* CENTER LINE - Main animation focus, faster/slower based on momentum */}
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: 0,
+            right: 0,
+            height: "4px",
+            transform: "translateY(-50%)",
+            backgroundImage: `
               repeating-linear-gradient(
                 90deg,
                 transparent,
-                transparent 40px,
-                #FDE047 40px,
-                #FDE047 60px,
-                transparent 60px,
-                transparent 120px
+                transparent 20px,
+                #FDE047 20px,
+                #FDE047 45px,
+                transparent 45px,
+                transparent 70px
               )
             `,
-            backgroundSize: "30px 30px, 35px 35px, 500px 5px",
-            backgroundPosition: "0 0, 15px 15px, 0 50%",
             animation: `roadScroll ${roadSec}s linear infinite`,
           }}/>
 
-          {/* Road Edge Lines */}
-          <div className="absolute left-0 right-0 h-1 bg-white" style={{ top: "15%" }}/>
-          <div className="absolute left-0 right-0 h-1 bg-white" style={{ bottom: "15%" }}/>
+          {/* Road Edge Lines - Thinner */}
+          <div className="absolute left-0 right-0 bg-white" style={{ top: "20%", height: "2px" }}/>
+          <div className="absolute left-0 right-0 bg-white" style={{ bottom: "20%", height: "2px" }}/>
+
+          {/* Grass Tufts on Roadside - Left side */}
+          <div style={{
+            position: "absolute",
+            top: "-8px",
+            left: "100%",
+            width: "200%",
+            height: "15px",
+            animation: `grassPass ${roadSec * 0.8}s linear infinite`,
+          }}>
+            {[0, 12, 25, 38, 52, 65, 80, 95].map((pos) => (
+              <div key={`left-${pos}`} style={{
+                position: "absolute",
+                left: `${pos}%`,
+                bottom: 0,
+                width: "3px",
+                height: `${8 + Math.random() * 6}px`,
+                background: "linear-gradient(to top, #15803D, #22C55E)",
+                transformOrigin: "bottom center",
+                transform: `rotate(${-15 + Math.random() * 30}deg)`,
+              }}/>
+            ))}
+          </div>
+
+          {/* Grass Tufts on Roadside - Right side */}
+          <div style={{
+            position: "absolute",
+            bottom: "-8px",
+            left: "100%",
+            width: "200%",
+            height: "15px",
+            animation: `grassPass ${roadSec * 0.8}s linear infinite`,
+          }}>
+            {[3, 18, 31, 45, 58, 72, 87].map((pos) => (
+              <div key={`right-${pos}`} style={{
+                position: "absolute",
+                left: `${pos}%`,
+                top: 0,
+                width: "3px",
+                height: `${8 + Math.random() * 6}px`,
+                background: "linear-gradient(to top, #15803D, #22C55E)",
+                transformOrigin: "top center",
+                transform: `rotate(${-15 + Math.random() * 30}deg)`,
+              }}/>
+            ))}
+          </div>
 
           {/* Progress Indicator */}
           <div
             className="absolute inset-y-0 left-0"
             style={{
               width: `${pct}%`,
-              background: "linear-gradient(90deg, rgba(34,197,94,0.25) 0%, rgba(34,197,94,0.1) 100%)",
+              background: "linear-gradient(90deg, rgba(34,197,94,0.2) 0%, rgba(34,197,94,0.08) 100%)",
               transition: "width 800ms cubic-bezier(0.4, 0, 0.2, 1)",
-              borderRight: "3px solid #22C55E",
-              boxShadow: "inset -5px 0 15px rgba(34,197,94,0.4)"
+              borderRight: "2px solid #22C55E",
+              boxShadow: "inset -4px 0 12px rgba(34,197,94,0.35)"
             }}
           />
 
@@ -375,9 +439,9 @@ function TrackCar({ percent, momentum }) {
             className="absolute z-20"
             style={{
               left: `${carPct}%`,
-              bottom: "25%",
+              bottom: "30%",
               animation: `carBounce ${bounceSec}s ease-in-out infinite`,
-              filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.4))"
+              filter: "drop-shadow(0 5px 10px rgba(0,0,0,0.35))"
             }}
           >
             <CarIcon wheelSec={wheelSec} momentum={momentum} />
@@ -385,12 +449,12 @@ function TrackCar({ percent, momentum }) {
         </div>
 
         {/* Progress Labels */}
-        <div className="absolute bottom-2 left-4 right-4 flex items-center justify-between text-xs font-bold">
-          <span className="px-2 py-1 bg-white/90 rounded-lg shadow text-slate-700">0%</span>
-          <span className="px-4 py-1 bg-blue-600 text-white rounded-lg shadow-lg">
+        <div className="absolute bottom-1 left-3 right-3 flex items-center justify-between text-xs font-bold">
+          <span className="px-2 py-0.5 bg-white/90 rounded-lg shadow text-slate-700">0%</span>
+          <span className="px-3 py-0.5 bg-blue-600 text-white rounded-lg shadow-lg">
             {pct}%
           </span>
-          <span className="px-2 py-1 bg-white/90 rounded-lg shadow text-slate-700">100%</span>
+          <span className="px-2 py-0.5 bg-white/90 rounded-lg shadow text-slate-700">100%</span>
         </div>
       </div>
     </div>
