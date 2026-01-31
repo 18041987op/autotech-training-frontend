@@ -26,129 +26,179 @@ function getMomentum({ completionRate, quizScore }) {
 function getMomentumCopy(momentum) {
   // IMPORTANT: even "stalled" still animates, just slower.
   if (momentum === "fast") {
-    return { badge: "Fast", line: "You're moving fast. Keep momentum and finish this module.", roadSec: 1.5, wheelSec: 0.4, bounceSec: 1.2 };
+    return { badge: "Fast", line: "You're moving fast. Keep momentum and finish this module.", roadSec: 1.2, wheelSec: 0.3, bounceSec: 0.8, cloudSec: 8 };
   }
   if (momentum === "steady") {
-    return { badge: "Steady", line: "Steady progress. One more quiz session will push you forward.", roadSec: 2.5, wheelSec: 0.7, bounceSec: 1.8 };
+    return { badge: "Steady", line: "Steady progress. One more quiz session will push you forward.", roadSec: 2.0, wheelSec: 0.6, bounceSec: 1.4, cloudSec: 15 };
   }
-  return { badge: "Stalled", line: "Looks stalled. Do a quick review + one short assessment attempt today.", roadSec: 4.5, wheelSec: 1.2, bounceSec: 2.5 };
+  return { badge: "Stalled", line: "Looks stalled. Do a quick review + one short assessment attempt today.", roadSec: 3.5, wheelSec: 1.0, bounceSec: 2.2, cloudSec: 25 };
 }
 
-function CarIcon({ wheelSec }) {
+function CarIcon({ wheelSec, momentum }) {
+  const speedLines = momentum === "fast" ? 5 : momentum === "steady" ? 3 : 1;
+  
   return (
-    <svg width="110" height="56" viewBox="0 0 110 56" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
-        <linearGradient id="carBody" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3B82F6" />
-          <stop offset="50%" stopColor="#2563EB" />
-          <stop offset="100%" stopColor="#1D4ED8" />
+        <linearGradient id="carBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#EF4444" />
+          <stop offset="50%" stopColor="#DC2626" />
+          <stop offset="100%" stopColor="#B91C1C" />
         </linearGradient>
-        <linearGradient id="carWindow" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.7" />
+        <linearGradient id="carRoof" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#7C3AED" />
+          <stop offset="100%" stopColor="#6D28D9" />
         </linearGradient>
-        <radialGradient id="wheelGradient" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#475569" />
-          <stop offset="70%" stopColor="#1E293B" />
-          <stop offset="100%" stopColor="#0F172A" />
+        <linearGradient id="windowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#BFDBFE" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#93C5FD" stopOpacity="0.6" />
+        </linearGradient>
+        <radialGradient id="tire">
+          <stop offset="0%" stopColor="#374151" />
+          <stop offset="60%" stopColor="#1F2937" />
+          <stop offset="100%" stopColor="#111827" />
         </radialGradient>
-        <filter id="carShadow" x="-50%" y="-50%" width="200%" height="250%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-          <feOffset dx="0" dy="4" result="offsetblur"/>
-          <feComponentTransfer>
-            <feFuncA type="linear" slope="0.3"/>
-          </feComponentTransfer>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
           <feMerge>
-            <feMergeNode/>
+            <feMergeNode in="coloredBlur"/>
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
       </defs>
 
       {/* Ground Shadow */}
-      <ellipse cx="55" cy="50" rx="38" ry="5" fill="rgba(0,0,0,0.2)" />
+      <ellipse cx="60" cy="54" rx="45" ry="4" fill="rgba(0,0,0,0.15)" />
 
-      <g filter="url(#carShadow)">
-        {/* Car Body - Main */}
+      {/* Speed Lines - Behind Car */}
+      <g opacity={momentum === "fast" ? "0.6" : momentum === "steady" ? "0.4" : "0.2"}>
+        {[...Array(speedLines)].map((_, i) => (
+          <line 
+            key={i}
+            x1={8 - i * 4} 
+            y1={28 + i * 5} 
+            x2={18 - i * 4} 
+            y2={28 + i * 5} 
+            stroke="#EF4444" 
+            strokeWidth={3 - i * 0.5} 
+            strokeLinecap="round"
+            opacity={1 - i * 0.2}
+          />
+        ))}
+      </g>
+
+      <g filter="url(#glow)">
+        {/* Main Body - Sporty Shape */}
         <path
-          d="M20 32 L20 28 Q20 26 22 26 L40 26 L48 18 Q50 16 53 16 L70 16 Q73 16 75 18 L85 26 L95 26 Q97 26 97 28 L97 35 Q97 37 95 37 L22 37 Q20 37 20 35 Z"
-          fill="url(#carBody)"
-          stroke="#1E40AF"
+          d="M25 35 L25 32 Q25 28 29 28 L45 28 L52 20 Q54 17 58 17 L75 17 Q78 17 81 19 L90 28 L102 28 Q106 28 106 32 L106 38 Q106 40 104 40 L28 40 Q25 40 25 38 Z"
+          fill="url(#carBodyGrad)"
+          stroke="#991B1B"
+          strokeWidth="2"
+        />
+        
+        {/* Spoiler */}
+        <rect x="22" y="30" width="8" height="3" rx="1" fill="#6D28D9" stroke="#5B21B6" strokeWidth="1"/>
+        
+        {/* Hood Scoop / Roof */}
+        <path
+          d="M50 17 L56 11 Q58 9 62 9 L72 9 Q76 9 78 11 L82 17 Z"
+          fill="url(#carRoof)"
+          stroke="#5B21B6"
           strokeWidth="1.5"
         />
-        
-        {/* Car Roof */}
-        <path
-          d="M45 16 L52 9 Q54 7 57 7 L68 7 Q71 7 73 9 L78 16 Z"
-          fill="url(#carBody)"
-          stroke="#1E40AF"
-          strokeWidth="1.5"
-        />
 
-        {/* Windows */}
+        {/* Windshield */}
         <path
-          d="M48 17 L53 10 Q54 9 56 9 L65 9 Q67 9 68 10 L73 17 Z"
-          fill="url(#carWindow)"
+          d="M52 18 L57 12 Q58 11 61 11 L71 11 Q74 11 75 12 L80 18 Z"
+          fill="url(#windowGrad)"
           stroke="#1E40AF"
-          strokeWidth="1"
-          opacity="0.9"
+          strokeWidth="1.2"
         />
         
-        {/* Side Window */}
-        <rect x="78" y="20" width="14" height="10" rx="2" fill="url(#carWindow)" stroke="#1E40AF" strokeWidth="1" opacity="0.8"/>
-
-        {/* Front Grille Details */}
-        <rect x="88" y="28" width="7" height="6" rx="1" fill="#1E293B" opacity="0.6"/>
-        <line x1="91" y1="28" x2="91" y2="34" stroke="#374151" strokeWidth="0.5"/>
-        <line x1="93" y1="28" x2="93" y2="34" stroke="#374151" strokeWidth="0.5"/>
-
-        {/* Headlights */}
-        <circle cx="92" cy="25" r="2.5" fill="#FDE047" stroke="#F59E0B" strokeWidth="1"/>
-        <circle cx="92" cy="25" r="1.2" fill="#FEF08A" opacity="0.9"/>
+        {/* Side Windows */}
+        <polygon points="84,23 96,23 96,30 86,30" fill="url(#windowGrad)" stroke="#1E40AF" strokeWidth="1"/>
         
-        {/* Rear Light */}
-        <circle cx="23" cy="25" r="1.8" fill="#DC2626" stroke="#991B1B" strokeWidth="0.8"/>
+        {/* Racing Stripe */}
+        <rect x="55" y="17" width="3" height="23" fill="#FBBF24" opacity="0.8"/>
+        <rect x="70" y="17" width="3" height="23" fill="#FBBF24" opacity="0.8"/>
+
+        {/* Front Bumper Details */}
+        <rect x="98" y="31" width="8" height="6" rx="1" fill="#1F2937" opacity="0.7"/>
+        <line x1="100" y1="32" x2="100" y2="36" stroke="#4B5563" strokeWidth="0.8"/>
+        <line x1="102" y1="32" x2="102" y2="36" stroke="#4B5563" strokeWidth="0.8"/>
+        <line x1="104" y1="32" x2="104" y2="36" stroke="#4B5563" strokeWidth="0.8"/>
+
+        {/* Headlights - Bright and glowing */}
+        <ellipse cx="102" cy="27" rx="3" ry="2.5" fill="#FEF08A" filter="url(#glow)"/>
+        <ellipse cx="102" cy="27" rx="1.5" ry="1.2" fill="#FFFFFF"/>
+        <circle cx="102" cy="24" r="1.5" fill="#FDE047" opacity="0.9"/>
         
-        {/* Door Line */}
-        <line x1="62" y1="26" x2="62" y2="36" stroke="#1E40AF" strokeWidth="1.2" opacity="0.6"/>
+        {/* Tail Lights */}
+        <ellipse cx="27" cy="27" rx="2" ry="2.5" fill="#FCA5A5" stroke="#DC2626" strokeWidth="1"/>
+        <ellipse cx="27" cy="27" rx="0.8" ry="1" fill="#FEE2E2"/>
         
         {/* Side Mirror */}
-        <ellipse cx="82" cy="22" rx="3" ry="2" fill="#1E40AF" stroke="#1E293B" strokeWidth="0.8"/>
+        <path d="M86 24 L90 22 L91 25 L87 26 Z" fill="#DC2626" stroke="#991B1B" strokeWidth="1"/>
         
-        {/* Bottom Skirt */}
-        <rect x="24" y="36" width="68" height="2" rx="1" fill="#1E293B" opacity="0.5"/>
+        {/* Door Lines */}
+        <line x1="68" y1="28" x2="68" y2="39" stroke="#991B1B" strokeWidth="1.5" opacity="0.6"/>
+        
+        {/* Exhaust Pipe */}
+        <ellipse cx="28" cy="39" rx="2" ry="1.5" fill="#374151" stroke="#1F2937" strokeWidth="1"/>
+        
+        {/* Bottom Diffuser */}
+        <path d="M30 40 L100 40 L98 42 L32 42 Z" fill="#1F2937" opacity="0.6"/>
       </g>
 
       {/* Front Wheel */}
-      <g style={{ transformOrigin: "75px 40px", animation: `wheelSpin ${wheelSec}s linear infinite` }}>
-        <circle cx="75" cy="40" r="8" fill="url(#wheelGradient)" stroke="#0F172A" strokeWidth="1.5"/>
-        <circle cx="75" cy="40" r="4" fill="#94A3B8" stroke="#64748B" strokeWidth="1"/>
-        <circle cx="75" cy="40" r="1.5" fill="#E2E8F0"/>
-        {/* Spokes */}
-        <line x1="75" y1="32" x2="75" y2="48" stroke="#64748B" strokeWidth="1" opacity="0.6"/>
-        <line x1="67" y1="40" x2="83" y2="40" stroke="#64748B" strokeWidth="1" opacity="0.6"/>
-        <line x1="69" y1="34" x2="81" y2="46" stroke="#64748B" strokeWidth="0.8" opacity="0.4"/>
-        <line x1="69" y1="46" x2="81" y2="34" stroke="#64748B" strokeWidth="0.8" opacity="0.4"/>
+      <g style={{ transformOrigin: "85px 43px", animation: `wheelSpin ${wheelSec}s linear infinite` }}>
+        <circle cx="85" cy="43" r="9" fill="url(#tire)" stroke="#0F172A" strokeWidth="2"/>
+        <circle cx="85" cy="43" r="5" fill="#52525B" stroke="#3F3F46" strokeWidth="1.5"/>
+        <circle cx="85" cy="43" r="2" fill="#A1A1AA"/>
+        {/* Rim Spokes */}
+        {[0, 60, 120, 180, 240, 300].map((angle) => (
+          <line
+            key={angle}
+            x1="85"
+            y1="43"
+            x2={85 + Math.cos((angle * Math.PI) / 180) * 4}
+            y2={43 + Math.sin((angle * Math.PI) / 180) * 4}
+            stroke="#71717A"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        ))}
       </g>
 
       {/* Rear Wheel */}
-      <g style={{ transformOrigin: "34px 40px", animation: `wheelSpin ${wheelSec}s linear infinite` }}>
-        <circle cx="34" cy="40" r="8" fill="url(#wheelGradient)" stroke="#0F172A" strokeWidth="1.5"/>
-        <circle cx="34" cy="40" r="4" fill="#94A3B8" stroke="#64748B" strokeWidth="1"/>
-        <circle cx="34" cy="40" r="1.5" fill="#E2E8F0"/>
-        {/* Spokes */}
-        <line x1="34" y1="32" x2="34" y2="48" stroke="#64748B" strokeWidth="1" opacity="0.6"/>
-        <line x1="26" y1="40" x2="42" y2="40" stroke="#64748B" strokeWidth="1" opacity="0.6"/>
-        <line x1="28" y1="34" x2="40" y2="46" stroke="#64748B" strokeWidth="0.8" opacity="0.4"/>
-        <line x1="28" y1="46" x2="40" y2="34" stroke="#64748B" strokeWidth="0.8" opacity="0.4"/>
+      <g style={{ transformOrigin: "38px 43px", animation: `wheelSpin ${wheelSec}s linear infinite` }}>
+        <circle cx="38" cy="43" r="9" fill="url(#tire)" stroke="#0F172A" strokeWidth="2"/>
+        <circle cx="38" cy="43" r="5" fill="#52525B" stroke="#3F3F46" strokeWidth="1.5"/>
+        <circle cx="38" cy="43" r="2" fill="#A1A1AA"/>
+        {/* Rim Spokes */}
+        {[0, 60, 120, 180, 240, 300].map((angle) => (
+          <line
+            key={angle}
+            x1="38"
+            y1="43"
+            x2={38 + Math.cos((angle * Math.PI) / 180) * 4}
+            y2={43 + Math.sin((angle * Math.PI) / 180) * 4}
+            stroke="#71717A"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+        ))}
       </g>
 
-      {/* Speed Lines (motion effect) */}
-      <g opacity="0.3">
-        <line x1="10" y1="28" x2="18" y2="28" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
-        <line x1="8" y1="33" x2="16" y2="33" stroke="#3B82F6" strokeWidth="1.5" strokeLinecap="round"/>
-        <line x1="12" y1="38" x2="18" y2="38" stroke="#3B82F6" strokeWidth="1" strokeLinecap="round"/>
-      </g>
+      {/* Exhaust Smoke (when moving) */}
+      {momentum !== "stalled" && (
+        <g opacity="0.4">
+          <circle cx="24" cy="39" r="3" fill="#9CA3AF">
+            <animate attributeName="r" values="2;4;1" dur="0.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.5;0.2;0" dur="0.6s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+      )}
     </svg>
   );
 }
@@ -156,14 +206,14 @@ function CarIcon({ wheelSec }) {
 function TrackCar({ percent, momentum }) {
   const pct = clampPct(percent);
   const carPct = safeCarPct(pct);
-  const { roadSec, wheelSec, bounceSec } = getMomentumCopy(momentum);
+  const { roadSec, wheelSec, bounceSec, cloudSec } = getMomentumCopy(momentum);
 
   return (
-    <div className="mt-4">
+    <div className="mt-5">
       <style>{`
         @keyframes roadScroll {
-          0% { background-position: 0 0, 0 center, 0 0; }
-          100% { background-position: -600px 0, -300px center, -40px 0; }
+          0% { background-position: 0% 0, 0 center; }
+          100% { background-position: 100% 0, -600px center; }
         }
         @keyframes wheelSpin {
           0% { transform: rotate(0deg); }
@@ -171,142 +221,176 @@ function TrackCar({ percent, momentum }) {
         }
         @keyframes carBounce {
           0%, 100% { transform: translate(-50%, -50%) translateY(0px) rotate(0deg); }
-          25% { transform: translate(-50%, -50%) translateY(-2px) rotate(-0.5deg); }
-          50% { transform: translate(-50%, -50%) translateY(-4px) rotate(0deg); }
-          75% { transform: translate(-50%, -50%) translateY(-2px) rotate(0.5deg); }
+          25% { transform: translate(-50%, -50%) translateY(-3px) rotate(-0.8deg); }
+          50% { transform: translate(-50%, -50%) translateY(-5px) rotate(0deg); }
+          75% { transform: translate(-50%, -50%) translateY(-3px) rotate(0.8deg); }
         }
-        @keyframes cloudFloat {
-          0% { transform: translateX(0); opacity: 0.6; }
-          100% { transform: translateX(-100%); opacity: 0.3; }
+        @keyframes treePass {
+          0% { transform: translateX(0) scale(1); opacity: 1; }
+          100% { transform: translateX(-120%) scale(0.8); opacity: 0.5; }
+        }
+        @keyframes cloudDrift {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-100%); }
         }
       `}</style>
 
-      <div className="relative">
-        {/* SKY/BACKGROUND */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden" style={{
-          background: "linear-gradient(to bottom, #BAE6FD 0%, #7DD3FC 100%)",
+      <div className="relative rounded-3xl overflow-hidden shadow-lg" style={{ height: "200px" }}>
+        {/* SKY */}
+        <div className="absolute inset-0" style={{
+          background: "linear-gradient(to bottom, #38BDF8 0%, #7DD3FC 40%, #BAE6FD 100%)",
         }}>
+          {/* Sun */}
+          <div className="absolute top-6 right-12 w-16 h-16 rounded-full bg-yellow-300 shadow-lg" style={{
+            boxShadow: "0 0 40px rgba(253, 224, 71, 0.6)"
+          }}/>
+
           {/* Clouds */}
           <div style={{
             position: "absolute",
-            top: "10%",
-            left: "100%",
+            top: "15%",
+            left: "0",
             width: "200%",
-            height: "30px",
-            animation: `cloudFloat ${roadSec * 3}s linear infinite`,
+            animation: `cloudDrift ${cloudSec}s linear infinite`,
           }}>
-            <div style={{
-              position: "absolute",
-              left: "10%",
-              width: "80px",
-              height: "30px",
-              background: "white",
-              borderRadius: "50px",
-              opacity: 0.7,
-              boxShadow: "40px 0 0 -10px white, 20px 0 0 -5px white"
-            }}/>
-          </div>
-          <div style={{
-            position: "absolute",
-            top: "25%",
-            left: "100%",
-            width: "200%",
-            height: "25px",
-            animation: `cloudFloat ${roadSec * 4}s linear infinite`,
-          }}>
-            <div style={{
-              position: "absolute",
-              left: "40%",
-              width: "70px",
-              height: "25px",
-              background: "white",
-              borderRadius: "40px",
-              opacity: 0.6,
-              boxShadow: "35px 0 0 -8px white, 18px 0 0 -4px white"
-            }}/>
+            {[0, 30, 60, 90].map((offset) => (
+              <div key={offset} style={{
+                position: "absolute",
+                left: `${offset}%`,
+                width: "100px",
+                height: "35px",
+                background: "white",
+                borderRadius: "50px",
+                opacity: 0.8,
+                boxShadow: "50px 0 0 -12px white, 25px 0 0 -6px white, 75px 0 0 -15px white"
+              }}/>
+            ))}
           </div>
         </div>
 
-        {/* ROAD */}
+        {/* MOUNTAINS */}
+        <div className="absolute bottom-0 left-0 right-0" style={{ height: "35%" }}>
+          <svg viewBox="0 0 1200 200" className="w-full h-full" preserveAspectRatio="none">
+            <path d="M0,200 L0,120 L200,60 L400,100 L600,40 L800,90 L1000,70 L1200,110 L1200,200 Z" 
+                  fill="#6B7280" opacity="0.4"/>
+            <path d="M0,200 L0,140 L150,100 L350,130 L550,80 L750,120 L950,100 L1200,140 L1200,200 Z" 
+                  fill="#9CA3AF" opacity="0.5"/>
+          </svg>
+        </div>
+
+        {/* GREEN LANDSCAPE */}
+        <div className="absolute bottom-0 left-0 right-0" style={{ height: "45%" }}>
+          <div style={{
+            height: "100%",
+            background: "linear-gradient(to bottom, #22C55E 0%, #16A34A 50%, #15803D 100%)",
+          }}>
+            {/* Animated Trees */}
+            <div style={{
+              position: "absolute",
+              bottom: "50%",
+              left: "100%",
+              width: "200%",
+              height: "40px",
+              animation: `treePass ${roadSec * 1.5}s linear infinite`,
+            }}>
+              {[0, 15, 30, 45, 60, 75, 90].map((pos) => (
+                <div key={pos} style={{
+                  position: "absolute",
+                  left: `${pos}%`,
+                  bottom: 0,
+                }}>
+                  {/* Tree */}
+                  <div style={{
+                    width: 0,
+                    height: 0,
+                    borderLeft: "8px solid transparent",
+                    borderRight: "8px solid transparent",
+                    borderBottom: "30px solid #15803D",
+                    position: "relative",
+                  }}>
+                    <div style={{
+                      position: "absolute",
+                      bottom: "-35px",
+                      left: "-2px",
+                      width: "4px",
+                      height: "8px",
+                      background: "#78350F"
+                    }}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ROAD - Much lighter and clearer */}
         <div
-          className="relative h-24 rounded-2xl overflow-hidden border-2 border-slate-300"
+          className="absolute bottom-0 left-0 right-0"
           style={{
-            marginTop: "40px",
-            background: "linear-gradient(to bottom, rgba(15,23,42,0) 0%, rgba(15,23,42,0.3) 20%, #1E293B 40%, #0F172A 100%)",
-            boxShadow: "inset 0 4px 10px rgba(0,0,0,0.3)",
+            height: "32%",
+            background: "linear-gradient(to bottom, #71717A 0%, #52525B 100%)",
+            borderTop: "3px solid #3F3F46",
           }}
         >
-          {/* Road Texture & Lane Markings */}
+          {/* Road Texture */}
           <div style={{
             position: "absolute",
             inset: 0,
             backgroundImage: `
-              radial-gradient(circle at 20% 80%, rgba(71,85,105,0.4) 1px, transparent 1px),
-              radial-gradient(circle at 80% 30%, rgba(71,85,105,0.3) 1px, transparent 1px),
+              radial-gradient(circle at 25% 75%, rgba(212,212,216,0.3) 1px, transparent 1px),
+              radial-gradient(circle at 75% 25%, rgba(212,212,216,0.2) 1px, transparent 1px),
               repeating-linear-gradient(
                 90deg,
                 transparent,
-                transparent 30px,
-                rgba(255,255,255,0.9) 30px,
-                rgba(255,255,255,0.9) 50px,
-                transparent 50px,
-                transparent 90px
+                transparent 40px,
+                #FDE047 40px,
+                #FDE047 60px,
+                transparent 60px,
+                transparent 120px
               )
             `,
-            backgroundSize: "20px 20px, 25px 25px, 400px 4px",
-            backgroundPosition: "0 0, 10px 10px, 0 50%",
-            backgroundRepeat: "repeat, repeat, repeat-x",
+            backgroundSize: "30px 30px, 35px 35px, 500px 5px",
+            backgroundPosition: "0 0, 15px 15px, 0 50%",
             animation: `roadScroll ${roadSec}s linear infinite`,
           }}/>
 
-          {/* Side Lines */}
-          <div className="absolute left-0 right-0 h-[3px] bg-yellow-400/80" style={{ top: "20%" }}/>
-          <div className="absolute left-0 right-0 h-[3px] bg-yellow-400/80" style={{ bottom: "20%" }}/>
+          {/* Road Edge Lines */}
+          <div className="absolute left-0 right-0 h-1 bg-white" style={{ top: "15%" }}/>
+          <div className="absolute left-0 right-0 h-1 bg-white" style={{ bottom: "15%" }}/>
 
-          {/* Progress Overlay */}
+          {/* Progress Indicator */}
           <div
-            className="absolute inset-y-0 left-0 pointer-events-none"
+            className="absolute inset-y-0 left-0"
             style={{
               width: `${pct}%`,
-              background: "linear-gradient(90deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)",
+              background: "linear-gradient(90deg, rgba(34,197,94,0.25) 0%, rgba(34,197,94,0.1) 100%)",
               transition: "width 800ms cubic-bezier(0.4, 0, 0.2, 1)",
-              boxShadow: "inset -2px 0 8px rgba(34,197,94,0.3)"
+              borderRight: "3px solid #22C55E",
+              boxShadow: "inset -5px 0 15px rgba(34,197,94,0.4)"
             }}
           />
 
-          {/* CAR */}
+          {/* THE CAR */}
           <div
-            className="absolute"
+            className="absolute z-20"
             style={{
               left: `${carPct}%`,
-              top: "50%",
+              bottom: "25%",
               animation: `carBounce ${bounceSec}s ease-in-out infinite`,
-              zIndex: 10,
-              filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.3))"
+              filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.4))"
             }}
           >
-            <CarIcon wheelSec={wheelSec} />
+            <CarIcon wheelSec={wheelSec} momentum={momentum} />
           </div>
-
-          {/* Horizon Line Effect */}
-          <div style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "30%",
-            background: "linear-gradient(to bottom, rgba(186,230,253,0.3), transparent)",
-            pointerEvents: "none"
-          }}/>
         </div>
 
-        {/* Labels */}
-        <div className="mt-3 flex items-center justify-between text-xs font-semibold">
-          <span className="text-slate-500">0%</span>
-          <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+        {/* Progress Labels */}
+        <div className="absolute bottom-2 left-4 right-4 flex items-center justify-between text-xs font-bold">
+          <span className="px-2 py-1 bg-white/90 rounded-lg shadow text-slate-700">0%</span>
+          <span className="px-4 py-1 bg-blue-600 text-white rounded-lg shadow-lg">
             {pct}%
           </span>
-          <span className="text-slate-500">100%</span>
+          <span className="px-2 py-1 bg-white/90 rounded-lg shadow text-slate-700">100%</span>
         </div>
       </div>
     </div>
