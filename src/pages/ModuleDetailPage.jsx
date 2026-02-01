@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
@@ -30,6 +30,9 @@ export function ModuleDetailPage() {
 
   const [genLoading, setGenLoading] = useState(false);
   const [genMsg, setGenMsg] = useState("");
+
+  // ✅ Used to scroll to the expanded Full Text block
+  const fullTextRef = useRef(null);
 
   // ✅ Modal state for AI Coach (keeps user on this page)
   const [aiOpen, setAiOpen] = useState(false);
@@ -72,6 +75,17 @@ export function ModuleDetailPage() {
     // eslint-disable-next-line
   }, [id]);
 
+  // ✅ When "active" full text is set, scroll to it so the user sees it opened
+  useEffect(() => {
+    if (!active) return;
+    // small delay to ensure DOM is updated
+    const tmr = setTimeout(() => {
+      fullTextRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+
+    return () => clearTimeout(tmr);
+  }, [active]);
+
   const inactiveCount = useMemo(() => {
     return (assessments || []).filter((a) => a.isActive === false).length;
   }, [assessments]);
@@ -89,9 +103,7 @@ export function ModuleDetailPage() {
     setSyncing(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
-      setSyncMsg(
-        `Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`
-      );
+      setSyncMsg(`Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`);
       await load();
     } catch (e) {
       setSyncMsg(e.message || "Sync failed");
@@ -365,7 +377,8 @@ export function ModuleDetailPage() {
                   </div>
                 </div>
 
-                <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">
+                {/* ✅ Compact preview (prevents big wall of text) */}
+                <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
                   {r.hasText ? (
                     r.previewText
                   ) : (
@@ -378,8 +391,9 @@ export function ModuleDetailPage() {
         )}
       </div>
 
+      {/* ✅ Expanded full text section (scrolls into view) */}
       {active ? (
-        <div className="card p-6">
+        <div ref={fullTextRef} className="card p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-extrabold">{active.name}</h3>
