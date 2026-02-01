@@ -100,6 +100,7 @@ function AppRoutes() {
         <Route path="training" element={<ModulesListPage pageType="training" />} />
         <Route path="assessments" element={<AssessmentsPage />} />
         <Route path="progress" element={<MyProgressPage />} />
+        <Route path="culture" element={<ModulesListPage pageType="culture" />} />
 
         {/* Module detail (Drive resources) */}
         <Route path="modules/:id" element={<ModuleDetailPage />} />

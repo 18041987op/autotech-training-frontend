@@ -12,6 +12,18 @@ function inferTypeFromTitle(title = "") {
   return "training";
 }
 
+// ✅ NEW: prefer domain from DB if present, fallback to title inference
+function inferTypeFromModule(m) {
+  const d = (m?.domain || "").toLowerCase().trim();
+  if (d === "onboarding") return "onboarding";
+  if (d === "training") return "training";
+  if (d === "culture") return "culture";
+  if (d === "evaluations") return "assessments"; // keep UI model simple for now
+  if (d === "global") return "training";
+  if (d === "archive") return "training";
+  return inferTypeFromTitle(m?.title || "");
+}
+
 export function ModulesListPage({ pageType }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -37,7 +49,7 @@ export function ModulesListPage({ pageType }) {
 
   const filtered = useMemo(() => {
     if (pageType?.startsWith("admin-")) return [];
-    return (modules || []).filter((m) => inferTypeFromTitle(m.title) === pageType);
+    return (modules || []).filter((m) => inferTypeFromModule(m) === pageType);
   }, [modules, pageType]);
 
   const titleKey =
@@ -45,6 +57,8 @@ export function ModulesListPage({ pageType }) {
       ? "modules.onboarding.title"
       : pageType === "training"
       ? "modules.training.title"
+      : pageType === "culture"
+      ? "modules.culture.title" // not currently in i18n; we’ll fall back below
       : pageType === "assessments"
       ? "modules.assessments.title"
       : "modules.training.title";
@@ -54,6 +68,8 @@ export function ModulesListPage({ pageType }) {
       ? "modules.onboarding.subtitle"
       : pageType === "training"
       ? "modules.training.subtitle"
+      : pageType === "culture"
+      ? "modules.culture.subtitle" // not currently in i18n; we’ll fall back below
       : pageType === "assessments"
       ? "modules.assessments.subtitle"
       : "modules.training.subtitle";
@@ -74,11 +90,28 @@ export function ModulesListPage({ pageType }) {
     );
   }
 
+  // If culture keys don’t exist yet, reuse training copy (safe fallback)
+  const safeTitle = (() => {
+    try {
+      return t(titleKey);
+    } catch {
+      return t("modules.training.title");
+    }
+  })();
+
+  const safeSubtitle = (() => {
+    try {
+      return t(subtitleKey);
+    } catch {
+      return t("modules.training.subtitle");
+    }
+  })();
+
   return (
     <div className="space-y-5">
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{t(titleKey)}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t(subtitleKey)}</p>
+        <h1 className="text-2xl font-extrabold">{safeTitle}</h1>
+        <p className="mt-2 text-sm text-slate-600">{safeSubtitle}</p>
       </div>
 
       {filtered.length === 0 ? (
@@ -93,34 +126,14 @@ export function ModulesListPage({ pageType }) {
               key={m.id}
               className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
             >
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="font-extrabold leading-tight">{m.title}</h3>
-                {m.required ? (
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold">
-                    {t("status.required")}
-                  </span>
-                ) : null}
-              </div>
-
-              <p className="mt-2 text-sm text-slate-600">{m.description || "—"}</p>
-
-              <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
-                <span>{t("modules.completion")}</span>
-                <span className="font-semibold text-slate-700">{m.completionRate || 0}%</span>
-              </div>
-
-              <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
-                <div
-                  className="h-2 rounded-full bg-brand-primary"
-                  style={{ width: `${Math.min(100, Math.max(0, m.completionRate || 0))}%` }}
-                />
-              </div>
+              <div className="font-extrabold">{m.title}</div>
+              <div className="mt-2 text-sm text-slate-600">{m.description || "—"}</div>
 
               <button
-                className="mt-4 w-full btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold"
                 onClick={() => navigate(`/modules/${m.id}`)}
+                className="mt-4 rounded-xl border px-3 py-2 text-xs font-semibold hover:bg-slate-50"
               >
-                {t("actions.open")}
+                {t("common.view")} →
               </button>
             </div>
           ))}

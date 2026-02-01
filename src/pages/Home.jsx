@@ -61,7 +61,7 @@ export function Home({ user }) {
           icon={Shield}
           title={t("home.cards.culture")}
           blurb={t("home.blurbCulture")}
-          to="/training"
+          to="/culture"
         />
         <Card
           icon={Sparkles}
