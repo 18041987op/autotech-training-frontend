@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
@@ -16,6 +16,16 @@ function normalizeOptions(options) {
   return [];
 }
 
+function mondayOfThisWeekISODate() {
+  const now = new Date();
+  const day = now.getDay(); // 0 Sun ... 6 Sat
+  const diffToMonday = (day === 0 ? -6 : 1) - day;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
 export function AssessmentRunnerPage() {
   const { id: moduleId, aid } = useParams();
   const nav = useNavigate();
@@ -28,6 +38,9 @@ export function AssessmentRunnerPage() {
   const [questions, setQuestions] = useState([]);
   const [questionLimit, setQuestionLimit] = useState(null);
 
+  // weekly info (from backend GET /api/assessments/:id)
+  const [weekly, setWeekly] = useState(null); // { weekStart, goalCorrect, correct, incorrect, remainingCorrect, inRampUp, sessionCap }
+
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState({}); // { [questionNo]: selectedIndex }
 
@@ -35,9 +48,18 @@ export function AssessmentRunnerPage() {
   const [revealed, setRevealed] = useState(false);
   const [pickedIndex, setPickedIndex] = useState(null);
 
+  // retry wrong at end of quiz
+  const redoQueueRef = useRef([]); // array of question objects to append
+  const redoSetRef = useRef(new Set()); // questionNo set to avoid duplicates
+  const [baseTotalCount, setBaseTotalCount] = useState(0); // to detect when we're at end of initial set
+
   // final result
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
+
+  // session counters (this page load)
+  const [sessionAnswered, setSessionAnswered] = useState(0);
+  const [sessionIncorrect, setSessionIncorrect] = useState(0);
 
   // attempts history (module-wide)
   const [attempts, setAttempts] = useState([]);
@@ -64,6 +86,35 @@ export function AssessmentRunnerPage() {
     return t("assessmentRunner.progress", { current: idx + 1, total });
   }, [idx, total, t]);
 
+  const weeklyLabel = useMemo(() => {
+    if (!weekly) return null;
+    const goal = weekly.goalCorrect ?? null;
+    const correct = weekly.correct ?? null;
+    const remaining = weekly.remainingCorrect ?? null;
+    if (typeof goal !== "number" || typeof correct !== "number" || typeof remaining !== "number") return null;
+
+    return {
+      weekStart: weekly.weekStart || mondayOfThisWeekISODate(),
+      goal,
+      correct,
+      remaining,
+      inRampUp: !!weekly.inRampUp
+    };
+  }, [weekly]);
+
+  const capActive = weekly?.sessionCap === 15;
+
+  const shouldStopForCap = useMemo(() => {
+    if (!capActive) return false;
+    return sessionAnswered >= 15;
+  }, [capActive, sessionAnswered]);
+
+  const isCorrect = useMemo(() => {
+    if (!current) return null;
+    if (pickedIndex == null) return null;
+    return Number(current.correctIndex) === Number(pickedIndex);
+  }, [current, pickedIndex]);
+
   const loadAssessment = async () => {
     setErr("");
     setLoading(true);
@@ -72,9 +123,8 @@ export function AssessmentRunnerPage() {
       const out = await apiFetch(`/api/assessments/${aid}`);
       setAssessment(out.assessment || null);
 
-      setQuestionLimit(
-        typeof out.questionLimit === "number" ? out.questionLimit : null
-      );
+      setQuestionLimit(typeof out.questionLimit === "number" ? out.questionLimit : null);
+      setWeekly(out.weekly || null);
 
       const normalized = (out.questions || []).map((q) => ({
         questionNo: q.question_no,
@@ -84,15 +134,22 @@ export function AssessmentRunnerPage() {
           typeof q.correct_index === "number"
             ? q.correct_index
             : Number(q.correct_index),
-        explanation: q.explanation || ""
+        explanation: q.explanation || "",
+        topic: q.topic || null
       }));
 
+      // reset quiz state
       setQuestions(normalized);
+      setBaseTotalCount(normalized.length);
       setIdx(0);
       setAnswers({});
       setRevealed(false);
       setPickedIndex(null);
       setResult(null);
+
+      // reset redo tracking
+      redoQueueRef.current = [];
+      redoSetRef.current = new Set();
 
       // reset history state for fresh attempt
       setAttempts([]);
@@ -111,20 +168,40 @@ export function AssessmentRunnerPage() {
     // eslint-disable-next-line
   }, [aid]);
 
-  const isCorrect = useMemo(() => {
-    if (!current) return null;
-    if (pickedIndex == null) return null;
-    return Number(current.correctIndex) === Number(pickedIndex);
-  }, [current, pickedIndex]);
-
   const pick = (optIndex) => {
     if (!current) return;
     if (revealed) return;
 
     const qNo = current.questionNo ?? idx + 1;
+
     setAnswers((prev) => ({ ...prev, [qNo]: optIndex }));
     setPickedIndex(optIndex);
     setRevealed(true);
+
+    // If wrong, queue for the end of THIS quiz (one time)
+    const correct = Number(current.correctIndex) === Number(optIndex);
+    if (!correct) {
+      const set = redoSetRef.current;
+      if (!set.has(qNo)) {
+        set.add(qNo);
+        redoQueueRef.current.push(current);
+      }
+    }
+  };
+
+  const appendRedoIfNeeded = () => {
+    // If we're at the end of the initial set, and we have redo questions, append them once.
+    // This ensures wrong questions appear at the end of the same quiz.
+    const atEndOfBase = baseTotalCount > 0 && idx >= baseTotalCount - 1;
+    const hasRedo = redoQueueRef.current.length > 0;
+
+    if (atEndOfBase && hasRedo) {
+      const redo = redoQueueRef.current;
+      redoQueueRef.current = []; // clear so we don't append twice
+      setQuestions((prev) => [...prev, ...redo]);
+      return true; // appended
+    }
+    return false;
   };
 
   const submitAttempt = async () => {
@@ -136,6 +213,24 @@ export function AssessmentRunnerPage() {
       const out = await apiFetch(`/api/assessments/${aid}/attempt`, {
         method: "POST",
         body: { answers }
+      });
+
+      // Update session counters
+      const attemptCorrect = typeof out.correct === "number" ? out.correct : 0;
+      const attemptTotal = typeof out.total === "number" ? out.total : total;
+      const attemptIncorrect = Math.max(0, attemptTotal - attemptCorrect);
+
+      setSessionAnswered((n) => n + attemptTotal);
+      setSessionIncorrect((n) => n + attemptIncorrect);
+
+      // Update weekly progress client-side (backend is source of truth, but this keeps UI responsive)
+      setWeekly((prev) => {
+        if (!prev) return prev;
+        const nextCorrect = (prev.correct ?? 0) + attemptCorrect;
+        const nextIncorrect = (prev.incorrect ?? 0) + attemptIncorrect;
+        const goal = prev.goalCorrect ?? 0;
+        const remaining = Math.max(0, goal - nextCorrect);
+        return { ...prev, correct: nextCorrect, incorrect: nextIncorrect, remainingCorrect: remaining };
       });
 
       setResult(out);
@@ -150,7 +245,17 @@ export function AssessmentRunnerPage() {
     if (!current) return;
     if (!revealed) return;
 
+    // If we're at end, append redo questions (if any) before submitting
     if (idx >= total - 1) {
+      const appended = appendRedoIfNeeded();
+      if (appended) {
+        // move forward to the newly appended question
+        setIdx((i) => i + 1);
+        setRevealed(false);
+        setPickedIndex(null);
+        return;
+      }
+
       await submitAttempt();
       return;
     }
@@ -162,7 +267,13 @@ export function AssessmentRunnerPage() {
 
   const backToModule = () => nav(`/modules/${moduleId}`);
 
-  // Try again without full reload
+  // Start another short quiz (new random set) without losing session counters
+  const continueWeekly = async () => {
+    if (shouldStopForCap) return;
+    await loadAssessment();
+  };
+
+  // Try again without full reload of page state (still reloads the quiz content)
   const tryAgain = async () => {
     await loadAssessment();
   };
@@ -187,6 +298,34 @@ export function AssessmentRunnerPage() {
       }
     })();
   }, [result, aid]);
+
+  // Focus areas (topics) for this attempt: based on final answers vs correctIndex
+  const focusAreas = useMemo(() => {
+    if (!result) return [];
+    if (!questions || questions.length === 0) return [];
+
+    const byTopic = new Map();
+    const uniq = new Map(); // questionNo -> question object (avoid duplicates if repeated)
+    for (const q of questions) {
+      if (!q?.questionNo) continue;
+      if (!uniq.has(q.questionNo)) uniq.set(q.questionNo, q);
+    }
+
+    for (const [qNo, q] of uniq.entries()) {
+      const ans = answers?.[qNo];
+      if (typeof ans !== "number") continue;
+      const wrong = Number(ans) !== Number(q.correctIndex);
+      if (!wrong) continue;
+
+      const topic = (q.topic || "General").trim();
+      byTopic.set(topic, (byTopic.get(topic) || 0) + 1);
+    }
+
+    return Array.from(byTopic.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([topic, count]) => ({ topic, count }));
+  }, [result, questions, answers]);
 
   if (loading) {
     return (
@@ -223,6 +362,8 @@ export function AssessmentRunnerPage() {
     const correct = result.correct ?? result.attempt?.correct;
     const totalRes = result.total ?? result.attempt?.total ?? total;
 
+    const weeklyDone = (weekly?.remainingCorrect ?? null) === 0;
+
     return (
       <div className="space-y-4">
         <div className="card p-6 space-y-4">
@@ -231,6 +372,27 @@ export function AssessmentRunnerPage() {
             <div className="mt-1 text-sm text-slate-600">
               {t("assessmentRunner.passing")}: {passingScore}%
             </div>
+
+            {weeklyLabel ? (
+              <div className="mt-2 text-sm text-slate-700">
+                <span className="font-extrabold">Weekly goal:</span>{" "}
+                {weeklyLabel.correct}/{weeklyLabel.goal} correct{" "}
+                {weeklyLabel.remaining > 0 ? (
+                  <span className="text-slate-500">(remaining: {weeklyLabel.remaining})</span>
+                ) : null}
+                {weeklyLabel.inRampUp ? (
+                  <span className="ml-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                    Ramp-Up
+                  </span>
+                ) : null}
+              </div>
+            ) : null}
+
+            {capActive ? (
+              <div className="mt-1 text-xs text-slate-500">
+                Session control active due to repeated mistakes. If needed, the system will stop at 15 questions and continue later.
+              </div>
+            ) : null}
           </div>
 
           <div className="rounded-2xl bg-slate-50 p-4">
@@ -257,6 +419,46 @@ export function AssessmentRunnerPage() {
             )}
           </div>
 
+          {/* Focus areas */}
+          {focusAreas.length > 0 ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="text-sm font-extrabold text-slate-900">Focus areas</div>
+              <div className="mt-1 text-sm text-slate-700">
+                Review these topics before the next quiz:
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {focusAreas.map((fa) => (
+                  <span
+                    key={fa.topic}
+                    className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-800"
+                  >
+                    {fa.topic} ({fa.count})
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Weekly completion message */}
+          {weeklyDone ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <div className="font-extrabold">Week complete — excellent work.</div>
+              <div className="mt-1 text-emerald-900/90">
+                You met this week’s learning goal. That consistency builds real skill and protects the team.
+              </div>
+            </div>
+          ) : null}
+
+          {/* Session cap message */}
+          {shouldStopForCap ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <div className="font-extrabold">Session limit reached.</div>
+              <div className="mt-1 text-amber-900/90">
+                You’ve answered 15 questions in this session. Take a break and continue later to lock in the material.
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap gap-2">
             {!passed ? (
               <button
@@ -268,12 +470,32 @@ export function AssessmentRunnerPage() {
               </button>
             ) : null}
 
+            {/* Continue weekly quizzes until goal is hit */}
+            {!weeklyDone ? (
+              <button
+                className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
+                onClick={continueWeekly}
+                disabled={shouldStopForCap}
+                type="button"
+              >
+                Continue (next quiz)
+              </button>
+            ) : (
+              <button
+                className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold"
+                onClick={continueWeekly}
+                type="button"
+              >
+                Keep learning
+              </button>
+            )}
+
             <button
               className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
               onClick={backToModule}
               type="button"
             >
-              {t("assessmentRunner.keepLearning")}
+              {weeklyDone ? "See you next week" : t("assessmentRunner.keepLearning")}
             </button>
           </div>
         </div>
@@ -362,9 +584,19 @@ export function AssessmentRunnerPage() {
         <div>
           <h1 className="text-xl font-extrabold">{assessment?.title || "Assessment"}</h1>
           <div className="mt-1 text-sm text-slate-600">{progressLabel}</div>
+
           {typeof questionLimit === "number" ? (
             <div className="mt-1 text-xs text-slate-500">
               {t("assessmentRunner.questionCountLine", { count: questionLimit })}
+            </div>
+          ) : null}
+
+          {weeklyLabel ? (
+            <div className="mt-2 text-xs text-slate-500">
+              Week goal: {weeklyLabel.correct}/{weeklyLabel.goal} correct
+              {weeklyLabel.remaining > 0 ? ` • remaining ${weeklyLabel.remaining}` : ""}
+              {weeklyLabel.inRampUp ? " • Ramp-Up" : ""}
+              {capActive ? " • Session control ON" : ""}
             </div>
           ) : null}
         </div>
@@ -378,10 +610,24 @@ export function AssessmentRunnerPage() {
         </button>
       </div>
 
+      {shouldStopForCap ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          <div className="font-extrabold">Session limit reached.</div>
+          <div className="mt-1 text-amber-900/90">
+            You’ve answered 15 questions in this session. Take a break and continue later.
+          </div>
+        </div>
+      ) : null}
+
       <div className="rounded-2xl bg-slate-50 p-4">
         <div className="text-sm font-extrabold text-slate-900">
           {current.text || t("assessmentRunner.questionFallback")}
         </div>
+        {current.topic ? (
+          <div className="mt-2 text-xs text-slate-500">
+            Topic: <span className="font-semibold text-slate-700">{current.topic}</span>
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-2">
@@ -409,7 +655,7 @@ export function AssessmentRunnerPage() {
             <button
               key={optIndex}
               className={`text-left rounded-2xl border ${border} ${bg} px-4 py-3 hover:bg-brand-soft disabled:opacity-70`}
-              disabled={revealed}
+              disabled={revealed || shouldStopForCap}
               onClick={() => pick(optIndex)}
               type="button"
             >
@@ -441,6 +687,9 @@ export function AssessmentRunnerPage() {
                   {current.options?.[Number(current.correctIndex)] ?? "—"}
                 </div>
               ) : null}
+              <div className="mt-2 text-xs text-slate-500">
+                This question will reappear at the end of this quiz.
+              </div>
             </>
           )}
         </div>
@@ -450,7 +699,7 @@ export function AssessmentRunnerPage() {
         <button
           className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
           onClick={next}
-          disabled={!revealed || submitting}
+          disabled={!revealed || submitting || shouldStopForCap}
           type="button"
         >
           {idx >= total - 1
