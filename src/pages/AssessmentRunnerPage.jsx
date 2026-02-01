@@ -59,7 +59,6 @@ export function AssessmentRunnerPage() {
 
   // session counters (this page load)
   const [sessionAnswered, setSessionAnswered] = useState(0);
-  const [sessionIncorrect, setSessionIncorrect] = useState(0);
 
   // attempts history (module-wide)
   const [attempts, setAttempts] = useState([]);
@@ -221,7 +220,6 @@ export function AssessmentRunnerPage() {
       const attemptIncorrect = Math.max(0, attemptTotal - attemptCorrect);
 
       setSessionAnswered((n) => n + attemptTotal);
-      setSessionIncorrect((n) => n + attemptIncorrect);
 
       // Update weekly progress client-side (backend is source of truth, but this keeps UI responsive)
       setWeekly((prev) => {
