@@ -31,7 +31,11 @@ export function ModuleDetailPage() {
   const [genLoading, setGenLoading] = useState(false);
   const [genMsg, setGenMsg] = useState("");
 
-  // ✅ Used to scroll to the expanded Full Text block
+  // ✅ NEW: append questions UI state
+  const [appendLoading, setAppendLoading] = useState(false);
+  const [appendMsg, setAppendMsg] = useState("");
+  const [appendStop, setAppendStop] = useState(false);
+
   const fullTextRef = useRef(null);
 
   // ✅ Modal state for AI Coach (keeps user on this page)
@@ -78,11 +82,9 @@ export function ModuleDetailPage() {
   // ✅ When "active" full text is set, scroll to it so the user sees it opened
   useEffect(() => {
     if (!active) return;
-    // small delay to ensure DOM is updated
     const tmr = setTimeout(() => {
       fullTextRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 60);
-
     return () => clearTimeout(tmr);
   }, [active]);
 
@@ -115,6 +117,11 @@ export function ModuleDetailPage() {
   const generateAssessment = async () => {
     setGenMsg("");
     setGenLoading(true);
+
+    // reset append UI when generating a new bank
+    setAppendMsg("");
+    setAppendStop(false);
+
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/generate-assessment`, { method: "POST" });
       setGenMsg(`${t("assessmentsUi.created")}: ${out.title}`);
@@ -123,6 +130,43 @@ export function ModuleDetailPage() {
       setGenMsg(e.message || "Failed");
     } finally {
       setGenLoading(false);
+    }
+  };
+
+  // ✅ NEW: append questions (10 at a time) with stop condition + cap
+  const appendQuestions = async () => {
+    setAppendMsg("");
+    setAppendLoading(true);
+    try {
+      const out = await apiFetch(`/api/admin/modules/${id}/append-questions`, { method: "POST" });
+
+      // Build a clear status line for admin
+      const inserted = typeof out.insertedCount === "number" ? out.insertedCount : 0;
+      const dupes = typeof out.duplicateCount === "number" ? out.duplicateCount : 0;
+      const totalNow =
+        typeof out.totalQuestionsNow === "number" ? out.totalQuestionsNow : null;
+      const streak =
+        typeof out.lowNoveltyStreak === "number" ? out.lowNoveltyStreak : null;
+
+      const parts = [];
+      parts.push(out.message || "Append complete");
+      parts.push(`Inserted: ${inserted}`);
+      parts.push(`Duplicates: ${dupes}`);
+      if (totalNow != null) parts.push(`Total: ${totalNow}/200`);
+      if (streak != null) parts.push(`Low-novelty streak: ${streak}/2`);
+
+      const reason = out.stopReason ? ` • ${out.stopReason}` : "";
+      setAppendMsg(parts.join(" • ") + reason);
+
+      const stop = out.stop === true;
+      setAppendStop(stop);
+
+      // Optional: refresh assessments list (keeps things current)
+      await loadAssessments();
+    } catch (e) {
+      setAppendMsg(e.message || "Append failed");
+    } finally {
+      setAppendLoading(false);
     }
   };
 
@@ -211,8 +255,26 @@ export function ModuleDetailPage() {
                 {genLoading ? t("assessmentsUi.generating") : t("assessmentsUi.generate")}
               </button>
 
+              {/* ✅ NEW: Append questions button */}
+              <button
+                className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
+                onClick={appendQuestions}
+                disabled={appendLoading || appendStop}
+                type="button"
+                title={appendStop ? "Question bank stopped (cap reached or material exhausted)." : ""}
+              >
+                {appendLoading ? "Appending…" : "Append 10 Questions"}
+              </button>
+
               {syncMsg ? <div className="text-xs text-slate-600">{syncMsg}</div> : null}
               {genMsg ? <div className="text-xs text-slate-600">{genMsg}</div> : null}
+              {appendMsg ? <div className="text-xs text-slate-600">{appendMsg}</div> : null}
+
+              {appendStop ? (
+                <div className="text-xs text-slate-500">
+                  Bank generation stopped. Add more content in Drive + Sync, then Generate again.
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -377,7 +439,6 @@ export function ModuleDetailPage() {
                   </div>
                 </div>
 
-                {/* ✅ Compact preview (prevents big wall of text) */}
                 <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
                   {r.hasText ? (
                     r.previewText
@@ -391,7 +452,7 @@ export function ModuleDetailPage() {
         )}
       </div>
 
-      {/* ✅ Expanded full text section (scrolls into view) */}
+      {/* Expanded full text section */}
       {active ? (
         <div ref={fullTextRef} className="card p-6">
           <div className="flex items-start justify-between gap-4">
@@ -411,10 +472,9 @@ export function ModuleDetailPage() {
         </div>
       ) : null}
 
-      {/* ✅ AI Coach Modal */}
+      {/* AI Coach Modal */}
       {aiOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
           <button
             type="button"
             aria-label="Close AI Coach"
@@ -422,7 +482,6 @@ export function ModuleDetailPage() {
             onClick={() => setAiOpen(false)}
           />
 
-          {/* Panel */}
           <div className="relative w-[94%] max-w-3xl max-h-[86vh] overflow-auto rounded-3xl bg-white shadow-xl border border-slate-200 p-4 md:p-6">
             <AICoachWidget
               initialModuleId={id}
