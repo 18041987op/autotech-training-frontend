@@ -600,51 +600,89 @@ export function AssessmentRunnerPage() {
   <div className="min-h-[calc(100vh-140px)] flex flex-col">
     {/* MAIN CARD */}
     <div className="card p-6 space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-extrabold">{assessment?.title || "Assessment"}</h1>
+      {/* HEADER (more structured + fills empty right area) */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-xl font-extrabold leading-tight">
+              {assessment?.title || "Assessment"}
+            </h1>
 
-          {/* Make header feel more “alive” */}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-700">
-              Focus mode
-            </span>
-            {weeklyLabel?.inRampUp ? (
-              <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
-                Ramp-Up
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-700">
+                Focus mode
               </span>
-            ) : null}
-            {capActive ? (
-              <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
-                Session control ON
-              </span>
-            ) : null}
+
+              {weeklyLabel?.inRampUp ? (
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                  Ramp-Up
+                </span>
+              ) : null}
+
+              {capActive ? (
+                <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
+                  Session control ON
+                </span>
+              ) : null}
+            </div>
           </div>
 
-          <div className="mt-2 text-sm text-slate-600">{progressLabel}</div>
-
-          {typeof questionLimit === "number" ? (
-            <div className="mt-1 text-xs text-slate-500">
-              {t("assessmentRunner.questionCountLine", { count: questionLimit })}
-            </div>
-          ) : null}
-
-          {weeklyLabel ? (
-            <div className="mt-2 text-xs text-slate-500">
-              Week goal: {weeklyLabel.correct}/{weeklyLabel.goal} correct
-              {weeklyLabel.remaining > 0 ? ` • remaining ${weeklyLabel.remaining}` : ""}
-            </div>
-          ) : null}
+          <button
+            className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
+            onClick={backToModule}
+            type="button"
+          >
+            {t("assessmentRunner.exit")}
+          </button>
         </div>
 
-        <button
-          className="btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold"
-          onClick={backToModule}
-          type="button"
-        >
-          {t("assessmentRunner.exit")}
-        </button>
+        {/* Compact stats grid (fills the empty right area on mobile) */}
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Question
+            </div>
+            <div className="mt-1 text-sm font-extrabold text-slate-900">
+              {idx + 1} of {total}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              This attempt
+            </div>
+            <div className="mt-1 text-sm font-extrabold text-slate-900">
+              {typeof questionLimit === "number" ? questionLimit : total}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Week goal
+            </div>
+            <div className="mt-1 text-sm font-extrabold text-slate-900">
+              {weeklyLabel ? `${weeklyLabel.correct}/${weeklyLabel.goal}` : "—"}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              Remaining
+            </div>
+            <div className="mt-1 text-sm font-extrabold text-slate-900">
+              {weeklyLabel ? weeklyLabel.remaining : "—"}
+            </div>
+          </div>
+        </div>
+
+        {/* short helper line */}
+        <div className="mt-3 text-xs text-slate-500">
+          Tip: wrong answers repeat at the end of this quiz.
+        </div>
       </div>
+
+      {/* Divider — makes a clear separation from the question */}
+      <div className="h-px bg-slate-200" />
 
       {shouldStopForCap ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -656,7 +694,7 @@ export function AssessmentRunnerPage() {
       ) : null}
 
       {/* QUESTION CARD (more separation + “cheerful” feel) */}
-      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Question
         </div>
@@ -674,7 +712,7 @@ export function AssessmentRunnerPage() {
       </div>
 
       {/* ANSWERS GROUP */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-4">
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-100">
         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Choose one answer
         </div>
