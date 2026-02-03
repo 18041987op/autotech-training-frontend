@@ -78,7 +78,6 @@
     "usersTitle": "Gestión de Usuarios",
     "contentTitle": "Gestión de Contenido"
   },
-  
   "actions": {
     "open": "Abrir",
     "close": "Cerrar",
@@ -97,7 +96,7 @@
   },
   "modules": {
     "onboarding": {
-      "title": "Inducción" ,
+      "title": "Inducción",
       "subtitle": "Módulos de inducción disponibles para ti."
     },
     "training": {
@@ -132,7 +131,18 @@
     "refreshAssessments": "Actualizar",
     "noAssessments": "Todavía no hay evaluaciones para este módulo.",
     "passingScore": "Puntaje para aprobar",
-    "startAssessment": "Comenzar"
+    "startAssessment": "Comenzar",
+    "admin": {
+      "generateAssessment": "Generar evaluación",
+      "appendQuestions10": "Agregar más preguntas (10)",
+      "appending": "Agregando…",
+      "bankStoppedHint": "La generación del banco se detuvo. Agrega más contenido + Sync y luego genera de nuevo."
+    },
+    "user": {
+      "contentTitle": "Contenido del módulo",
+      "contentSubtitle": "El contenido de entrenamiento está disponible dentro de la app. Abre el texto completo para leer.",
+      "read": "Leer"
+    }
   },
   "assessmentRunner": {
     "progress": "Pregunta {{current}} de {{total}}",
@@ -158,7 +168,7 @@
     "wrongBody": "Repasa el material e intenta entender por qué la opción correcta es la mejor.",
     "correctAnswer": "Respuesta correcta",
     "historyTitle": "Intentos recientes (este módulo)",
-    "historySubtitle": "Muestra tus últimos 10 intentos en todos los assessments de este módulo.",
+    "historySubtitle": "Muestra tus últimos 10 intentos en todas las evaluaciones de este módulo.",
     "historyNone": "Aún no hay intentos registrados.",
     "passedTag": "Aprobado",
     "failedTag": "Falló",
@@ -172,18 +182,39 @@
       "attemptLabel": "Este intento",
       "weekGoalLabel": "Meta semanal",
       "remainingLabel": "Restante",
-      "tip": "Consejo: las respuestas incorrectas se repiten al final de este cuestionario.",
+      "tip": "Consejo: las respuestas incorrectas se repiten al final de este cuestionario."
+    },
+    "answers": {
       "chooseOne": "Elige una respuesta"
+    },
+    "footer": {
+      "title": "Sigue adelante",
+      "subtitle": "Sesiones cortas crean habilidad real.",
+      "tip": "Consejo: si fallas una pregunta, volverá a aparecer al final de este cuestionario."
     }
   },
-
   "progress": {
     "title": "Mi Progreso",
     "subtitle": "Tu progreso y resultados hasta ahora.",
     "modulesStarted": "Módulos iniciados",
     "avgCompletion": "Promedio de progreso",
     "passed": "Aprobadas (>=70)",
-    "detail": "Detalle"
+    "detail": "Detalle",
+    "summary": {
+      "assignedModules": "Módulos asignados"
+    },
+    "detailLabels": {
+      "score": "Puntuación",
+      "overall": "General"
+    },
+    "momentum": {
+      "fastBadge": "Rápido",
+      "fastLine": "Vas rápido. Mantén el ritmo y completa tus evaluaciones asignadas.",
+      "steadyBadge": "Constante",
+      "steadyLine": "Buen progreso. Una sesión corta te empuja hacia adelante.",
+      "stalledBadge": "Detenido",
+      "stalledLine": "Parece que te frenaste. Haz una revisión rápida y un intento corto hoy."
+    }
   },
   "auth2": {
     "signIn": "Iniciar sesión",
@@ -206,9 +237,9 @@
     "approve": "Aprobar",
     "lastLogin": "Último acceso"
   },
-  "roles": { 
-    "technician": "Técnico", 
-    "administrative": "Administrativo", 
+  "roles": {
+    "technician": "Técnico",
+    "administrative": "Administrativo",
     "serviceAdvisor": "Asesor de Servicio (SA)",
     "admin": "Admin"
   },
@@ -230,5 +261,4 @@
       "driveFolder": "Nombre del folder en Drive"
     }
   }
-
 }

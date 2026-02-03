@@ -52,7 +52,6 @@
     "blurbTraining": "Role-specific learning paths with job-ready resources.",
     "blurbCulture": "How we work: communication, quality, safety, and customer experience.",
     "blurbEvaluations": "Low-pressure assessments to confirm understanding."
-    
   },
   "pages": {
     "onboardingTitle": "Onboarding",
@@ -79,7 +78,6 @@
     "usersTitle": "User Management",
     "contentTitle": "Content Management"
   },
-  
   "actions": {
     "open": "Open",
     "close": "Close",
@@ -133,7 +131,19 @@
     "refreshAssessments": "Refresh",
     "noAssessments": "No assessments found for this module yet.",
     "passingScore": "Passing score",
-    "startAssessment": "Start"
+    "startAssessment": "Start",
+
+    "admin": {
+      "generateAssessment": "Generate Assessment",
+      "appendQuestions10": "Append more questions (10)",
+      "appending": "Appending…",
+      "bankStoppedHint": "Bank generation stopped. Add more content + Sync, then Generate again."
+    },
+    "user": {
+      "contentTitle": "Module content",
+      "contentSubtitle": "Training content is available inside the app. Open Full text to read.",
+      "read": "Read"
+    }
   },
   "assessmentRunner": {
     "progress": "Question {{current}} of {{total}}",
@@ -173,15 +183,15 @@
       "attemptLabel": "This attempt",
       "weekGoalLabel": "Week goal",
       "remainingLabel": "Remaining",
-      "tip": "Tip: wrong answers repeat at the end of this quiz.",
-      "answers": {
-        "chooseOne": "Choose one answer"
-      },
-      "footer": {
-        "title": "Keep going",
-        "subtitle": "Short sessions build real skill.",
-        "tip": "Tip: If you miss a question, it will appear again at the end of this quiz."
-      }
+      "tip": "Tip: wrong answers repeat at the end of this quiz."
+    },
+    "answers": {
+      "chooseOne": "Choose one answer"
+    },
+    "footer": {
+      "title": "Keep going",
+      "subtitle": "Short sessions build real skill.",
+      "tip": "Tip: If you miss a question, it will appear again at the end of this quiz."
     }
   },
   "progress": {
@@ -190,7 +200,23 @@
     "modulesStarted": "Modules started",
     "avgCompletion": "Average completion",
     "passed": "Passed checks (>=70)",
-    "detail": "Detail"
+    "detail": "Detail",
+
+    "summary": {
+      "assignedModules": "Assigned modules"
+    },
+    "detailLabels": {
+      "score": "Score",
+      "overall": "Overall"
+    },
+    "momentum": {
+      "fastBadge": "Fast",
+      "fastLine": "You're moving fast. Keep momentum and finish your assigned checks.",
+      "steadyBadge": "Steady",
+      "steadyLine": "Steady progress. A short quiz session will push you forward.",
+      "stalledBadge": "Stalled",
+      "stalledLine": "Looks stalled. Do a quick review + one short assessment attempt today."
+    }
   },
   "auth2": {
     "signIn": "Sign in",
@@ -213,8 +239,8 @@
     "approve": "Approve",
     "lastLogin": "Last login"
   },
-  "roles": { 
-    "technician": "Technician", 
+  "roles": {
+    "technician": "Technician",
     "administrative": "Administrative",
     "serviceAdvisor": "Service Advisor (SA)",
     "admin": "Admin"
