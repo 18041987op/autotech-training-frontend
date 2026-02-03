@@ -164,7 +164,25 @@
     "passedTag": "Passed",
     "failedTag": "Failed",
     "questionCountLine": "Questions this attempt: {{count}}",
-    "policyLine": "Last 7 days: {{failedCount}} failed • Rule in effect: {{limit}} questions"
+    "policyLine": "Last 7 days: {{failedCount}} failed • Rule in effect: {{limit}} questions",
+    "header": {
+      "focusMode": "Focus mode",
+      "rampUp": "Ramp-Up",
+      "sessionControlOn": "Session control ON",
+      "questionLabel": "Question",
+      "attemptLabel": "This attempt",
+      "weekGoalLabel": "Week goal",
+      "remainingLabel": "Remaining",
+      "tip": "Tip: wrong answers repeat at the end of this quiz.",
+      "answers": {
+        "chooseOne": "Choose one answer"
+      },
+      "footer": {
+        "title": "Keep going",
+        "subtitle": "Short sessions build real skill.",
+        "tip": "Tip: If you miss a question, it will appear again at the end of this quiz."
+      }
+    }
   },
   "progress": {
     "title": "My Progress",

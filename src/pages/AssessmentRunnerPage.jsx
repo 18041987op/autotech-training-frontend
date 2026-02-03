@@ -26,12 +26,16 @@ function mondayOfThisWeekISODate() {
   return monday.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
-function AssessmentFooter() {
+function AssessmentFooter({ t }) {
   return (
     <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-4">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-sm font-extrabold text-slate-900">Keep going</div>
-        <div className="text-xs text-slate-500">Short sessions build real skill.</div>
+        <div className="text-sm font-extrabold text-slate-900">
+          {t("assessmentRunner.footer.title")}
+        </div>
+        <div className="text-xs text-slate-500">
+          {t("assessmentRunner.footer.subtitle")}
+        </div>
       </div>
 
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -39,12 +43,11 @@ function AssessmentFooter() {
       </div>
 
       <div className="mt-3 text-xs text-slate-600">
-        Tip: If you miss a question, it will appear again at the end of this quiz.
+        {t("assessmentRunner.footer.tip")}
       </div>
     </div>
   );
 }
-
 
 export function AssessmentRunnerPage() {
   const { id: moduleId, aid } = useParams();
@@ -605,18 +608,18 @@ export function AssessmentRunnerPage() {
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                Focus mode
+                t("assessmentRunner.header.focusMode")
               </span>
 
               {weeklyLabel?.inRampUp ? (
                 <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
-                  Ramp-Up
+                  t("assessmentRunner.header.rampUp")
                 </span>
               ) : null}
 
               {capActive ? (
                 <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
-                  Session control ON
+                  t("assessmentRunner.header.sessionControlOn")
                 </span>
               ) : null}
             </div>
@@ -635,7 +638,7 @@ export function AssessmentRunnerPage() {
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Question
+              t("assessmentRunner.header.questionLabel")
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {idx + 1} of {total}
@@ -644,7 +647,7 @@ export function AssessmentRunnerPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              This attempt
+              t("assessmentRunner.header.attemptLabel")
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {typeof questionLimit === "number" ? questionLimit : total}
@@ -653,7 +656,7 @@ export function AssessmentRunnerPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Week goal
+              t("assessmentRunner.header.weekGoalLabel")
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {weeklyLabel ? `${weeklyLabel.correct}/${weeklyLabel.goal}` : "—"}
@@ -662,7 +665,7 @@ export function AssessmentRunnerPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Remaining
+              t("assessmentRunner.header.remainingLabel")
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {weeklyLabel ? weeklyLabel.remaining : "—"}
@@ -672,7 +675,7 @@ export function AssessmentRunnerPage() {
 
         {/* short helper line */}
         <div className="mt-3 text-xs text-slate-500">
-          Tip: wrong answers repeat at the end of this quiz.
+          t("assessmentRunner.header.tip")
         </div>
       </div>
 
@@ -709,7 +712,7 @@ export function AssessmentRunnerPage() {
       {/* ANSWERS GROUP */}
       <div className="rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-100">
         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Choose one answer
+          t("assessmentRunner.answers.chooseOne")
         </div>
 
         <div className="mt-3 grid gap-2">
@@ -792,7 +795,7 @@ export function AssessmentRunnerPage() {
 
     {/* FOOTER FILLER (occupies the empty space) */}
     <div className="flex-1" />
-    <AssessmentFooter />
+    <AssessmentFooter t={t} />
   </div>
   );
 }

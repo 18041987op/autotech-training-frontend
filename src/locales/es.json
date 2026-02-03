@@ -163,7 +163,18 @@
     "passedTag": "Aprobado",
     "failedTag": "Falló",
     "questionCountLine": "Preguntas en este intento: {{count}}",
-    "policyLine": "Últimos 7 días: {{failedCount}} fallidos • Regla activa: {{limit}} preguntas"
+    "policyLine": "Últimos 7 días: {{failedCount}} fallidos • Regla activa: {{limit}} preguntas",
+    "header": {
+      "focusMode": "Modo enfoque",
+      "rampUp": "Período de adaptación",
+      "sessionControlOn": "Control de sesión ACTIVADO",
+      "questionLabel": "Pregunta",
+      "attemptLabel": "Este intento",
+      "weekGoalLabel": "Meta semanal",
+      "remainingLabel": "Restante",
+      "tip": "Consejo: las respuestas incorrectas se repiten al final de este cuestionario.",
+      "chooseOne": "Elige una respuesta"
+    }
   },
 
   "progress": {
