@@ -638,7 +638,7 @@ export function AssessmentRunnerPage() {
         <div className="mt-4 grid grid-cols-2 gap-2">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              t("assessmentRunner.header.questionLabel")
+              {t("assessmentRunner.header.questionLabel")}
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {idx + 1} of {total}
@@ -647,7 +647,7 @@ export function AssessmentRunnerPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              t("assessmentRunner.header.attemptLabel")
+              {t("assessmentRunner.header.attemptLabel")}
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {typeof questionLimit === "number" ? questionLimit : total}
@@ -656,7 +656,7 @@ export function AssessmentRunnerPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              t("assessmentRunner.header.weekGoalLabel")
+              {t("assessmentRunner.header.weekGoalLabel")}
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {weeklyLabel ? `${weeklyLabel.correct}/${weeklyLabel.goal}` : "—"}
@@ -665,7 +665,7 @@ export function AssessmentRunnerPage() {
 
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
             <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              t("assessmentRunner.header.remainingLabel")
+              {t("assessmentRunner.header.remainingLabel")}
             </div>
             <div className="mt-1 text-sm font-extrabold text-slate-900">
               {weeklyLabel ? weeklyLabel.remaining : "—"}
