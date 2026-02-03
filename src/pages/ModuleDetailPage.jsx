@@ -31,17 +31,26 @@ export function ModuleDetailPage() {
   const [genLoading, setGenLoading] = useState(false);
   const [genMsg, setGenMsg] = useState("");
 
-  // ✅ NEW: append questions UI state
+  // Append questions UI state
   const [appendLoading, setAppendLoading] = useState(false);
   const [appendMsg, setAppendMsg] = useState("");
   const [appendStop, setAppendStop] = useState(false);
 
   const fullTextRef = useRef(null);
 
-  // ✅ Modal state for AI Coach (keeps user on this page)
+  // Modal state for AI Coach (keeps user on this page)
   const [aiOpen, setAiOpen] = useState(false);
 
-  const headerSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
+  // Admin subtitle (existing translation)
+  const adminResourcesSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
+
+  // User subtitle (no Drive mention)
+  const userResourcesSubtitle = useMemo(() => {
+    // Keep this simple; we can move it into i18n later if you want.
+    return "Training content is available inside the app. Open Full text to read.";
+  }, []);
+
+  const headerSubtitle = isAdmin ? adminResourcesSubtitle : userResourcesSubtitle;
 
   async function load() {
     setErr("");
@@ -79,7 +88,7 @@ export function ModuleDetailPage() {
     // eslint-disable-next-line
   }, [id]);
 
-  // ✅ When "active" full text is set, scroll to it so the user sees it opened
+  // When "active" full text is set, scroll to it so the user sees it opened
   useEffect(() => {
     if (!active) return;
     const tmr = setTimeout(() => {
@@ -99,6 +108,11 @@ export function ModuleDetailPage() {
     if (!isAdmin) return activeOnes;
     return showInactive ? [...activeOnes, ...inactiveOnes] : activeOnes;
   }, [assessments, isAdmin, showInactive]);
+
+  // Determines whether we already have an active bank for this module
+  const hasActiveAssessment = useMemo(() => {
+    return (assessments || []).some((a) => a.isActive !== false);
+  }, [assessments]);
 
   const runSync = async () => {
     setSyncMsg("");
@@ -133,20 +147,16 @@ export function ModuleDetailPage() {
     }
   };
 
-  // ✅ NEW: append questions (10 at a time) with stop condition + cap
   const appendQuestions = async () => {
     setAppendMsg("");
     setAppendLoading(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/append-questions`, { method: "POST" });
 
-      // Build a clear status line for admin
       const inserted = typeof out.insertedCount === "number" ? out.insertedCount : 0;
       const dupes = typeof out.duplicateCount === "number" ? out.duplicateCount : 0;
-      const totalNow =
-        typeof out.totalQuestionsNow === "number" ? out.totalQuestionsNow : null;
-      const streak =
-        typeof out.lowNoveltyStreak === "number" ? out.lowNoveltyStreak : null;
+      const totalNow = typeof out.totalQuestionsNow === "number" ? out.totalQuestionsNow : null;
+      const streak = typeof out.lowNoveltyStreak === "number" ? out.lowNoveltyStreak : null;
 
       const parts = [];
       parts.push(out.message || "Append complete");
@@ -161,7 +171,6 @@ export function ModuleDetailPage() {
       const stop = out.stop === true;
       setAppendStop(stop);
 
-      // Optional: refresh assessments list (keeps things current)
       await loadAssessments();
     } catch (e) {
       setAppendMsg(e.message || "Append failed");
@@ -169,6 +178,29 @@ export function ModuleDetailPage() {
       setAppendLoading(false);
     }
   };
+
+  // Single adaptive admin action button:
+  // - if no active assessment => Generate
+  // - else => Append 10 questions
+  const runAdaptiveAssessmentAction = async () => {
+    if (!hasActiveAssessment) return generateAssessment();
+    return appendQuestions();
+  };
+
+  const adaptiveButtonLabel = useMemo(() => {
+    if (!hasActiveAssessment) return "Generate Assessment";
+    return "Append more questions (10)";
+  }, [hasActiveAssessment]);
+
+  const adaptiveButtonDisabled = useMemo(() => {
+    if (!hasActiveAssessment) return genLoading;
+    return appendLoading || appendStop;
+  }, [hasActiveAssessment, genLoading, appendLoading, appendStop]);
+
+  const adaptiveButtonSubMsg = useMemo(() => {
+    if (!hasActiveAssessment) return genMsg;
+    return appendMsg;
+  }, [hasActiveAssessment, genMsg, appendMsg]);
 
   const openFull = async (rid) => {
     try {
@@ -222,7 +254,6 @@ export function ModuleDetailPage() {
             <h1 className="text-2xl font-extrabold">{module?.title}</h1>
             <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
 
-            {/* ✅ Open AI Coach modal (stay on module page) */}
             <div className="mt-4">
               <button
                 className="btn-outline-sm"
@@ -246,33 +277,25 @@ export function ModuleDetailPage() {
                 {syncing ? t("actions.syncing") : t("actions.sync")}
               </button>
 
+              {/* Adaptive button: Generate first, then Append */}
               <button
                 className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
-                onClick={generateAssessment}
-                disabled={genLoading}
+                onClick={runAdaptiveAssessmentAction}
+                disabled={adaptiveButtonDisabled}
                 type="button"
+                title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
               >
-                {genLoading ? t("assessmentsUi.generating") : t("assessmentsUi.generate")}
-              </button>
-
-              {/* ✅ NEW: Append questions button */}
-              <button
-                className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
-                onClick={appendQuestions}
-                disabled={appendLoading || appendStop}
-                type="button"
-                title={appendStop ? "Question bank stopped (cap reached or material exhausted)." : ""}
-              >
-                {appendLoading ? "Appending…" : "Append 10 Questions"}
+                {hasActiveAssessment
+                  ? (appendLoading ? "Appending…" : adaptiveButtonLabel)
+                  : (genLoading ? t("assessmentsUi.generating") : adaptiveButtonLabel)}
               </button>
 
               {syncMsg ? <div className="text-xs text-slate-600">{syncMsg}</div> : null}
-              {genMsg ? <div className="text-xs text-slate-600">{genMsg}</div> : null}
-              {appendMsg ? <div className="text-xs text-slate-600">{appendMsg}</div> : null}
+              {adaptiveButtonSubMsg ? <div className="text-xs text-slate-600">{adaptiveButtonSubMsg}</div> : null}
 
               {appendStop ? (
                 <div className="text-xs text-slate-500">
-                  Bank generation stopped. Add more content in Drive + Sync, then Generate again.
+                  Bank generation stopped. Add more content + Sync, then Generate again.
                 </div>
               ) : null}
             </div>
@@ -400,7 +423,9 @@ export function ModuleDetailPage() {
 
       {/* Resources */}
       <div className="card p-6">
-        <h2 className="text-lg font-extrabold">{t("moduleDetail.resourcesTitle")}</h2>
+        <h2 className="text-lg font-extrabold">
+          {isAdmin ? t("moduleDetail.resourcesTitle") : "Module content"}
+        </h2>
         <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
         {resources.length === 0 ? (
@@ -412,11 +437,13 @@ export function ModuleDetailPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                   <div className="min-w-0">
                     <div className="font-extrabold truncate">{r.name}</div>
-                    <div className="text-xs text-slate-500">{r.mimeType}</div>
+                    {/* Hide mimeType from non-admin to keep it less "technical" */}
+                    {isAdmin ? <div className="text-xs text-slate-500">{r.mimeType}</div> : null}
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:justify-end">
-                    {r.webViewLink ? (
+                    {/* Admin only: Open in Drive */}
+                    {isAdmin && r.webViewLink ? (
                       <a
                         className="btn-outline-sm px-3 py-1.5"
                         href={r.webViewLink}
@@ -434,7 +461,7 @@ export function ModuleDetailPage() {
                       title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}
                       type="button"
                     >
-                      {t("moduleDetail.fullText")}
+                      {isAdmin ? t("moduleDetail.fullText") : "Read"}
                     </button>
                   </div>
                 </div>
@@ -458,7 +485,7 @@ export function ModuleDetailPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-extrabold">{active.name}</h3>
-              <p className="text-xs text-slate-500">{active.mimeType}</p>
+              {isAdmin ? <p className="text-xs text-slate-500">{active.mimeType}</p> : null}
             </div>
 
             <button className="btn-outline-sm" onClick={() => setActive(null)} type="button">
