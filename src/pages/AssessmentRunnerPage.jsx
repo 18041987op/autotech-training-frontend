@@ -608,18 +608,18 @@ export function AssessmentRunnerPage() {
 
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-700">
-                t("assessmentRunner.header.focusMode")
+                {t("assessmentRunner.header.focusMode")}
               </span>
 
               {weeklyLabel?.inRampUp ? (
                 <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
-                  t("assessmentRunner.header.rampUp")
+                  {t("assessmentRunner.header.rampUp")}
                 </span>
               ) : null}
 
               {capActive ? (
                 <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
-                  t("assessmentRunner.header.sessionControlOn")
+                  {t("assessmentRunner.header.sessionControlOn")}
                 </span>
               ) : null}
             </div>
@@ -675,7 +675,7 @@ export function AssessmentRunnerPage() {
 
         {/* short helper line */}
         <div className="mt-3 text-xs text-slate-500">
-          t("assessmentRunner.header.tip")
+          {t("assessmentRunner.header.tip")}
         </div>
       </div>
 
@@ -712,7 +712,7 @@ export function AssessmentRunnerPage() {
       {/* ANSWERS GROUP */}
       <div className="rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-100">
         <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          t("assessmentRunner.answers.chooseOne")
+          {t("assessmentRunner.answers.chooseOne")}
         </div>
 
         <div className="mt-3 grid gap-2">
