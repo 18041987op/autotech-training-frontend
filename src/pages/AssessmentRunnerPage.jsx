@@ -26,6 +26,26 @@ function mondayOfThisWeekISODate() {
   return monday.toISOString().slice(0, 10); // YYYY-MM-DD
 }
 
+function AssessmentFooter() {
+  return (
+    <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm font-extrabold text-slate-900">Keep going</div>
+        <div className="text-xs text-slate-500">Short sessions build real skill.</div>
+      </div>
+
+      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="h-full w-1/3 bg-slate-900 opacity-70" />
+      </div>
+
+      <div className="mt-3 text-xs text-slate-600">
+        Tip: If you miss a question, it will appear again at the end of this quiz.
+      </div>
+    </div>
+  );
+}
+
+
 export function AssessmentRunnerPage() {
   const { id: moduleId, aid } = useParams();
   const nav = useNavigate();
@@ -577,11 +597,31 @@ export function AssessmentRunnerPage() {
   }
 
   return (
+  <div className="min-h-[calc(100vh-140px)] flex flex-col">
+    {/* MAIN CARD */}
     <div className="card p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold">{assessment?.title || "Assessment"}</h1>
-          <div className="mt-1 text-sm text-slate-600">{progressLabel}</div>
+
+          {/* Make header feel more “alive” */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-700">
+              Focus mode
+            </span>
+            {weeklyLabel?.inRampUp ? (
+              <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                Ramp-Up
+              </span>
+            ) : null}
+            {capActive ? (
+              <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
+                Session control ON
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-2 text-sm text-slate-600">{progressLabel}</div>
 
           {typeof questionLimit === "number" ? (
             <div className="mt-1 text-xs text-slate-500">
@@ -593,8 +633,6 @@ export function AssessmentRunnerPage() {
             <div className="mt-2 text-xs text-slate-500">
               Week goal: {weeklyLabel.correct}/{weeklyLabel.goal} correct
               {weeklyLabel.remaining > 0 ? ` • remaining ${weeklyLabel.remaining}` : ""}
-              {weeklyLabel.inRampUp ? " • Ramp-Up" : ""}
-              {capActive ? " • Session control ON" : ""}
             </div>
           ) : null}
         </div>
@@ -617,50 +655,64 @@ export function AssessmentRunnerPage() {
         </div>
       ) : null}
 
-      <div className="rounded-2xl bg-slate-50 p-4">
-        <div className="text-sm font-extrabold text-slate-900">
+      {/* QUESTION CARD (more separation + “cheerful” feel) */}
+      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Question
+        </div>
+
+        <div className="mt-2 text-base font-extrabold text-slate-900">
           {current.text || t("assessmentRunner.questionFallback")}
         </div>
+
         {current.topic ? (
-          <div className="mt-2 text-xs text-slate-500">
-            Topic: <span className="font-semibold text-slate-700">{current.topic}</span>
+          <div className="mt-3 text-xs text-slate-500">
+            Topic:{" "}
+            <span className="font-semibold text-slate-700">{current.topic}</span>
           </div>
         ) : null}
       </div>
 
-      <div className="grid gap-2">
-        {current.options.map((opt, optIndex) => {
-          const chosen = pickedIndex === optIndex;
-          const correct = Number(current.correctIndex) === Number(optIndex);
+      {/* ANSWERS GROUP */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-4">
+        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Choose one answer
+        </div>
 
-          const border =
-            revealed && chosen && correct
-              ? "border-slate-900"
-              : revealed && chosen && !correct
-              ? "border-red-300"
-              : revealed && correct
-              ? "border-slate-300"
-              : "border-slate-200";
+        <div className="mt-3 grid gap-2">
+          {current.options.map((opt, optIndex) => {
+            const chosen = pickedIndex === optIndex;
+            const correct = Number(current.correctIndex) === Number(optIndex);
 
-          const bg =
-            revealed && chosen && correct
-              ? "bg-white"
-              : revealed && chosen && !correct
-              ? "bg-red-50"
-              : "bg-white";
+            const border =
+              revealed && chosen && correct
+                ? "border-slate-900"
+                : revealed && chosen && !correct
+                ? "border-red-300"
+                : revealed && correct
+                ? "border-slate-300"
+                : "border-slate-200";
 
-          return (
-            <button
-              key={optIndex}
-              className={`text-left rounded-2xl border ${border} ${bg} px-4 py-3 hover:bg-brand-soft disabled:opacity-70`}
-              disabled={revealed || shouldStopForCap}
-              onClick={() => pick(optIndex)}
-              type="button"
-            >
-              <div className="text-sm font-semibold text-slate-900">{opt}</div>
-            </button>
-          );
-        })}
+            const bg =
+              revealed && chosen && correct
+                ? "bg-white"
+                : revealed && chosen && !correct
+                ? "bg-red-50"
+                : "bg-white";
+
+            return (
+              <button
+                key={optIndex}
+                className={`text-left rounded-2xl border ${border} ${bg} px-4 py-3 hover:bg-brand-soft disabled:opacity-70`}
+                disabled={revealed || shouldStopForCap}
+                onClick={() => pick(optIndex)}
+                type="button"
+              >
+                <div className="text-sm font-semibold text-slate-900">{opt}</div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Feedback */}
@@ -669,16 +721,12 @@ export function AssessmentRunnerPage() {
           {isCorrect ? (
             <>
               <div className="font-extrabold">{t("assessmentRunner.correctTitle")}</div>
-              <div className="mt-1">
-                {current.explanation || t("assessmentRunner.correctBody")}
-              </div>
+              <div className="mt-1">{current.explanation || t("assessmentRunner.correctBody")}</div>
             </>
           ) : (
             <>
               <div className="font-extrabold">{t("assessmentRunner.wrongTitle")}</div>
-              <div className="mt-1">
-                {current.explanation || t("assessmentRunner.wrongBody")}
-              </div>
+              <div className="mt-1">{current.explanation || t("assessmentRunner.wrongBody")}</div>
               {Number.isFinite(Number(current.correctIndex)) ? (
                 <div className="mt-2">
                   <span className="font-semibold">{t("assessmentRunner.correctAnswer")}:</span>{" "}
@@ -708,5 +756,10 @@ export function AssessmentRunnerPage() {
         </button>
       </div>
     </div>
+
+    {/* FOOTER FILLER (occupies the empty space) */}
+    <div className="flex-1" />
+    <AssessmentFooter />
+  </div>
   );
 }
