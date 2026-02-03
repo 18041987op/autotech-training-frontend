@@ -100,11 +100,6 @@ export function AssessmentRunnerPage() {
     return Number.isFinite(n) ? n : 70;
   }, [assessment]);
 
-  const progressLabel = useMemo(() => {
-    if (!total) return "";
-    return t("assessmentRunner.progress", { current: idx + 1, total });
-  }, [idx, total, t]);
-
   const weeklyLabel = useMemo(() => {
     if (!weekly) return null;
     const goal = weekly.goalCorrect ?? null;
