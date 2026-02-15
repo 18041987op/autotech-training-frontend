@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 
 import { LanguageToggle } from "./LanguageToggle";
+import { Breadcrumbs } from "./Breadcrumbs";
+import { GlobalSearch } from "./GlobalSearch";
+import { NotificationCenter } from "./NotificationCenter";
+import { DarkModeToggle } from "./DarkModeToggle";
 
 const cx = (...parts) => parts.filter(Boolean).join(" ");
 
@@ -72,6 +76,7 @@ export function Layout({ user, onSignOut }) {
           />
 
           <div className="mx-auto max-w-6xl px-4 py-6">
+            <Breadcrumbs />
             <Outlet context={{ user }} />
           </div>
         </main>
@@ -237,21 +242,24 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
           Menu
         </button>
 
-        <input
-          className="hidden md:block w-[420px] input-brand"
-          placeholder={t("common.search")}
-        />
+        <div className="hidden md:block w-[420px]">
+          <GlobalSearch />
+        </div>
 
-        {/* Top-right: icon-only logout */}
-        <button
-          onClick={onSignOut}
-          className="btn-outline-sm"
-          title={t("auth.signOut")}
-          aria-label={t("auth.signOut")}
-          type="button"
-        >
-          <LogOut className="h-4 w-4" />
-        </button>
+        {/* Top-right: notifications, dark mode, logout */}
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <DarkModeToggle />
+          <button
+            onClick={onSignOut}
+            className="btn-outline-sm"
+            title={t("auth.signOut")}
+            aria-label={t("auth.signOut")}
+            type="button"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,74 +1,84 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BookOpen, GraduationCap, Layers, Shield, Sparkles } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AnimatedCard } from "../components/AnimatedCard";
+import { LoadingSkeleton } from "../components/LoadingSkeleton";
+import { useProgress } from '../hooks/useProgress';
 
-function Card({ icon: Icon, title, blurb, to }) {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-
-  return (
-    <div className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft">
-      <div className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-soft text-brand-primary">
-        <Icon className="h-5 w-5" />
-      </div>
-      <h3 className="mt-4 font-extrabold">{title}</h3>
-      <p className="mt-2 text-sm text-slate-600">{blurb}</p>
-      <button
-        onClick={() => navigate(to)}
-        className="mt-4 rounded-xl border px-3 py-2 text-xs font-semibold hover:bg-slate-50"
-      >
-        {t("common.view")} →
-      </button>
-    </div>
-  );
-}
+const cardData = [
+  { icon: Layers, titleKey: "home.cards.requiredThisWeek", blurbKey: "home.blurbRequired", to: "/assessments" },
+  { icon: BookOpen, titleKey: "home.cards.onboarding", blurbKey: "home.blurbOnboarding", to: "/onboarding" },
+  { icon: GraduationCap, titleKey: "home.cards.training", blurbKey: "home.blurbTraining", to: "/training" },
+  { icon: Shield, titleKey: "home.cards.culture", blurbKey: "home.blurbCulture", to: "/culture" },
+  { icon: Sparkles, titleKey: "home.cards.evaluations", blurbKey: "home.blurbEvaluations", to: "/assessments" },
+];
 
 export function Home({ user }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { data: progressData, isLoading } = useProgress();
+
+  const chartData = useMemo(() => {
+    if (!progressData?.progress) return [];
+    return progressData.progress.map(p => ({
+      name: p.modules?.title?.slice(0, 20) || 'Unknown',
+      completion: p.completion_rate || 0,
+      score: p.quiz_score || 0,
+    })).slice(0, 6); // Limit to 6 modules for readability
+  }, [progressData]);
 
   return (
     <div className="space-y-6">
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      {/* Welcome Card */}
+      <AnimatedCard className="rounded-3xl border bg-white p-6 shadow-sm">
         <h2 className="text-2xl font-extrabold">{t("home.headline")}</h2>
         <p className="mt-2 text-sm text-slate-600">
           {user?.role === "technician"
             ? t("home.subtextTechnician")
             : t("home.subtextAdmin")}
         </p>
-      </div>
+      </AnimatedCard>
 
+      {/* Progress Chart */}
+      {progressData?.progress && progressData.progress.length > 0 && (
+        <AnimatedCard delay={0.1} className="card p-6">
+          <h3 className="text-lg font-bold mb-4">📊 Your Progress</h3>
+          {isLoading ? (
+            <LoadingSkeleton height="h-64" />
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="completion" fill="#1E6FAE" name="Completion %" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="score" fill="#F7941D" name="Quiz Score" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </AnimatedCard>
+      )}
+
+      {/* Quick Action Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card
-          icon={Layers}
-          title={t("home.cards.requiredThisWeek")}
-          blurb={t("home.blurbRequired")}
-          to="/assessments"
-        />
-        <Card
-          icon={BookOpen}
-          title={t("home.cards.onboarding")}
-          blurb={t("home.blurbOnboarding")}
-          to="/onboarding"
-        />
-        <Card
-          icon={GraduationCap}
-          title={t("home.cards.training")}
-          blurb={t("home.blurbTraining")}
-          to="/training"
-        />
-        <Card
-          icon={Shield}
-          title={t("home.cards.culture")}
-          blurb={t("home.blurbCulture")}
-          to="/culture"
-        />
-        <Card
-          icon={Sparkles}
-          title={t("home.cards.evaluations")}
-          blurb={t("home.blurbEvaluations")}
-          to="/assessments"
-        />
+        {cardData.map((card, i) => (
+          <AnimatedCard key={card.to} delay={0.1 * (i + 2)} className="card-interactive p-5">
+            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-soft text-brand-primary">
+              <card.icon className="h-5 w-5" />
+            </div>
+            <h3 className="mt-4 font-extrabold">{t(card.titleKey)}</h3>
+            <p className="mt-2 text-sm text-slate-600">{t(card.blurbKey)}</p>
+            <button
+              onClick={() => navigate(card.to)}
+              className="mt-4 rounded-xl border px-3 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors"
+            >
+              {t("common.view")} →
+            </button>
+          </AnimatedCard>
+        ))}
       </div>
     </div>
   );

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { I18nextProvider } from "react-i18next";
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import i18n from "./i18n";
+import { queryClient } from './lib/queryClient';
 
 import { apiFetch, clearToken } from "./lib/api";
 
@@ -28,11 +31,14 @@ function Protected({ user, children }) {
 
 export default function App() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </I18nextProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nextProvider i18n={i18n}>
+        <BrowserRouter>
+          <AppRoutes />
+          <Toaster position="top-right" richColors />
+        </BrowserRouter>
+      </I18nextProvider>
+    </QueryClientProvider>
   );
 }
 
