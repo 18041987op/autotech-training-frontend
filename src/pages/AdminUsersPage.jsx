@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useOutletContext } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 
 function Pill({ children }) {
@@ -12,6 +13,8 @@ function Pill({ children }) {
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
+  const { user: currentUser } = useOutletContext() || {};
+  const currentUserId = currentUser?.id;
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -60,9 +63,11 @@ export function AdminUsersPage() {
 
   const stats = useMemo(() => {
     const total = users.length;
-    const pending = users.filter((u) => !u.approved).length;
+    // Pending = not approved and never logged in; Inactive = not approved but had login before
+    const pending = users.filter((u) => !u.approved && !u.last_login).length;
+    const inactive = users.filter((u) => !u.approved && u.last_login).length;
     const admins = users.filter((u) => u.role === "admin").length;
-    return { total, pending, admins };
+    return { total, pending, inactive, admins };
   }, [users]);
 
   const approve = async (id) => {
@@ -71,6 +76,16 @@ export function AdminUsersPage() {
       await load();
     } catch (e) {
       alert(e.message || "Failed to approve");
+    }
+  };
+
+  const deactivate = async (id) => {
+    if (!window.confirm(t("adminUsers.deactivateConfirm"))) return;
+    try {
+      await apiFetch(`/api/admin/users/${id}/deactivate`, { method: "PATCH" });
+      await load();
+    } catch (e) {
+      alert(e.message || "Failed to deactivate");
     }
   };
 
@@ -156,7 +171,7 @@ export function AdminUsersPage() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 grid-cols-2 md:grid-cols-4">
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               {t("adminUsers.total")}
@@ -169,6 +184,13 @@ export function AdminUsersPage() {
               {t("adminUsers.pending")}
             </p>
             <p className="mt-2 text-2xl font-extrabold">{stats.pending}</p>
+          </div>
+
+          <div className="rounded-3xl border border-red-100 bg-red-50 p-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-red-400">
+              {t("adminUsers.inactiveTag")}
+            </p>
+            <p className="mt-2 text-2xl font-extrabold text-red-700">{stats.inactive}</p>
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
@@ -196,13 +218,17 @@ export function AdminUsersPage() {
                       <div className="font-extrabold truncate">{u.name}</div>
                       <Pill>{u.role}</Pill>
 
-                      {!u.approved ? (
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                          {t("adminUsers.pendingTag")}
-                        </span>
-                      ) : (
+                      {u.approved ? (
                         <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800">
                           {t("adminUsers.activeTag")}
+                        </span>
+                      ) : u.last_login ? (
+                        <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-800">
+                          {t("adminUsers.inactiveTag")}
+                        </span>
+                      ) : (
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                          {t("adminUsers.pendingTag")}
                         </span>
                       )}
                     </div>
@@ -221,7 +247,15 @@ export function AdminUsersPage() {
                         onClick={() => approve(u.id)}
                         type="button"
                       >
-                        {t("adminUsers.approve")}
+                        {t("adminUsers.activate")}
+                      </button>
+                    ) : u.id !== currentUserId ? (
+                      <button
+                        className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                        onClick={() => deactivate(u.id)}
+                        type="button"
+                      >
+                        {t("adminUsers.deactivate")}
                       </button>
                     ) : null}
 

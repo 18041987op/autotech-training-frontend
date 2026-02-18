@@ -267,7 +267,11 @@
     "admins": "Admins",
     "pendingTag": "Pending",
     "activeTag": "Active",
+    "inactiveTag": "Inactive",
     "approve": "Approve",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "Deactivate this user? They will lose access immediately.",
     "lastLogin": "Last login"
   },
   "roles": {
