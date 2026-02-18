@@ -33,7 +33,38 @@
     "roleAdministrative": "Administrativo",
     "roleAdmin": "Admin",
     "signOut": "Cerrar sesión",
-    "roleServiceAdvisor": "Asesor de Servicio (SA)"
+    "roleServiceAdvisor": "Asesor de Servicio (SA)",
+    "hero": {
+      "headline": "Tu Crecimiento, Simplificado",
+      "subheadline": "Desde la incorporación hasta la maestría: todo lo que necesitas para sobresalir en el servicio automotriz.",
+      "statsModules": "Módulos de Capacitación",
+      "statsTechnicians": "Técnicos Certificados",
+      "statsSatisfaction": "Índice de Satisfacción"
+    },
+    "features": {
+      "training": {
+        "title": "Aprende a Tu Ritmo",
+        "description": "Módulos interactivos que cubren diagnósticos, procedimientos de reparación y mejores prácticas de la industria"
+      },
+      "progress": {
+        "title": "Ve Tu Crecimiento",
+        "description": "Dashboards en tiempo real muestran tasas de finalización, puntajes de exámenes y progreso de certificación"
+      },
+      "aiCoach": {
+        "title": "Obtén Respuestas Instantáneas",
+        "description": "Asistente impulsado por IA disponible 24/7 para preguntas técnicas y orientación"
+      },
+      "certification": {
+        "title": "Obtén Reconocimiento",
+        "description": "Valida tu experiencia con certificaciones que impulsan tu credibilidad profesional"
+      }
+    },
+    "preview": {
+      "unlock": "Inicia sesión para desbloquear tu dashboard personalizado"
+    },
+    "signIn": "Iniciar sesión",
+    "signingIn": "Iniciando sesión...",
+    "secureLogin": "Inicio de Sesión Seguro"
   },
   "home": {
     "title": "Inicio",

@@ -33,7 +33,38 @@
     "roleAdministrative": "Administrative",
     "roleAdmin": "Admin",
     "signOut": "Sign out",
-    "roleServiceAdvisor": "Service Advisor (SA)"
+    "roleServiceAdvisor": "Service Advisor (SA)",
+    "hero": {
+      "headline": "Your Growth, Simplified",
+      "subheadline": "From onboarding to mastery - everything you need to excel in automotive service.",
+      "statsModules": "Training Modules",
+      "statsTechnicians": "Certified Technicians",
+      "statsSatisfaction": "Satisfaction Rate"
+    },
+    "features": {
+      "training": {
+        "title": "Learn at Your Pace",
+        "description": "Interactive modules covering diagnostics, repair procedures, and industry best practices"
+      },
+      "progress": {
+        "title": "See Your Growth",
+        "description": "Real-time dashboards show completion rates, quiz scores, and certification progress"
+      },
+      "aiCoach": {
+        "title": "Get Instant Answers",
+        "description": "AI-powered assistant available 24/7 for technical questions and guidance"
+      },
+      "certification": {
+        "title": "Earn Recognition",
+        "description": "Validate your expertise with certifications that boost your professional credibility"
+      }
+    },
+    "preview": {
+      "unlock": "Sign in to unlock your personalized dashboard"
+    },
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "secureLogin": "Secure Login"
   },
   "home": {
     "title": "Home",

@@ -117,4 +117,42 @@ img, svg, video, canvas {
   .skeleton {
     @apply animate-shimmer bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 bg-[length:2000px_100%] rounded;
   }
+
+  /* ===== Auth Page Specific ===== */
+  .glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .animated-gradient {
+    background: linear-gradient(
+      120deg,
+      #1E6FAE 0%,
+      #338FD7 25%,
+      #F7941D 50%,
+      #1E6FAE 75%,
+      #338FD7 100%
+    );
+    background-size: 200% 200%;
+    animation: gradient-shift 5s ease infinite;
+  }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+}
+
+/* Accessibility: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .animated-gradient {
+    animation: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
