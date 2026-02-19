@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
+import { translateModuleList } from "../hooks/useModuleTranslation";
 
 function inferTypeFromTitle(title = "") {
   const t = title.toLowerCase();
@@ -26,7 +27,7 @@ function inferTypeFromModule(m) {
 
 export function ModulesListPage({ pageType }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,8 +50,9 @@ export function ModulesListPage({ pageType }) {
 
   const filtered = useMemo(() => {
     if (pageType?.startsWith("admin-")) return [];
-    return (modules || []).filter((m) => inferTypeFromModule(m) === pageType);
-  }, [modules, pageType]);
+    const raw = (modules || []).filter((m) => inferTypeFromModule(m) === pageType);
+    return translateModuleList(raw, t, i18n);
+  }, [modules, pageType, t, i18n]);
 
   const titleKey =
     pageType === "onboarding"
@@ -126,8 +128,8 @@ export function ModulesListPage({ pageType }) {
               key={m.id}
               className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
             >
-              <div className="font-extrabold">{m.title}</div>
-              <div className="mt-2 text-sm text-slate-600">{m.description || "—"}</div>
+              <div className="font-extrabold">{m.translatedTitle}</div>
+              <div className="mt-2 text-sm text-slate-600">{m.translatedDescription || "—"}</div>
 
               <button
                 onClick={() => navigate(`/modules/${m.id}`)}

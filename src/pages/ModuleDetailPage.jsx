@@ -3,6 +3,7 @@ import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
+import { useModuleTranslation } from "../hooks/useModuleTranslation";
 
 export function ModuleDetailPage() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export function ModuleDetailPage() {
   const isAdmin = (user?.role || "").toLowerCase() === "admin";
 
   const [module, setModule] = useState(null);
+  const { moduleTitle, moduleDescription } = useModuleTranslation(module);
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
 
@@ -251,8 +253,8 @@ export function ModuleDetailPage() {
       <div className="card p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold">{module?.title}</h1>
-            <p className="mt-2 text-sm text-slate-600">{module?.description || "—"}</p>
+            <h1 className="text-2xl font-extrabold">{moduleTitle}</h1>
+            <p className="mt-2 text-sm text-slate-600">{moduleDescription || "—"}</p>
 
             <div className="mt-4">
               <button

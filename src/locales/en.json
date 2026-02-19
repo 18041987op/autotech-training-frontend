@@ -280,6 +280,88 @@
     "serviceAdvisor": "Service Advisor (SA)",
     "admin": "Admin"
   },
+  "moduleTranslations": {
+    "Vehicle Safety & Lift Operation": {
+      "title": "Vehicle Safety & Lift Operation",
+      "description": "Safe vehicle lifting procedures, lift types, jack stand use, and OSHA shop safety standards."
+    },
+    "Customer Communication & SA Skills": {
+      "title": "Customer Communication & SA Skills",
+      "description": "How to write repair orders, present MPI findings, handle objections, and deliver vehicles professionally."
+    },
+    "Brake System Inspection & Service": {
+      "title": "Brake System Inspection & Service",
+      "description": "Pad and rotor measurement, bleeding procedures, ABS basics, and caliper service."
+    },
+    "Oil Change & Fluid Services": {
+      "title": "Oil Change & Fluid Services",
+      "description": "Oil specifications, drain and fill procedures, fluid inspections, and service interval recommendations."
+    },
+    "NC State Vehicle Inspection Procedures": {
+      "title": "NC State Vehicle Inspection Procedures",
+      "description": "NCDMV inspection checklist, OBD emissions testing, documentation, and inspector responsibilities."
+    },
+    "Tire Service, TPMS & Rotation": {
+      "title": "Tire Service, TPMS & Rotation",
+      "description": "Tire sizing, inflation, TPMS sensor handling, rotation patterns, and balancing."
+    },
+    "Employee Handbook": {
+      "title": "Employee Handbook",
+      "description": "Company policies, schedules, dress code, benefits, and workplace expectations."
+    },
+    "Shop Safety & OSHA Compliance": {
+      "title": "Shop Safety & OSHA Compliance",
+      "description": "PPE requirements, hazardous materials handling, fire safety, and NC labor regulations."
+    },
+    "Engine Cooling System Service": {
+      "title": "Engine Cooling System Service",
+      "description": "Radiator, thermostat, water pump, coolant types, pressure testing, and flush procedures."
+    },
+    "Air Conditioning & HVAC Service": {
+      "title": "Air Conditioning & HVAC Service",
+      "description": "AC cycle components, R-134a and R-1234yf refrigerants, EPA 609 certification, and diagnosis."
+    },
+    "Electrical Diagnostics Fundamentals": {
+      "title": "Electrical Diagnostics Fundamentals",
+      "description": "Multimeter use, battery and charging system testing, OBD-II scan tools, and wiring basics."
+    },
+    "Transmission & Drivetrain Service": {
+      "title": "Transmission & Drivetrain Service",
+      "description": "ATF fluid service, CVT precautions, manual transmission oil, and failure symptom diagnosis."
+    },
+    "Suspension & Steering Inspection": {
+      "title": "Suspension & Steering Inspection",
+      "description": "Ball joints, tie rods, struts, alignment indicators, and electric power steering."
+    },
+    "Writing a Repair Order (RO)": {
+      "title": "Writing a Repair Order (RO)",
+      "description": "Capturing customer concerns, required fields, labor lines, authorization, and NC law."
+    },
+    "Service Advisor Phone Skills": {
+      "title": "Service Advisor Phone Skills",
+      "description": "Call scripts, appointment conversion, estimate communication, and complaint handling."
+    },
+    "Vehicle Delivery & Customer Experience": {
+      "title": "Vehicle Delivery & Customer Experience",
+      "description": "Walk-around delivery, payment handling, Google review process, and satisfaction recovery."
+    },
+    "Parts Ordering & Inventory Management": {
+      "title": "Parts Ordering & Inventory Management",
+      "description": "VIN decoding, supplier ordering, core returns, warranty claims, and stock management."
+    },
+    "Scheduling & Shop Loading": {
+      "title": "Scheduling & Shop Loading",
+      "description": "Bay capacity, appointment types, walk-in handling, and DMS scheduling tools."
+    },
+    "Day 1 Orientation": {
+      "title": "Day 1 Orientation",
+      "description": "Shop tour, team introductions, systems overview, and 30/60/90 day expectations."
+    },
+    "Tools & Equipment — Technician Onboarding": {
+      "title": "Tools & Equipment — Technician Onboarding",
+      "description": "Required personal tools, shop equipment, lift operation protocol, and scanner access."
+    }
+  },
   "adminModules": {
     "title": "Modules",
     "subtitle": "Create and edit modules used in Training, Onboarding, Culture, and Assessments.",

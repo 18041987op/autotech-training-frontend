@@ -278,6 +278,88 @@
     "serviceAdvisor": "Asesor de Servicio (SA)",
     "admin": "Admin"
   },
+  "moduleTranslations": {
+    "Vehicle Safety & Lift Operation": {
+      "title": "Seguridad Vehicular y Operación de Elevadores",
+      "description": "Procedimientos seguros de elevación, tipos de elevadores, uso de soportes y normas OSHA para talleres."
+    },
+    "Customer Communication & SA Skills": {
+      "title": "Comunicación con el Cliente y Habilidades del SA",
+      "description": "Cómo redactar órdenes de reparación, presentar hallazgos del MPI, manejar objeciones y entregar vehículos."
+    },
+    "Brake System Inspection & Service": {
+      "title": "Inspección y Servicio del Sistema de Frenos",
+      "description": "Medición de pastillas y discos, sangrado de frenos, fundamentos ABS y servicio de calipers."
+    },
+    "Oil Change & Fluid Services": {
+      "title": "Cambio de Aceite y Servicios de Fluidos",
+      "description": "Especificaciones de aceite, procedimiento de drenaje, inspección de fluidos e intervalos de servicio."
+    },
+    "NC State Vehicle Inspection Procedures": {
+      "title": "Procedimientos de Inspección Vehicular del Estado de NC",
+      "description": "Lista de verificación NCDMV, pruebas OBD de emisiones, documentación y responsabilidades del inspector."
+    },
+    "Tire Service, TPMS & Rotation": {
+      "title": "Servicio de Llantas, TPMS y Rotación",
+      "description": "Tamaños de llantas, presión correcta, sensores TPMS, patrones de rotación y balanceo."
+    },
+    "Employee Handbook": {
+      "title": "Manual del Empleado",
+      "description": "Políticas de la empresa, horarios, código de vestimenta, beneficios y expectativas laborales."
+    },
+    "Shop Safety & OSHA Compliance": {
+      "title": "Seguridad en el Taller y Cumplimiento OSHA",
+      "description": "Requisitos de EPP, manejo de materiales peligrosos, seguridad contra incendios y regulaciones laborales de NC."
+    },
+    "Engine Cooling System Service": {
+      "title": "Servicio del Sistema de Enfriamiento del Motor",
+      "description": "Radiador, termostato, bomba de agua, tipos de refrigerante, prueba de presión y procedimiento de flush."
+    },
+    "Air Conditioning & HVAC Service": {
+      "title": "Servicio de Aire Acondicionado y HVAC",
+      "description": "Componentes del ciclo de A/C, refrigerantes R-134a y R-1234yf, certificación EPA 609 y diagnóstico."
+    },
+    "Electrical Diagnostics Fundamentals": {
+      "title": "Fundamentos de Diagnóstico Eléctrico",
+      "description": "Uso del multímetro, pruebas de batería y sistema de carga, escáner OBD-II y conceptos básicos de cableado."
+    },
+    "Transmission & Drivetrain Service": {
+      "title": "Servicio de Transmisión y Tren de Potencia",
+      "description": "Servicio de fluido ATF, precauciones con CVT, aceite de transmisión manual y diagnóstico de fallas."
+    },
+    "Suspension & Steering Inspection": {
+      "title": "Inspección de Suspensión y Dirección",
+      "description": "Rótulas, terminales de dirección, amortiguadores, indicadores de alineación y dirección eléctrica."
+    },
+    "Writing a Repair Order (RO)": {
+      "title": "Cómo Redactar una Orden de Reparación (RO)",
+      "description": "Captura de preocupaciones del cliente, campos requeridos, líneas de labor, autorización y ley de NC."
+    },
+    "Service Advisor Phone Skills": {
+      "title": "Habilidades Telefónicas del Asesor de Servicio",
+      "description": "Guiones de llamada, conversión de citas, comunicación de estimados y manejo de quejas."
+    },
+    "Vehicle Delivery & Customer Experience": {
+      "title": "Entrega del Vehículo y Experiencia del Cliente",
+      "description": "Entrega con recorrido, manejo del pago, proceso de reseña en Google y recuperación de satisfacción."
+    },
+    "Parts Ordering & Inventory Management": {
+      "title": "Pedido de Piezas y Gestión de Inventario",
+      "description": "Decodificación de VIN, pedido a proveedores, devoluciones de núcleo, garantías y gestión de stock."
+    },
+    "Scheduling & Shop Loading": {
+      "title": "Programación y Carga del Taller",
+      "description": "Capacidad por bahía, tipos de citas, manejo de walk-ins y herramientas DMS de programación."
+    },
+    "Day 1 Orientation": {
+      "title": "Orientación del Primer Día",
+      "description": "Recorrido del taller, presentación del equipo, resumen de sistemas y expectativas a 30/60/90 días."
+    },
+    "Tools & Equipment — Technician Onboarding": {
+      "title": "Herramientas y Equipos — Inducción del Técnico",
+      "description": "Herramientas personales requeridas, equipos del taller, protocolo del elevador y acceso al escáner."
+    }
+  },
   "adminModules": {
     "title": "Módulos",
     "subtitle": "Crea y edita módulos usados en Entrenamiento, Onboarding, Cultura y Evaluaciones.",
