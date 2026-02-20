@@ -148,6 +148,31 @@
       "technician": "Technician",
       "serviceAdvisor": "Service Advisor (SA)",
       "administrative": "Administrative"
+    },
+    "tabs": {
+      "all": "All",
+      "technician": "Technician",
+      "serviceAdvisor": "Service Advisor",
+      "administrative": "Admin"
+    },
+    "subcategoryLabels": {
+      "Fluids & Maintenance": "Fluids & Maintenance",
+      "Brakes & Chassis": "Brakes & Chassis",
+      "Tires & Wheels": "Tires & Wheels",
+      "Engine & Cooling": "Engine & Cooling",
+      "HVAC & Climate": "HVAC & Climate",
+      "Electrical & Diagnostics": "Electrical & Diagnostics",
+      "Transmission & Drivetrain": "Transmission & Drivetrain",
+      "Suspension & Steering": "Suspension & Steering",
+      "Safety & Compliance": "Safety & Compliance",
+      "State Inspection": "State Inspection",
+      "Customer Communication": "Customer Communication",
+      "Shop Operations": "Shop Operations",
+      "Vehicle Delivery": "Vehicle Delivery",
+      "Onboarding & Orientation": "Onboarding & Orientation",
+      "HR & Policies": "HR & Policies",
+      "Operations & Inventory": "Operations & Inventory",
+      "General": "General"
     }
   },
   "moduleDetail": {
@@ -377,7 +402,9 @@
       "required": "Required",
       "icon": "Icon",
       "color": "Color",
-      "driveFolder": "Drive folder name"
+      "driveFolder": "Drive folder name",
+      "subcategory": "Subcategory",
+      "subcategoryNone": "No subcategory"
     }
   }
 }

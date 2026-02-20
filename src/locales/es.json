@@ -148,6 +148,31 @@
       "technician": "Técnico",
       "serviceAdvisor": "Asesor de Servicio (SA)",
       "administrative": "Administrativo"
+    },
+    "tabs": {
+      "all": "Todos",
+      "technician": "Técnico",
+      "serviceAdvisor": "Asesor de Servicio",
+      "administrative": "Admin"
+    },
+    "subcategoryLabels": {
+      "Fluids & Maintenance": "Fluidos y Mantenimiento",
+      "Brakes & Chassis": "Frenos y Chasis",
+      "Tires & Wheels": "Llantas y Ruedas",
+      "Engine & Cooling": "Motor y Refrigeración",
+      "HVAC & Climate": "Clima y A/C",
+      "Electrical & Diagnostics": "Eléctrica y Diagnóstico",
+      "Transmission & Drivetrain": "Transmisión y Tren de Manejo",
+      "Suspension & Steering": "Suspensión y Dirección",
+      "Safety & Compliance": "Seguridad y Cumplimiento",
+      "State Inspection": "Inspección Estatal",
+      "Customer Communication": "Comunicación con el Cliente",
+      "Shop Operations": "Operaciones del Taller",
+      "Vehicle Delivery": "Entrega del Vehículo",
+      "Onboarding & Orientation": "Inducción y Orientación",
+      "HR & Policies": "RRHH y Políticas",
+      "Operations & Inventory": "Operaciones e Inventario",
+      "General": "General"
     }
   },
   "moduleDetail": {
@@ -375,7 +400,9 @@
       "required": "Requerido",
       "icon": "Ícono",
       "color": "Color",
-      "driveFolder": "Nombre del folder en Drive"
+      "driveFolder": "Nombre del folder en Drive",
+      "subcategory": "Subcategoría",
+      "subcategoryNone": "Sin subcategoría"
     }
   }
 }

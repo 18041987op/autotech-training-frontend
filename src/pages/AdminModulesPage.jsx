@@ -9,6 +9,26 @@ const CATEGORIES = [
   { value: "administrative", labelKey: "modules.categories.administrative" }
 ];
 
+const ALL_SUBCATEGORIES = [
+  "Fluids & Maintenance",
+  "Brakes & Chassis",
+  "Tires & Wheels",
+  "Engine & Cooling",
+  "HVAC & Climate",
+  "Electrical & Diagnostics",
+  "Transmission & Drivetrain",
+  "Suspension & Steering",
+  "Safety & Compliance",
+  "State Inspection",
+  "Customer Communication",
+  "Shop Operations",
+  "Vehicle Delivery",
+  "Onboarding & Orientation",
+  "HR & Policies",
+  "Operations & Inventory",
+  "General"
+];
+
 const DRIVE_ANCHORS = [
   { value: "00_GLOBAL", label: "00_GLOBAL" },
   { value: "01_ONBOARDING", label: "01_ONBOARDING" },
@@ -29,6 +49,7 @@ export function AdminModulesPage() {
     title: "",
     description: "",
     category: "universal",
+    subcategory: "",
     required: true,
     icon: "Shield",
     color: "#1E6FAE",
@@ -85,6 +106,7 @@ export function AdminModulesPage() {
       title: m.title || "",
       description: m.description || "",
       category: m.category || "universal",
+      subcategory: m.subcategory || "",
       required: !!m.required,
       icon: m.icon || "Shield",
       color: m.color || "#1E6FAE",
@@ -116,6 +138,7 @@ export function AdminModulesPage() {
             title: form.title.trim(),
             description: form.description.trim() || null,
             category: form.category,
+            subcategory: form.subcategory?.trim() || null,
             required: form.required,
             drive_anchor: form.drive_anchor || "02_TRAINING",
             drive_subfolder: subfolder || null
@@ -128,6 +151,7 @@ export function AdminModulesPage() {
             title: form.title.trim(),
             description: form.description.trim() || null,
             category: form.category,
+            subcategory: form.subcategory?.trim() || null,
             required: form.required,
             icon: form.icon || null,
             color: form.color || null,
@@ -366,6 +390,22 @@ export function AdminModulesPage() {
                     <option key={c.value} value={c.value}>
                       {t(c.labelKey)}
                     </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-600">
+                  {t("adminModules.fields.subcategory")}
+                </label>
+                <select
+                  className="mt-1 input bg-white"
+                  value={form.subcategory || ""}
+                  onChange={(e) => setForm((p) => ({ ...p, subcategory: e.target.value }))}
+                >
+                  <option value="">— {t("adminModules.fields.subcategoryNone")} —</option>
+                  {ALL_SUBCATEGORIES.map((s) => (
+                    <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
               </div>
