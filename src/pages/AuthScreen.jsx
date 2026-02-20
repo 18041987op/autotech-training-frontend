@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Shield, Mail, Lock } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { apiFetch, setToken } from "../lib/api";
@@ -96,8 +96,16 @@ export function AuthScreen({ onSignedIn }) {
 
               {/* Brand Identity */}
               <div className="text-center mb-8">
-                <div className="brand-icon h-16 w-16 mx-auto mb-4">
-                  <Shield className="h-8 w-8" />
+                <div className="mx-auto mb-4 h-20 w-20 rounded-2xl bg-brand-primary flex items-center justify-center shadow-md overflow-hidden">
+                  <img
+                    src="/logo.png"
+                    alt="AutoRx Center"
+                    className="h-full w-full object-contain p-1.5"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.parentElement.classList.add("fallback-icon");
+                    }}
+                  />
                 </div>
                 <h2 className="text-2xl font-extrabold">
                   {t("appName")}

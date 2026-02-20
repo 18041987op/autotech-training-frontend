@@ -28,6 +28,10 @@ import { DarkModeToggle } from "./DarkModeToggle";
 
 const cx = (...parts) => parts.filter(Boolean).join(" ");
 
+// Logo — place your logo at public/logo.png
+// Falls back to the wrench icon if the image fails to load
+const LOGO_SRC = "/logo.png";
+
 // ─── App brand constants ────────────────────────────────────────────────────
 const COMPANY_NAME    = "AutoRx Training";
 const COMPANY_TAGLINE = "Built for your shop";
@@ -152,11 +156,21 @@ export function Layout({ user, onSignOut }) {
 
 // ─── Brand (sidebar full version) ───────────────────────────────────────────
 function Brand() {
+  const [imgErr, setImgErr] = React.useState(false);
   return (
     <div className="flex items-center gap-3 px-2 py-1">
       {/* Logo mark */}
-      <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-brand-primary flex items-center justify-center shadow-sm">
-        <Wrench className="h-5 w-5 text-white" />
+      <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-brand-primary flex items-center justify-center shadow-sm overflow-hidden">
+        {imgErr ? (
+          <Wrench className="h-5 w-5 text-white" />
+        ) : (
+          <img
+            src={LOGO_SRC}
+            alt="AutoRx Center"
+            className="h-full w-full object-contain p-1"
+            onError={() => setImgErr(true)}
+          />
+        )}
       </div>
       {/* Text */}
       <div className="leading-tight">
@@ -169,10 +183,20 @@ function Brand() {
 
 // ─── Brand inline (mobile drawer / top bar) ──────────────────────────────────
 function BrandInline() {
+  const [imgErr, setImgErr] = React.useState(false);
   return (
     <div className="flex items-center gap-2">
-      <div className="h-8 w-8 rounded-xl bg-brand-primary flex items-center justify-center">
-        <Wrench className="h-4 w-4 text-white" />
+      <div className="h-8 w-8 rounded-xl bg-brand-primary flex items-center justify-center overflow-hidden">
+        {imgErr ? (
+          <Wrench className="h-4 w-4 text-white" />
+        ) : (
+          <img
+            src={LOGO_SRC}
+            alt="AutoRx Center"
+            className="h-full w-full object-contain p-0.5"
+            onError={() => setImgErr(true)}
+          />
+        )}
       </div>
       <span className="text-sm font-extrabold text-slate-900">{COMPANY_NAME}</span>
     </div>
@@ -353,8 +377,16 @@ function AppFooter() {
 
           {/* Left: brand */}
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-xl bg-brand-primary flex items-center justify-center">
-              <Wrench className="h-3.5 w-3.5 text-white" />
+            <div className="h-7 w-7 rounded-xl bg-brand-primary flex items-center justify-center overflow-hidden">
+              <img
+                src={LOGO_SRC}
+                alt="AutoRx Center"
+                className="h-full w-full object-contain p-0.5"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+                }}
+              />
             </div>
             <div className="leading-tight">
               <span className="text-sm font-extrabold text-slate-800">{COMPANY_NAME}</span>

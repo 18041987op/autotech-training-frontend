@@ -692,13 +692,13 @@ export function AssessmentRunnerPage() {
       ) : null}
 
       {/* UNIFIED QUESTION + ANSWERS CARD */}
-      <div className="rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-        {/* ── Question header (darker tone) ── */}
-        <div className="bg-slate-800 px-5 py-5">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+      <div className="rounded-3xl border border-brand-primary overflow-hidden shadow-sm">
+        {/* ── Question header (brand blue) ── */}
+        <div className="bg-brand-primary px-5 py-5">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-blue-200 mb-2">
             Question {idx + 1}
             {current.topic ? (
-              <span className="ml-2 normal-case font-semibold text-slate-500">
+              <span className="ml-2 normal-case font-semibold text-blue-200">
                 · {current.topic}
               </span>
             ) : null}
@@ -732,20 +732,23 @@ export function AssessmentRunnerPage() {
 
               if (revealed) {
                 if (chosen && correct) {
-                  borderCls = "border-emerald-400";
-                  bgCls     = "bg-emerald-50";
-                  textCls   = "text-emerald-900 font-bold";
-                  labelBg   = "bg-emerald-500 text-white";
+                  // Correct pick — brand blue tones
+                  borderCls = "border-brand-primary";
+                  bgCls     = "bg-blue-50";
+                  textCls   = "text-slate-900 font-bold";
+                  labelBg   = "bg-brand-primary text-white";
                 } else if (chosen && !correct) {
-                  borderCls = "border-red-300";
-                  bgCls     = "bg-red-50";
-                  textCls   = "text-red-800";
-                  labelBg   = "bg-red-400 text-white";
+                  // Wrong pick — soft orange/amber (brand accent family)
+                  borderCls = "border-brand-accent";
+                  bgCls     = "bg-orange-50";
+                  textCls   = "text-slate-800";
+                  labelBg   = "bg-brand-accent text-white";
                 } else if (!chosen && correct) {
-                  borderCls = "border-emerald-300";
-                  bgCls     = "bg-emerald-50/50";
-                  textCls   = "text-emerald-800 font-semibold";
-                  labelBg   = "bg-emerald-200 text-emerald-800";
+                  // Unchosen correct — light blue hint
+                  borderCls = "border-blue-200";
+                  bgCls     = "bg-blue-50/60";
+                  textCls   = "text-slate-800 font-semibold";
+                  labelBg   = "bg-blue-100 text-blue-700";
                 } else {
                   borderCls = "border-slate-200 opacity-50";
                 }
