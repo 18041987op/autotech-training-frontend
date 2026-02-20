@@ -10,6 +10,74 @@
   --fg: 17 24 39;
 }
 
+/* ──────────────────────────────────────────────
+   Dark mode overrides
+   Applied via Tailwind's `dark` class strategy.
+   The DarkModeToggle adds/removes class="dark"
+   on <html>. These rules cascade automatically.
+────────────────────────────────────────────── */
+.dark body,
+.dark #root {
+  background-color: #0f172a; /* slate-900 */
+  color: #f1f5f9;            /* slate-100 */
+}
+
+/* Cards & surfaces */
+.dark .card,
+.dark .rounded-3xl.border.bg-white,
+.dark .rounded-2xl.border.bg-white,
+.dark .rounded-2xl.border.border-slate-200.bg-white {
+  background-color: #1e293b !important; /* slate-800 */
+  border-color: #334155 !important;     /* slate-700 */
+  color: #f1f5f9;
+}
+
+/* Sidebar & TopBar */
+.dark aside {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark .sticky.top-0 {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  border-color: #334155 !important;
+}
+
+/* Text colours */
+.dark .text-slate-900 { color: #f1f5f9 !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #64748b !important; }
+
+/* Backgrounds */
+.dark .bg-white    { background-color: #1e293b !important; }
+.dark .bg-slate-50 { background-color: #0f172a !important; }
+.dark .min-h-screen.bg-slate-50 { background-color: #0f172a !important; }
+
+/* Inputs */
+.dark .input {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Nav items */
+.dark .nav-item-idle {
+  color: #cbd5e1 !important;
+}
+
+/* Subtle bordered elements */
+.dark .border-slate-200 { border-color: #334155 !important; }
+.dark .border-slate-300 { border-color: #475569 !important; }
+
+/* Badges */
+.dark .bg-slate-100 { background-color: #334155 !important; }
+.dark .rounded-lg.border.border-slate-200.bg-slate-50 {
+  background-color: #334155 !important;
+  border-color: #475569 !important;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

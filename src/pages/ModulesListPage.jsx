@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router-dom";
+import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { translateModuleList } from "../hooks/useModuleTranslation";
 
@@ -114,6 +115,237 @@ function SubcategoryHeader({ name }) {
   );
 }
 
+// ─── Edit Modal (inline, admin-only) ──────────────────────────────────────────
+
+const CATEGORIES = [
+  { value: "universal",       label: "Universal" },
+  { value: "technician",      label: "Technician" },
+  { value: "service_advisor", label: "Service Advisor" },
+  { value: "administrative",  label: "Administrative" },
+];
+
+const ALL_SUBCATEGORIES = [
+  "Fluids & Maintenance",
+  "Brakes & Chassis",
+  "Tires & Wheels",
+  "Engine & Cooling",
+  "HVAC & Climate",
+  "Electrical & Diagnostics",
+  "Transmission & Drivetrain",
+  "Suspension & Steering",
+  "Safety & Compliance",
+  "State Inspection",
+  "Customer Communication",
+  "Shop Operations",
+  "Vehicle Delivery",
+  "Onboarding & Orientation",
+  "HR & Policies",
+  "Operations & Inventory",
+  "General",
+];
+
+function EditModuleModal({ module: m, onClose, onSaved }) {
+  const { t } = useTranslation();
+  const [form, setForm] = useState({
+    title:       m.title       || "",
+    description: m.description || "",
+    category:    m.category    || "universal",
+    subcategory: m.subcategory || "",
+    required:    !!m.required,
+    icon:        m.icon        || "Shield",
+    color:       m.color       || "#1E6FAE",
+    drive_folder: m.drive_folder ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr]       = useState("");
+
+  const save = async () => {
+    if (!form.title.trim()) { setErr("Title is required"); return; }
+    setSaving(true);
+    setErr("");
+    try {
+      await apiFetch(`/api/admin/modules/${m.id}`, {
+        method: "PATCH",
+        body: {
+          title:        form.title.trim(),
+          description:  form.description.trim() || null,
+          category:     form.category,
+          subcategory:  form.subcategory?.trim() || null,
+          required:     form.required,
+          icon:         form.icon  || null,
+          color:        form.color || null,
+          drive_folder: form.drive_folder || null,
+        },
+      });
+      onSaved();
+    } catch (e) {
+      setErr(e.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <button
+        type="button"
+        aria-label="Close"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div className="relative w-[94%] max-w-[720px] max-h-[90vh] overflow-y-auto rounded-3xl border bg-white shadow-xl p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              {t("adminModules.editing", "Editing")}
+            </p>
+            <h2 className="text-xl font-extrabold leading-snug">{m.title}</h2>
+          </div>
+          <button className="btn-outline-sm" onClick={onClose} type="button">
+            {t("actions.close", "Close")}
+          </button>
+        </div>
+
+        {err ? (
+          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {err}
+          </div>
+        ) : null}
+
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Title */}
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.title", "Title")}
+            </label>
+            <input
+              className="mt-1 input"
+              value={form.title}
+              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.description", "Description")}
+            </label>
+            <textarea
+              className="mt-1 input"
+              rows={3}
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.category", "Category")}
+            </label>
+            <select
+              className="mt-1 input bg-white"
+              value={form.category}
+              onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Subcategory */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.subcategory", "Subcategory")}
+            </label>
+            <select
+              className="mt-1 input bg-white"
+              value={form.subcategory || ""}
+              onChange={(e) => setForm((p) => ({ ...p, subcategory: e.target.value }))}
+            >
+              <option value="">— {t("adminModules.fields.subcategoryNone", "No subcategory")} —</option>
+              {ALL_SUBCATEGORIES.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Required */}
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.required}
+                onChange={(e) => setForm((p) => ({ ...p, required: e.target.checked }))}
+                className="rounded"
+              />
+              {t("adminModules.fields.required", "Required")}
+            </label>
+          </div>
+
+          {/* Icon */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.icon", "Icon")}
+            </label>
+            <input
+              className="mt-1 input"
+              value={form.icon}
+              onChange={(e) => setForm((p) => ({ ...p, icon: e.target.value }))}
+            />
+          </div>
+
+          {/* Color */}
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.color", "Color")}
+            </label>
+            <input
+              className="mt-1 input"
+              value={form.color}
+              onChange={(e) => setForm((p) => ({ ...p, color: e.target.value }))}
+              placeholder="#1E6FAE"
+            />
+          </div>
+
+          {/* Drive folder */}
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.driveFolder", "Drive Folder")}
+            </label>
+            <input
+              className="mt-1 input"
+              value={form.drive_folder || ""}
+              onChange={(e) => setForm((p) => ({ ...p, drive_folder: e.target.value }))}
+              placeholder="e.g., Warranty-Procedures"
+            />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 flex justify-end gap-2">
+          <button className="btn-outline-sm" onClick={onClose} type="button">
+            {t("actions.cancel", "Cancel")}
+          </button>
+          <button
+            className="btn-primary btn-sm px-5 disabled:opacity-60"
+            onClick={save}
+            disabled={saving}
+            type="button"
+          >
+            {saving ? "Saving…" : t("actions.save", "Save")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── main export ──────────────────────────────────────────────────────────────
 
 export function ModulesListPage({ pageType }) {
@@ -121,10 +353,14 @@ export function ModulesListPage({ pageType }) {
   const { t, i18n } = useTranslation();
   const ctx = useOutletContext() || {};
   const user = ctx.user;
+  const isAdmin = (user?.role || "").toLowerCase() === "admin";
 
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
+  // Admin: which module is being edited inline
+  const [editingModule, setEditingModule] = useState(null);
 
   // ── which tabs are visible for this user ──
   const visibleTabs = useMemo(() => {
@@ -147,19 +383,21 @@ export function ModulesListPage({ pageType }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   useEffect(() => { setActiveTab(defaultTab); }, [defaultTab]);
 
+  const loadModules = async () => {
+    try {
+      setErr("");
+      setLoading(true);
+      const data = await apiFetch("/api/modules/user");
+      setModules(data.modules || []);
+    } catch (e) {
+      setErr(e.message || "Failed to load modules");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        setErr("");
-        setLoading(true);
-        const data = await apiFetch("/api/modules/user");
-        setModules(data.modules || []);
-      } catch (e) {
-        setErr(e.message || "Failed to load modules");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    loadModules();
   }, []);
 
   // 1. Filter by domain/type (training vs onboarding etc.)
@@ -275,8 +513,22 @@ export function ModulesListPage({ pageType }) {
                 {groups[subcat].map((m) => (
                   <div
                     key={m.id}
-                    className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+                    onClick={() => navigate(`/modules/${m.id}`)}
+                    className="group relative rounded-3xl border bg-white p-5 shadow-sm transition cursor-pointer hover:-translate-y-[2px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
                   >
+                    {/* Admin Edit button — top-right, stops card click propagation */}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setEditingModule(m); }}
+                        className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm hover:border-brand-primary hover:text-brand-primary"
+                        title="Edit module"
+                        aria-label="Edit module"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+
                     {/* Role badge — hide on "universal" since it appears everywhere */}
                     {m.category && m.category !== "universal" && (
                       <div className="mb-3">
@@ -286,23 +538,32 @@ export function ModulesListPage({ pageType }) {
                       </div>
                     )}
 
-                    <div className="font-extrabold leading-snug">{m.translatedTitle}</div>
+                    <div className="font-extrabold leading-snug pr-7">{m.translatedTitle}</div>
                     <div className="mt-2 text-sm text-slate-600 leading-relaxed">
                       {m.translatedDescription || "—"}
                     </div>
 
-                    <button
-                      onClick={() => navigate(`/modules/${m.id}`)}
-                      className="mt-4 rounded-xl border px-3 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors"
-                    >
+                    <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand-primary">
                       {t("common.view")} →
-                    </button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {/* Admin inline edit modal */}
+      {editingModule && (
+        <EditModuleModal
+          module={editingModule}
+          onClose={() => setEditingModule(null)}
+          onSaved={async () => {
+            setEditingModule(null);
+            await loadModules();
+          }}
+        />
       )}
     </div>
   );

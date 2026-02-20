@@ -1,9 +1,172 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
+
+// ─── Inline edit modal (admin-only) ───────────────────────────────────────────
+
+const EDIT_CATEGORIES = [
+  { value: "universal",       label: "Universal" },
+  { value: "technician",      label: "Technician" },
+  { value: "service_advisor", label: "Service Advisor" },
+  { value: "administrative",  label: "Administrative" },
+];
+
+const EDIT_SUBCATEGORIES = [
+  "Fluids & Maintenance", "Brakes & Chassis", "Tires & Wheels", "Engine & Cooling",
+  "HVAC & Climate", "Electrical & Diagnostics", "Transmission & Drivetrain",
+  "Suspension & Steering", "Safety & Compliance", "State Inspection",
+  "Customer Communication", "Shop Operations", "Vehicle Delivery",
+  "Onboarding & Orientation", "HR & Policies", "Operations & Inventory", "General",
+];
+
+function EditModuleModal({ module: m, onClose, onSaved }) {
+  const { t } = useTranslation();
+  const [form, setForm] = useState({
+    title:        m.title        || "",
+    description:  m.description  || "",
+    category:     m.category     || "universal",
+    subcategory:  m.subcategory  || "",
+    required:     !!m.required,
+    icon:         m.icon         || "Shield",
+    color:        m.color        || "#1E6FAE",
+    drive_folder: m.drive_folder ?? "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  const save = async () => {
+    if (!form.title.trim()) { setErr("Title is required"); return; }
+    setSaving(true);
+    setErr("");
+    try {
+      await apiFetch(`/api/admin/modules/${m.id}`, {
+        method: "PATCH",
+        body: {
+          title:        form.title.trim(),
+          description:  form.description.trim() || null,
+          category:     form.category,
+          subcategory:  form.subcategory?.trim() || null,
+          required:     form.required,
+          icon:         form.icon  || null,
+          color:        form.color || null,
+          drive_folder: form.drive_folder || null,
+        },
+      });
+      onSaved();
+    } catch (e) {
+      setErr(e.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <button type="button" aria-label="Close" className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative w-[94%] max-w-[720px] max-h-[90vh] overflow-y-auto rounded-3xl border bg-white shadow-xl p-6">
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
+              {t("adminModules.editing", "Editing")}
+            </p>
+            <h2 className="text-xl font-extrabold leading-snug">{m.title}</h2>
+          </div>
+          <button className="btn-outline-sm" onClick={onClose} type="button">
+            {t("actions.close", "Close")}
+          </button>
+        </div>
+
+        {err ? (
+          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{err}</div>
+        ) : null}
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.title", "Title")}
+            </label>
+            <input className="mt-1 input" value={form.title}
+              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.description", "Description")}
+            </label>
+            <textarea className="mt-1 input" rows={3} value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.category", "Category")}
+            </label>
+            <select className="mt-1 input bg-white" value={form.category}
+              onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}>
+              {EDIT_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.subcategory", "Subcategory")}
+            </label>
+            <select className="mt-1 input bg-white" value={form.subcategory || ""}
+              onChange={(e) => setForm((p) => ({ ...p, subcategory: e.target.value }))}>
+              <option value="">— {t("adminModules.fields.subcategoryNone", "No subcategory")} —</option>
+              {EDIT_SUBCATEGORIES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div className="flex items-center">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
+              <input type="checkbox" checked={form.required} className="rounded"
+                onChange={(e) => setForm((p) => ({ ...p, required: e.target.checked }))} />
+              {t("adminModules.fields.required", "Required")}
+            </label>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.icon", "Icon")}
+            </label>
+            <input className="mt-1 input" value={form.icon}
+              onChange={(e) => setForm((p) => ({ ...p, icon: e.target.value }))} />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.color", "Color")}
+            </label>
+            <input className="mt-1 input" value={form.color} placeholder="#1E6FAE"
+              onChange={(e) => setForm((p) => ({ ...p, color: e.target.value }))} />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              {t("adminModules.fields.driveFolder", "Drive Folder")}
+            </label>
+            <input className="mt-1 input" value={form.drive_folder || ""} placeholder="e.g., Warranty-Procedures"
+              onChange={(e) => setForm((p) => ({ ...p, drive_folder: e.target.value }))} />
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-2">
+          <button className="btn-outline-sm" onClick={onClose} type="button">
+            {t("actions.cancel", "Cancel")}
+          </button>
+          <button className="btn-primary btn-sm px-5 disabled:opacity-60" onClick={save} disabled={saving} type="button">
+            {saving ? "Saving…" : t("actions.save", "Save")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ModuleDetailPage() {
   const { id } = useParams();
@@ -42,6 +205,9 @@ export function ModuleDetailPage() {
 
   // Modal state for AI Coach (keeps user on this page)
   const [aiOpen, setAiOpen] = useState(false);
+
+  // Admin: inline edit modal
+  const [editOpen, setEditOpen] = useState(false);
 
   // Admin subtitle (existing translation)
   const adminResourcesSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
@@ -270,6 +436,16 @@ export function ModuleDetailPage() {
 
           {isAdmin ? (
             <div className="text-right space-y-2">
+              {/* Edit module shortcut */}
+              <button
+                className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-semibold flex items-center justify-center gap-2"
+                onClick={() => setEditOpen(true)}
+                type="button"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+                {t("actions.edit", "Edit Module")}
+              </button>
+
               <button
                 className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
                 onClick={runSync}
@@ -499,6 +675,18 @@ export function ModuleDetailPage() {
             {active.text || "—"}
           </pre>
         </div>
+      ) : null}
+
+      {/* Admin: Inline Edit Modal */}
+      {editOpen && module ? (
+        <EditModuleModal
+          module={module}
+          onClose={() => setEditOpen(false)}
+          onSaved={async () => {
+            setEditOpen(false);
+            await load();
+          }}
+        />
       ) : null}
 
       {/* AI Coach Modal */}
