@@ -96,14 +96,19 @@ export function AuthScreen({ onSignedIn }) {
 
               {/* Brand Identity */}
               <div className="text-center mb-8">
-                <div className="mx-auto mb-4 h-20 w-20 rounded-2xl bg-brand-primary flex items-center justify-center shadow-md overflow-hidden">
+                {/* Landscape logo — display full width, centered */}
+                <div className="flex justify-center mb-4">
                   <img
                     src="/logo.png"
                     alt="AutoRx Center"
-                    className="h-full w-full object-contain p-1.5"
+                    className="h-16 w-auto object-contain"
                     onError={(e) => {
+                      // Fallback: show icon + name
                       e.currentTarget.style.display = "none";
-                      e.currentTarget.parentElement.classList.add("fallback-icon");
+                      const div = document.createElement("div");
+                      div.className = "brand-icon h-16 w-16 mx-auto flex items-center justify-center";
+                      div.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+                      e.currentTarget.parentElement.appendChild(div);
                     }}
                   />
                 </div>

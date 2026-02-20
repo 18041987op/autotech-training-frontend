@@ -155,50 +155,56 @@ export function Layout({ user, onSignOut }) {
 }
 
 // ─── Brand (sidebar full version) ───────────────────────────────────────────
+// Logo is landscape (933×248) — display it full-width, no square container
 function Brand() {
   const [imgErr, setImgErr] = React.useState(false);
   return (
-    <div className="flex items-center gap-3 px-2 py-1">
-      {/* Logo mark */}
-      <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-brand-primary flex items-center justify-center shadow-sm overflow-hidden">
-        {imgErr ? (
-          <Wrench className="h-5 w-5 text-white" />
-        ) : (
-          <img
-            src={LOGO_SRC}
-            alt="AutoRx Center"
-            className="h-full w-full object-contain p-1"
-            onError={() => setImgErr(true)}
-          />
-        )}
-      </div>
-      {/* Text */}
-      <div className="leading-tight">
-        <p className="text-sm font-extrabold text-slate-900 tracking-tight">{COMPANY_NAME}</p>
-        <p className="text-[10px] font-medium text-slate-400 tracking-wide uppercase">{COMPANY_TAGLINE}</p>
-      </div>
+    <div className="px-2 py-1">
+      {imgErr ? (
+        /* Fallback: icon + text */
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-brand-primary flex items-center justify-center shadow-sm">
+            <Wrench className="h-5 w-5 text-white" />
+          </div>
+          <div className="leading-tight">
+            <p className="text-sm font-extrabold text-slate-900 tracking-tight">{COMPANY_NAME}</p>
+            <p className="text-[10px] font-medium text-slate-400 tracking-wide uppercase">{COMPANY_TAGLINE}</p>
+          </div>
+        </div>
+      ) : (
+        /* Logo full-width, naturally proportioned */
+        <img
+          src={LOGO_SRC}
+          alt="AutoRx Center"
+          className="w-full max-h-14 object-contain object-left"
+          onError={() => setImgErr(true)}
+        />
+      )}
     </div>
   );
 }
 
 // ─── Brand inline (mobile drawer / top bar) ──────────────────────────────────
+// Compact landscape logo for tight spaces
 function BrandInline() {
   const [imgErr, setImgErr] = React.useState(false);
   return (
     <div className="flex items-center gap-2">
-      <div className="h-8 w-8 rounded-xl bg-brand-primary flex items-center justify-center overflow-hidden">
-        {imgErr ? (
-          <Wrench className="h-4 w-4 text-white" />
-        ) : (
-          <img
-            src={LOGO_SRC}
-            alt="AutoRx Center"
-            className="h-full w-full object-contain p-0.5"
-            onError={() => setImgErr(true)}
-          />
-        )}
-      </div>
-      <span className="text-sm font-extrabold text-slate-900">{COMPANY_NAME}</span>
+      {imgErr ? (
+        <>
+          <div className="h-8 w-8 rounded-xl bg-brand-primary flex items-center justify-center">
+            <Wrench className="h-4 w-4 text-white" />
+          </div>
+          <span className="text-sm font-extrabold text-slate-900">{COMPANY_NAME}</span>
+        </>
+      ) : (
+        <img
+          src={LOGO_SRC}
+          alt="AutoRx Center"
+          className="h-8 w-auto object-contain"
+          onError={() => setImgErr(true)}
+        />
+      )}
     </div>
   );
 }
@@ -375,24 +381,23 @@ function AppFooter() {
       <div className="mx-auto max-w-6xl px-4 py-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-          {/* Left: brand */}
+          {/* Left: brand — landscape logo, height-constrained */}
           <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-xl bg-brand-primary flex items-center justify-center overflow-hidden">
-              <img
-                src={LOGO_SRC}
-                alt="AutoRx Center"
-                className="h-full w-full object-contain p-0.5"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
-                }}
-              />
-            </div>
-            <div className="leading-tight">
-              <span className="text-sm font-extrabold text-slate-800">{COMPANY_NAME}</span>
-              <span className="ml-2 text-xs text-slate-400">·</span>
-              <span className="ml-2 text-xs text-slate-400">{COMPANY_TAGLINE}</span>
-            </div>
+            <img
+              src={LOGO_SRC}
+              alt="AutoRx Center"
+              className="h-7 w-auto object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                // Show text fallback
+                const span = document.createElement("span");
+                span.className = "text-sm font-extrabold text-slate-800";
+                span.textContent = COMPANY_NAME;
+                e.currentTarget.parentElement.prepend(span);
+              }}
+            />
+            <span className="text-xs text-slate-400">·</span>
+            <span className="text-xs text-slate-400">{COMPANY_TAGLINE}</span>
           </div>
 
           {/* Right: links + copyright */}
