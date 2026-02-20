@@ -691,85 +691,112 @@ export function AssessmentRunnerPage() {
         </div>
       ) : null}
 
-      {/* QUESTION CARD (more separation + “cheerful” feel) */}
-      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
-        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Question
-        </div>
-
-        <div className="mt-2 text-base font-extrabold text-slate-900">
-          {current.text || t("assessmentRunner.questionFallback")}
-        </div>
-
-        {current.topic ? (
-          <div className="mt-3 text-xs text-slate-500">
-            Topic:{" "}
-            <span className="font-semibold text-slate-700">{current.topic}</span>
+      {/* UNIFIED QUESTION + ANSWERS CARD */}
+      <div className="rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+        {/* ── Question header (darker tone) ── */}
+        <div className="bg-slate-800 px-5 py-5">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+            Question {idx + 1}
+            {current.topic ? (
+              <span className="ml-2 normal-case font-semibold text-slate-500">
+                · {current.topic}
+              </span>
+            ) : null}
           </div>
-        ) : null}
-      </div>
-
-      {/* ANSWERS GROUP */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-4 ring-1 ring-slate-100">
-        <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          {t("assessmentRunner.answers.chooseOne")}
+          <div className="text-base font-extrabold text-white leading-snug">
+            {current.text || t("assessmentRunner.questionFallback")}
+          </div>
         </div>
 
-        <div className="mt-3 grid gap-2">
-          {current.options.map((opt, optIndex) => {
-            const chosen = pickedIndex === optIndex;
-            const correct = Number(current.correctIndex) === Number(optIndex);
+        {/* ── Divider ── */}
+        <div className="h-px bg-slate-200" />
 
-            const border =
-              revealed && chosen && correct
-                ? "border-slate-900"
-                : revealed && chosen && !correct
-                ? "border-red-300"
-                : revealed && correct
-                ? "border-slate-300"
-                : "border-slate-200";
+        {/* ── Answers section (light) ── */}
+        <div className="bg-white px-5 py-4">
+          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+            {t("assessmentRunner.answers.chooseOne")}
+          </div>
 
-            const bg =
-              revealed && chosen && correct
-                ? "bg-white"
-                : revealed && chosen && !correct
-                ? "bg-red-50"
-                : "bg-white";
+          <div className="grid gap-2">
+            {current.options.map((opt, optIndex) => {
+              const chosen  = pickedIndex === optIndex;
+              const correct = Number(current.correctIndex) === Number(optIndex);
 
-            return (
-              <button
-                key={optIndex}
-                className={`text-left rounded-2xl border ${border} ${bg} px-4 py-3 hover:bg-brand-soft disabled:opacity-70`}
-                disabled={revealed || shouldStopForCap}
-                onClick={() => pick(optIndex)}
-                type="button"
-              >
-                <div className="text-sm font-semibold text-slate-900">{opt}</div>
-              </button>
-            );
-          })}
+              // Letter label A B C D
+              const letter = String.fromCharCode(65 + optIndex);
+
+              let borderCls = "border-slate-200 hover:border-brand-primary hover:bg-brand-soft";
+              let bgCls     = "bg-white";
+              let textCls   = "text-slate-800";
+              let labelBg   = "bg-slate-100 text-slate-500";
+
+              if (revealed) {
+                if (chosen && correct) {
+                  borderCls = "border-emerald-400";
+                  bgCls     = "bg-emerald-50";
+                  textCls   = "text-emerald-900 font-bold";
+                  labelBg   = "bg-emerald-500 text-white";
+                } else if (chosen && !correct) {
+                  borderCls = "border-red-300";
+                  bgCls     = "bg-red-50";
+                  textCls   = "text-red-800";
+                  labelBg   = "bg-red-400 text-white";
+                } else if (!chosen && correct) {
+                  borderCls = "border-emerald-300";
+                  bgCls     = "bg-emerald-50/50";
+                  textCls   = "text-emerald-800 font-semibold";
+                  labelBg   = "bg-emerald-200 text-emerald-800";
+                } else {
+                  borderCls = "border-slate-200 opacity-50";
+                }
+              }
+
+              return (
+                <button
+                  key={optIndex}
+                  className={`text-left rounded-2xl border ${borderCls} ${bgCls} px-4 py-3 transition-all disabled:cursor-not-allowed flex items-start gap-3`}
+                  disabled={revealed || shouldStopForCap}
+                  onClick={() => pick(optIndex)}
+                  type="button"
+                >
+                  <span className={`flex-shrink-0 mt-0.5 h-5 w-5 rounded-lg text-[10px] font-extrabold flex items-center justify-center ${labelBg} transition-colors`}>
+                    {letter}
+                  </span>
+                  <span className={`text-sm ${textCls}`}>{opt}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Feedback */}
       {revealed ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+        <div className={`rounded-2xl border p-4 text-sm ${
+          isCorrect
+            ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+            : "border-amber-200 bg-amber-50 text-amber-900"
+        }`}>
           {isCorrect ? (
             <>
-              <div className="font-extrabold">{t("assessmentRunner.correctTitle")}</div>
-              <div className="mt-1">{current.explanation || t("assessmentRunner.correctBody")}</div>
+              <div className="font-extrabold flex items-center gap-1.5">
+                <span>✓</span> {t("assessmentRunner.correctTitle")}
+              </div>
+              <div className="mt-1 text-emerald-800">{current.explanation || t("assessmentRunner.correctBody")}</div>
             </>
           ) : (
             <>
-              <div className="font-extrabold">{t("assessmentRunner.wrongTitle")}</div>
-              <div className="mt-1">{current.explanation || t("assessmentRunner.wrongBody")}</div>
+              <div className="font-extrabold flex items-center gap-1.5">
+                <span>✗</span> {t("assessmentRunner.wrongTitle")}
+              </div>
+              <div className="mt-1 text-amber-800">{current.explanation || t("assessmentRunner.wrongBody")}</div>
               {Number.isFinite(Number(current.correctIndex)) ? (
-                <div className="mt-2">
+                <div className="mt-2 text-amber-900">
                   <span className="font-semibold">{t("assessmentRunner.correctAnswer")}:</span>{" "}
                   {current.options?.[Number(current.correctIndex)] ?? "—"}
                 </div>
               ) : null}
-              <div className="mt-2 text-xs text-slate-500">
+              <div className="mt-2 text-xs text-amber-700/80">
                 This question will reappear at the end of this quiz.
               </div>
             </>
