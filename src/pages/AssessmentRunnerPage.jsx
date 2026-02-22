@@ -227,9 +227,16 @@ export function AssessmentRunnerPage() {
     setErr("");
 
     try {
+      // Count questions answered correctly on the FIRST try (not in redo set)
+      const baseQuestions = questions.slice(0, baseTotalCount);
+      const firstPassCount = baseQuestions.filter(
+        (q) => !redoSetRef.current.has(q.questionNo)
+      ).length;
+      const totalQuestions = baseTotalCount;
+
       const out = await apiFetch(`/api/assessments/${aid}/attempt`, {
         method: "POST",
-        body: { answers }
+        body: { answers, firstPassCount, totalQuestions }
       });
 
       // Update session counters
@@ -556,6 +563,11 @@ export function AssessmentRunnerPage() {
                       </span>
                       <span className="mx-2 text-slate-300">•</span>
                       <span className="font-extrabold">{a.score ?? "—"}%</span>
+                      {typeof a.firstAttemptScore === "number" && (
+                        <span className="ml-2 text-xs text-slate-500">
+                          (1st-try: {a.firstAttemptScore}%)
+                        </span>
+                      )}
                     </div>
 
                     {a.passed ? (

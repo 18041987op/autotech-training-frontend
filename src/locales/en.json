@@ -257,6 +257,9 @@
     "avgCompletion": "Average completion",
     "passed": "Passed checks (>=70)",
     "detail": "Detail",
+    "firstTryAccuracy": "First-try accuracy",
+    "firstTryAccuracyHelp": "How you did before any retry questions",
+    "firstTryAccuracyAvg": "Avg first-try accuracy",
 
     "summary": {
       "assignedModules": "Assigned modules"
@@ -272,6 +275,31 @@
       "steadyLine": "Steady progress. A short quiz session will push you forward.",
       "stalledBadge": "Stalled",
       "stalledLine": "Looks stalled. Do a quick review + one short assessment attempt today."
+    }
+  },
+  "badges": {
+    "title": "Achievements",
+    "subtitle": "Earn badges by completing assessments accurately",
+    "none": "Complete assessments to earn your first badge! 🎖️",
+    "perfect_first_try": {
+      "label": "Perfect First Try",
+      "desc": "Passed with zero mistakes on the first attempt"
+    },
+    "hot_streak_3": {
+      "label": "Hot Streak",
+      "desc": "3 perfect first-try passes in a row"
+    },
+    "module_master": {
+      "label": "Module Master",
+      "desc": "Passed all assessments in a module"
+    },
+    "week_warrior": {
+      "label": "Week Warrior",
+      "desc": "Reached 30+ correct answers in a single week"
+    },
+    "fast_learner": {
+      "label": "Fast Learner",
+      "desc": "Reached 80%+ completion within your first 2 weeks"
     }
   },
   "auth2": {

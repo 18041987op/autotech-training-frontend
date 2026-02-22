@@ -256,6 +256,9 @@
     "avgCompletion": "Promedio de progreso",
     "passed": "Aprobadas (>=70)",
     "detail": "Detalle",
+    "firstTryAccuracy": "Precisión al primer intento",
+    "firstTryAccuracyHelp": "Qué tan bien lo hiciste antes de los reintentos",
+    "firstTryAccuracyAvg": "Precisión promedio al primer intento",
     "summary": {
       "assignedModules": "Módulos asignados"
     },
@@ -270,6 +273,31 @@
       "steadyLine": "Buen progreso. Una sesión corta te empuja hacia adelante.",
       "stalledBadge": "Detenido",
       "stalledLine": "Parece que te frenaste. Haz una revisión rápida y un intento corto hoy."
+    }
+  },
+  "badges": {
+    "title": "Logros",
+    "subtitle": "Gana insignias completando evaluaciones con precisión",
+    "none": "¡Completa evaluaciones para ganar tu primera insignia! 🎖️",
+    "perfect_first_try": {
+      "label": "Perfecto al Primer Intento",
+      "desc": "Aprobado sin ningún error en el primer intento"
+    },
+    "hot_streak_3": {
+      "label": "Racha de Fuego",
+      "desc": "3 evaluaciones perfectas al primer intento seguidas"
+    },
+    "module_master": {
+      "label": "Maestro del Módulo",
+      "desc": "Aprobaste todas las evaluaciones de un módulo"
+    },
+    "week_warrior": {
+      "label": "Guerrero Semanal",
+      "desc": "Lograste 30+ respuestas correctas en una sola semana"
+    },
+    "fast_learner": {
+      "label": "Aprendiz Rápido",
+      "desc": "Alcanzaste 80%+ de progreso en tus primeras 2 semanas"
     }
   },
   "auth2": {
