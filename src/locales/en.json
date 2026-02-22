@@ -281,6 +281,13 @@
     "title": "Achievements",
     "subtitle": "Earn badges by completing assessments accurately",
     "none": "Complete assessments to earn your first badge! 🎖️",
+    "howToEarn": "How to earn",
+    "earnedCount": "{{count}} of {{total}} badges earned",
+    "homeTitle": "My Progress",
+    "homeSubtitle": "Your learning momentum at a glance.",
+    "earnedSection": "Earned",
+    "lockedSection": "Still locked — hover to see how to earn",
+    "viewAll": "View full progress →",
     "perfect_first_try": {
       "label": "Perfect First Try",
       "desc": "Passed with zero mistakes on the first attempt"

@@ -279,6 +279,13 @@
     "title": "Logros",
     "subtitle": "Gana insignias completando evaluaciones con precisión",
     "none": "¡Completa evaluaciones para ganar tu primera insignia! 🎖️",
+    "howToEarn": "Cómo ganarla",
+    "earnedCount": "{{count}} de {{total}} insignias ganadas",
+    "homeTitle": "Mi Progreso",
+    "homeSubtitle": "Tu avance de aprendizaje de un vistazo.",
+    "earnedSection": "Ganadas",
+    "lockedSection": "Por ganar — pasa el cursor para ver cómo",
+    "viewAll": "Ver progreso completo →",
     "perfect_first_try": {
       "label": "Perfecto al Primer Intento",
       "desc": "Aprobado sin ningún error en el primer intento"

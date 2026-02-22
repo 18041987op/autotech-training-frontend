@@ -10,3 +10,13 @@ export function useProgress() {
     },
   });
 }
+
+export function useProgressBadges() {
+  return useQuery({
+    queryKey: ['progress-badges'],
+    queryFn: async () => {
+      const data = await apiFetch('/api/progress/badges').catch(() => ({ badges: [] }));
+      return data;
+    },
+  });
+}
