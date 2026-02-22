@@ -385,6 +385,163 @@
       "description": "Herramientas personales requeridas, equipos del taller, protocolo del elevador y acceso al escáner."
     }
   },
+  "lessons": {
+    "tabLabel": "Lecciones",
+    "backToLessons": "← Volver a Lecciones",
+    "comingSoon": "Próximamente",
+    "markComplete": "Marcar como completada",
+    "sectionComplete": "Sección completada",
+    "progressLabel": "Progreso",
+    "syncContent": "Sincronizar contenido de lecciones para IA",
+    "syncing": "Sincronizando…",
+    "syncDone": "Contenido sincronizado — ahora puedes generar evaluaciones",
+    "interactiveLesson": "Lección Interactiva",
+    "sections": "secciones",
+    "close": "Cerrar ✕",
+    "previous": "← Anterior",
+    "next": "Siguiente →",
+    "tryAgain": "Intentar de nuevo",
+    "markLessonComplete": "✅ Marcar lección completada",
+    "step": "Paso",
+    "of": "de",
+    "lessonComplete": "¡Lección Completada!",
+    "lessonCompleteBody": "Completaste \"%{title}\". ¡Continúa con el siguiente módulo!",
+    "correct": "✅ ¡Correcto!",
+    "incorrect": "❌ Incorrecto",
+    "explanation": "Explicación",
+    "outOf": "/ {{total}} correctas",
+    "scoreExcellent": "¡Excelente! Dominaste los conceptos de diagnóstico eléctrico básico.",
+    "scoreGood": "¡Buen trabajo! Repasa los conceptos que fallaste y vuelve a intentarlo.",
+    "scoreReview": "Repasa las secciones anteriores y vuelve a intentarlo. ¡Tú puedes!",
+    "diagTip": "Consejo de diagnóstico",
+    "tipPrefix": "Tip",
+
+    "electricalCircuitBasics": {
+      "title": "Circuito Básico de Lámpara",
+      "description": "Cómo funciona el circuito de una lámpara automotriz y cómo diagnosticar fallas con el Power Probe.",
+      "section1Title": "Circuito Básico de Lámpara",
+      "section1Subtitle": "Haz clic en el interruptor para activar el circuito. Haz clic en cada componente para ver su descripción.",
+      "section2Title": "Tipos de Fallas Eléctricas",
+      "section2Subtitle": "Selecciona cada tipo de falla para ver cómo afecta el circuito.",
+      "section3Title": "Diagnóstico con Power Probe",
+      "section3Subtitle": "Procedimiento paso a paso para localizar fallas en el circuito.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas de diagnóstico. Selecciona la mejor respuesta para cada pregunta.",
+      "switchOn": "🔌 Interruptor: ON",
+      "switchOff": "⭕ Interruptor: OFF",
+      "circuitClosed": "¡Circuito cerrado! La lámpara enciende.",
+      "circuitOpen": "Circuito abierto. La lámpara apagada.",
+      "quickQuestion": "🤔 Pregunta rápida: ¿Qué pasa si el fusible se quema?",
+      "fuseExplanation": "Cuando el fusible se quema, su filamento interno se rompe y crea una abertura en el circuito. Esto detiene el flujo de corriente por completo — la lámpara no recibe voltaje y se apaga.",
+      "diagTipContent": "Siempre empieza probando la fuente de poder (batería). Si la fuente está bien, prueba secuencialmente cada componente hacia la carga. El punto donde el voltaje desaparece es donde está la falla.",
+      "navPills": {
+        "circuit": "⚡ Circuito Básico",
+        "faults": "🔧 Tipos de Fallas",
+        "probe": "🔌 Power Probe",
+        "quiz": "📝 Examen Final"
+      },
+      "components": {
+        "battery": {
+          "label": "🔋 Batería (12V)",
+          "desc": "La batería es la fuente de energía del circuito. Proporciona 12 voltios de corriente continua (DC). Sin batería no hay circuito."
+        },
+        "fuse": {
+          "label": "⚡ Fusible",
+          "desc": "El fusible protege el circuito contra sobrecargas. Si la corriente supera el amperaje del fusible, el filamento se rompe y el circuito se abre — protegiendo los demás componentes."
+        },
+        "switch": {
+          "label": "🔀 Interruptor",
+          "desc": "El interruptor controla el flujo de corriente. En posición ABIERTA, interrumpe el circuito (la lámpara se apaga). En posición CERRADA, completa el circuito (la lámpara enciende)."
+        },
+        "lamp": {
+          "label": "💡 Lámpara",
+          "desc": "La lámpara es la carga del circuito. Convierte energía eléctrica en luz y calor. Si la lámpara no enciende, puede ser la lámpara misma, o cualquier componente antes de ella."
+        },
+        "ground": {
+          "label": "⏚ Tierra (Ground)",
+          "desc": "La tierra completa el circuito de regreso a la batería. Sin una buena conexión a tierra, el circuito no funciona aunque todos los demás componentes estén bien."
+        }
+      },
+      "fuses": {
+        "q1a": "La lámpara enciende más brillante",
+        "q1b": "El circuito se abre y la lámpara no enciende",
+        "q1c": "La batería se descarga más rápido",
+        "q1d": "Solo el interruptor deja de funcionar"
+      },
+      "faults": {
+        "normal": {
+          "label": "✅ Normal",
+          "title": "Circuito Normal",
+          "desc": "Todos los componentes funcionan correctamente. El voltaje fluye desde la batería a través del fusible, interruptor y lámpara hasta tierra. La lámpara enciende.",
+          "reading": "12V en todos los puntos de prueba"
+        },
+        "open": {
+          "label": "🔴 Circuito Abierto",
+          "title": "Circuito Abierto (Open Circuit)",
+          "desc": "Una ruptura en el circuito impide el flujo de corriente. Puede ser un fusible quemado, un cable roto, un interruptor defectuoso o una mala conexión a tierra. La lámpara no enciende.",
+          "reading": "12V antes del punto abierto, 0V después"
+        },
+        "short": {
+          "label": "⚠️ Cortocircuito",
+          "title": "Cortocircuito (Short Circuit)",
+          "desc": "Un cable o componente crea un camino no deseado a tierra antes de llegar a la carga. Esto causa un flujo excesivo de corriente que quema el fusible. Es el tipo de falla más peligroso.",
+          "reading": "El fusible se quema inmediatamente, 0V en la lámpara"
+        },
+        "resistance": {
+          "label": "🟡 Alta Resistencia",
+          "title": "Alta Resistencia",
+          "desc": "Una conexión oxidada, terminal corroída o cable dañado crea resistencia adicional. La lámpara enciende pero con menos brillo. Con el tiempo puede causar calentamiento y falla completa.",
+          "reading": "Caída de voltaje en el punto de alta resistencia (ej. 9V en lámpara en vez de 12V)"
+        }
+      },
+      "probe": {
+        "step1Title": "Conectar Power Probe a la batería",
+        "step1Desc": "Conecta el cable ROJO del Power Probe al terminal POSITIVO (+) de la batería. Conecta el cable NEGRO al terminal NEGATIVO (−) o a tierra del chasis.",
+        "step1Label": "POWER PROBE\nLISTO",
+        "step1Tip": "El Power Probe siempre necesita referencia directa de la batería para funcionar correctamente.",
+        "step2Title": "Probar la fuente: Terminal + de la batería",
+        "step2Desc": "Toca con la punta del Power Probe el terminal positivo (+) de la batería. Debes ver 12V y la luz VERDE encender.",
+        "step2Label": "12.6V\n✅ POSITIVO",
+        "step2Tip": "Si no ves 12V aquí, el problema es la batería. Cárgala o reemplázala.",
+        "step3Title": "Probar salida del fusible",
+        "step3Desc": "Toca la salida del fusible (lado hacia la carga). Si el fusible está bueno, debes ver 12V. Si ves 0V, el fusible está quemado.",
+        "step3Label": "12.6V\n✅ FUSIBLE OK",
+        "step3Tip": "Puedes probar ambos lados del fusible. Si el lado de entrada tiene voltaje pero el de salida no, el fusible está quemado.",
+        "step4Title": "Probar entrada del interruptor",
+        "step4Desc": "Toca el terminal de entrada del interruptor (el que viene del fusible). Debes ver 12V aquí independientemente de si el interruptor está abierto o cerrado.",
+        "step4Label": "12.6V\n✅ VOLTAJE OK",
+        "step4Tip": "Si no hay voltaje en la entrada del interruptor, el problema está antes — revisa el fusible y los cables.",
+        "step5Title": "Probar salida del interruptor (ON)",
+        "step5Desc": "Con el interruptor en posición ON, toca su terminal de salida. Si el interruptor funciona bien, debes ver 12V. Si ves 0V con el interruptor ON, el interruptor está defectuoso.",
+        "step5Label": "0V\n❌ INTERRUPTOR\nDEFECTUOSO",
+        "step5Tip": "Este es el diagnóstico clave: 12V entrada + 0V salida con switch ON = switch malo. ¡Reemplaza el interruptor!",
+        "step6Title": "Verificar tierra de la lámpara",
+        "step6Desc": "Toca la conexión a tierra de la lámpara con el Power Probe. Si el Power Probe muestra una señal de tierra, el ground está bien.",
+        "step6Label": "GND\n✅ TIERRA OK",
+        "step6Tip": "Una mala tierra puede causar que la lámpara encienda tenuemente o no encienda en absoluto, aunque tenga voltaje en la entrada."
+      },
+      "quiz": {
+        "q1": "¿Qué muestra el Power Probe cuando hay un circuito abierto en el lado de la carga?",
+        "q1a": "12V con luz verde",
+        "q1b": "0V — no hay voltaje en la carga",
+        "q1c": "La batería se descarga rápido",
+        "q1d": "El fusible se quema inmediatamente",
+        "q1exp": "En un circuito abierto, la corriente no puede fluir. El Power Probe no detectará voltaje en el lado de la carga (después del punto de ruptura). Antes del punto de ruptura seguirá mostrando 12V.",
+        "q2": "¿Dónde debes conectar el cable NEGRO (negativo) del Power Probe para obtener lecturas precisas?",
+        "q2a": "A cualquier parte metálica del vehículo",
+        "q2b": "Al terminal negativo de la batería o tierra del chasis comprobada",
+        "q2c": "Al terminal positivo de la batería",
+        "q2d": "No importa — el Power Probe se calibra solo",
+        "q2exp": "La referencia de tierra debe ser sólida y directa. Una tierra mala dará lecturas incorrectas. Siempre usa el terminal negativo de la batería o un punto de tierra del chasis verificado.",
+        "q3": "Tienes 12V en la entrada del interruptor pero 0V en su salida con el interruptor en posición ON. ¿Cuál es el problema?",
+        "q3a": "La lámpara está quemada",
+        "q3b": "El fusible está quemado",
+        "q3c": "El interruptor está defectuoso",
+        "q3d": "La batería tiene baja carga",
+        "q3exp": "12V en la entrada y 0V en la salida con el switch ON es el diagnóstico definitivo de un interruptor defectuoso. El componente que tiene voltaje en su entrada pero no lo pasa a su salida es el componente fallado."
+      }
+    }
+  },
   "adminModules": {
     "title": "Módulos",
     "subtitle": "Crea y edita módulos usados en Entrenamiento, Onboarding, Cultura y Evaluaciones.",

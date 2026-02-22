@@ -387,6 +387,163 @@
       "description": "Required personal tools, shop equipment, lift operation protocol, and scanner access."
     }
   },
+  "lessons": {
+    "tabLabel": "Lessons",
+    "backToLessons": "← Back to Lessons",
+    "comingSoon": "Coming soon",
+    "markComplete": "Mark as complete",
+    "sectionComplete": "Section complete",
+    "progressLabel": "Progress",
+    "syncContent": "Sync lesson content for AI",
+    "syncing": "Syncing…",
+    "syncDone": "Lesson content synced — you can now generate assessments",
+    "interactiveLesson": "Interactive Lesson",
+    "sections": "sections",
+    "close": "Close ✕",
+    "previous": "← Previous",
+    "next": "Next →",
+    "tryAgain": "Try again",
+    "markLessonComplete": "✅ Mark lesson complete",
+    "step": "Step",
+    "of": "of",
+    "lessonComplete": "Lesson Complete!",
+    "lessonCompleteBody": "You completed \"%{title}\". Keep going with the next module!",
+    "correct": "✅ Correct!",
+    "incorrect": "❌ Incorrect",
+    "explanation": "Explanation",
+    "outOf": "/ {{total}} correct",
+    "scoreExcellent": "Excellent! You mastered the basic electrical diagnosis concepts.",
+    "scoreGood": "Good job! Review the concepts you missed and try again.",
+    "scoreReview": "Review the previous sections and try again. You can do it!",
+    "diagTip": "Diagnosis tip",
+    "tipPrefix": "Tip",
+
+    "electricalCircuitBasics": {
+      "title": "Basic Lamp Circuit",
+      "description": "How a car lamp circuit works and how to diagnose faults with a Power Probe.",
+      "section1Title": "Basic Lamp Circuit",
+      "section1Subtitle": "Click the switch to activate the circuit. Click each component to see its description.",
+      "section2Title": "Types of Electrical Faults",
+      "section2Subtitle": "Select each fault type to see how it affects the circuit.",
+      "section3Title": "Diagnosis with Power Probe",
+      "section3Subtitle": "Step-by-step procedure to locate circuit faults.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 diagnostic questions. Select the best answer for each.",
+      "switchOn": "🔌 Switch: ON",
+      "switchOff": "⭕ Switch: OFF",
+      "circuitClosed": "Circuit closed! Lamp is on.",
+      "circuitOpen": "Circuit open. Lamp is off.",
+      "quickQuestion": "🤔 Quick question: What happens if the fuse blows?",
+      "fuseExplanation": "When the fuse blows, its internal filament breaks and creates an opening in the circuit. This stops current flow completely — the lamp receives no voltage and goes off.",
+      "diagTipContent": "Always start by testing the power source (battery). If the source is good, test each component sequentially toward the load. The point where voltage disappears is where the fault is.",
+      "navPills": {
+        "circuit": "⚡ Basic Circuit",
+        "faults": "🔧 Fault Types",
+        "probe": "🔌 Power Probe",
+        "quiz": "📝 Final Quiz"
+      },
+      "components": {
+        "battery": {
+          "label": "🔋 Battery (12V)",
+          "desc": "The battery is the energy source of the circuit. It provides 12 volts of direct current (DC). Without a battery there is no circuit."
+        },
+        "fuse": {
+          "label": "⚡ Fuse",
+          "desc": "The fuse protects the circuit against overloads. If the current exceeds the fuse's amperage, the filament breaks and the circuit opens — protecting the other components."
+        },
+        "switch": {
+          "label": "🔀 Switch",
+          "desc": "The switch controls current flow. In the OPEN position it interrupts the circuit (lamp off). In the CLOSED position it completes the circuit (lamp on)."
+        },
+        "lamp": {
+          "label": "💡 Lamp",
+          "desc": "The lamp is the circuit load. It converts electrical energy into light and heat. If the lamp does not turn on, the issue could be the lamp itself or any component before it."
+        },
+        "ground": {
+          "label": "⏚ Ground",
+          "desc": "The ground completes the circuit back to the battery. Without a good ground connection, the circuit does not work even if all other components are good."
+        }
+      },
+      "fuses": {
+        "q1a": "The lamp turns on brighter",
+        "q1b": "The circuit opens and the lamp goes off",
+        "q1c": "The battery drains faster",
+        "q1d": "Only the switch stops working"
+      },
+      "faults": {
+        "normal": {
+          "label": "✅ Normal",
+          "title": "Normal Circuit",
+          "desc": "All components working correctly. Voltage flows from battery through fuse, switch and lamp to ground. Lamp turns on.",
+          "reading": "12V at all test points"
+        },
+        "open": {
+          "label": "🔴 Open Circuit",
+          "title": "Open Circuit",
+          "desc": "A break in the circuit prevents current flow. Can be a blown fuse, broken wire, defective switch or bad ground. Lamp does not turn on.",
+          "reading": "12V before the open point, 0V after"
+        },
+        "short": {
+          "label": "⚠️ Short Circuit",
+          "title": "Short Circuit",
+          "desc": "A wire or component creates an unintended path to ground before reaching the load. This causes excessive current that blows the fuse. This is the most dangerous fault type.",
+          "reading": "Fuse blows immediately, 0V at lamp"
+        },
+        "resistance": {
+          "label": "🟡 High Resistance",
+          "title": "High Resistance",
+          "desc": "A corroded connection, corroded terminal or damaged wire creates extra resistance. The lamp turns on but dimly. Over time it can cause overheating and complete failure.",
+          "reading": "Voltage drop at the high-resistance point (e.g. 9V at lamp instead of 12V)"
+        }
+      },
+      "probe": {
+        "step1Title": "Connect Power Probe to battery",
+        "step1Desc": "Connect the RED wire of the Power Probe to the POSITIVE (+) battery terminal. Connect the BLACK wire to the NEGATIVE (−) terminal or chassis ground.",
+        "step1Label": "POWER PROBE\nREADY",
+        "step1Tip": "The Power Probe always needs a direct battery reference to work correctly.",
+        "step2Title": "Test source: Battery + terminal",
+        "step2Desc": "Touch the Power Probe tip to the positive (+) battery terminal. You should see 12V and the GREEN light turn on.",
+        "step2Label": "12.6V\n✅ POSITIVE",
+        "step2Tip": "If you don't see 12V here, the problem is the battery. Charge or replace it.",
+        "step3Title": "Test fuse output",
+        "step3Desc": "Touch the fuse output (load side). If the fuse is good, you should see 12V. If you see 0V, the fuse is blown.",
+        "step3Label": "12.6V\n✅ FUSE OK",
+        "step3Tip": "You can test both sides of the fuse. If the input side has voltage but the output doesn't, the fuse is blown.",
+        "step4Title": "Test switch input",
+        "step4Desc": "Touch the switch input terminal (the one coming from the fuse). You should see 12V here regardless of whether the switch is open or closed.",
+        "step4Label": "12.6V\n✅ VOLTAGE OK",
+        "step4Tip": "If there is no voltage at the switch input, the problem is before it — check the fuse and wires.",
+        "step5Title": "Test switch output (ON)",
+        "step5Desc": "With the switch in the ON position, touch its output terminal. If the switch works correctly, you should see 12V. If you see 0V with the switch ON, the switch is defective.",
+        "step5Label": "0V\n❌ SWITCH\nDEFECTIVE",
+        "step5Tip": "This is the key diagnosis: 12V input + 0V output with switch ON = bad switch. Replace the switch!",
+        "step6Title": "Verify lamp ground",
+        "step6Desc": "Touch the lamp's ground connection with the Power Probe. If the Power Probe shows a ground signal, the ground is good.",
+        "step6Label": "GND\n✅ GROUND OK",
+        "step6Tip": "A bad ground can cause the lamp to turn on dimly or not at all, even if it has voltage at the input."
+      },
+      "quiz": {
+        "q1": "What does the Power Probe show when there is an open circuit on the load side?",
+        "q1a": "12V with green light",
+        "q1b": "0V — no voltage at the load",
+        "q1c": "The battery drains quickly",
+        "q1d": "The fuse blows immediately",
+        "q1exp": "In an open circuit, current cannot flow. The Power Probe will not detect voltage on the load side (after the break point). Before the break point it will still show 12V.",
+        "q2": "Where should you connect the BLACK (negative) wire of the Power Probe for accurate readings?",
+        "q2a": "To any metal part of the vehicle",
+        "q2b": "To the battery negative terminal or a verified chassis ground",
+        "q2c": "To the battery positive terminal",
+        "q2d": "It doesn't matter — the Power Probe self-calibrates",
+        "q2exp": "The ground reference must be solid and direct. A bad ground will give incorrect readings. Always use the battery negative terminal or a verified chassis ground point.",
+        "q3": "You have 12V at the switch input but 0V at its output with the switch in the ON position. What is the problem?",
+        "q3a": "The lamp is burned out",
+        "q3b": "The fuse is blown",
+        "q3c": "The switch is defective",
+        "q3d": "The battery is low",
+        "q3exp": "12V at the input and 0V at the output with the switch ON is the definitive diagnosis of a defective switch. The component that has voltage at its input but does not pass it to its output is the failed component."
+      }
+    }
+  },
   "adminModules": {
     "title": "Modules",
     "subtitle": "Create and edit modules used in Training, Onboarding, Culture, and Assessments.",

@@ -213,13 +213,21 @@ export function ModuleDetailPage() {
   // Active tab
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Interactive lesson (registered component for this module, if any)
-  const LessonComponent = lessonRegistry[module?.id] || null;
+  // Interactive lessons for this module (array of LessonConfig, or [])
+  const lessons = lessonRegistry[module?.id] || [];
 
-  // When module loads and a lesson exists, switch to "lesson" tab by default
+  // Which individual lesson is open (null = show gallery)
+  const [activeLessonId, setActiveLessonId] = useState(null);
+  const activeLesson = lessons.find((l) => l.id === activeLessonId) || null;
+
+  // Sync lesson content to module_resources for AI assessment (admin only)
+  const [syncLessonLoading, setSyncLessonLoading] = useState(false);
+  const [syncLessonMsg, setSyncLessonMsg] = useState("");
+
+  // When module loads and lessons exist, switch to "lessons" tab by default
   useEffect(() => {
-    if (module?.id && lessonRegistry[module.id]) {
-      setActiveTab("lesson");
+    if (module?.id && (lessonRegistry[module.id] || []).length > 0) {
+      setActiveTab("lessons");
     }
   }, [module?.id]);
 
@@ -307,6 +315,27 @@ export function ModuleDetailPage() {
       setSyncMsg(e.message || "Sync failed");
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const syncLessonContent = async () => {
+    setSyncLessonMsg("");
+    setSyncLessonLoading(true);
+    try {
+      const payload = lessons.map((l) => ({
+        id:    l.id,
+        title: t(l.titleKey),
+        text:  l.contentText || "",
+      }));
+      await apiFetch(`/api/admin/modules/${id}/sync-lesson-content`, {
+        method: "POST",
+        body: { lessons: payload },
+      });
+      setSyncLessonMsg(t("lessons.syncDone"));
+    } catch (e) {
+      setSyncLessonMsg(e.message || "Sync failed");
+    } finally {
+      setSyncLessonLoading(false);
     }
   };
 
@@ -497,16 +526,16 @@ export function ModuleDetailPage() {
 
       {/* ── Tab navigation ───────────────────────────────────────────────── */}
       <div className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm overflow-x-auto">
-        {LessonComponent && (
+        {lessons.length > 0 && (
           <button
-            onClick={() => setActiveTab("lesson")}
+            onClick={() => { setActiveTab("lessons"); setActiveLessonId(null); }}
             className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
             style={{
-              background: activeTab === "lesson" ? "#1E6FAE" : "transparent",
-              color:      activeTab === "lesson" ? "white"   : "#64748b",
+              background: activeTab === "lessons" ? "#1E6FAE" : "transparent",
+              color:      activeTab === "lessons" ? "white"   : "#64748b",
             }}
           >
-            📖 Lección
+            📖 {t("lessons.tabLabel")}
           </button>
         )}
         <button
@@ -517,7 +546,7 @@ export function ModuleDetailPage() {
             color:      activeTab === "overview" ? "white"   : "#64748b",
           }}
         >
-          📋 Contenido
+          📋 {t("moduleDetail.user.contentTitle", "Content")}
         </button>
         <button
           onClick={() => setActiveTab("assessments")}
@@ -527,13 +556,76 @@ export function ModuleDetailPage() {
             color:      activeTab === "assessments" ? "white"   : "#64748b",
           }}
         >
-          🎯 Evaluaciones
+          🎯 {t("moduleDetail.assessmentsTitle")}
         </button>
       </div>
 
-      {/* ── Lesson tab ───────────────────────────────────────────────────── */}
-      {activeTab === "lesson" && LessonComponent && (
-        <LessonComponent />
+      {/* ── Lessons tab ──────────────────────────────────────────────────── */}
+      {activeTab === "lessons" && lessons.length > 0 && (
+        <div className="space-y-4">
+          {/* Back button + individual lesson view */}
+          {activeLesson ? (
+            <>
+              <button
+                onClick={() => setActiveLessonId(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-extrabold border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                type="button"
+              >
+                {t("lessons.backToLessons")}
+              </button>
+              <activeLesson.component />
+            </>
+          ) : (
+            /* Lesson gallery */
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {lessons.map((lesson) => (
+                  <button
+                    key={lesson.id}
+                    onClick={() => setActiveLessonId(lesson.id)}
+                    className="text-left rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm hover:border-blue-400 hover:shadow-md transition-all"
+                    type="button"
+                  >
+                    <div className="text-3xl mb-3">{lesson.icon}</div>
+                    <div className="font-extrabold text-slate-800 mb-1">
+                      {t(lesson.titleKey)}
+                    </div>
+                    <div className="text-sm text-slate-500 mb-4">
+                      {t(lesson.descriptionKey)}
+                    </div>
+                    <div
+                      className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-extrabold text-white"
+                      style={{ background: "#1E6FAE" }}
+                    >
+                      {t("moduleDetail.user.read", "Open")} →
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Admin: sync lesson content for AI assessment generation */}
+              {isAdmin && (
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex-1 text-sm text-slate-600">
+                    <span className="font-extrabold text-slate-700">Admin:</span>{" "}
+                    {t("lessons.syncContent")}
+                  </div>
+                  <button
+                    onClick={syncLessonContent}
+                    disabled={syncLessonLoading}
+                    className="btn-outline-sm disabled:opacity-60 flex-shrink-0"
+                    type="button"
+                  >
+                    {syncLessonLoading ? t("lessons.syncing") : t("lessons.syncContent")}
+                  </button>
+                  {syncLessonMsg ? (
+                    <div className="text-xs text-slate-600 sm:ml-2">{syncLessonMsg}</div>
+                  ) : null}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       )}
 
       {/* ── Assessments tab ──────────────────────────────────────────────── */}

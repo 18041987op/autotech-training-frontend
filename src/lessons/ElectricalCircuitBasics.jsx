@@ -1,13 +1,17 @@
 /**
- * ElectricalCircuitBasics — Interactive Lesson
+ * ElectricalCircuitBasics — Interactive Lesson (Bilingual via i18n)
  *
  * Sections:
  *   1. Basic Circuit — animated SVG, switch ON/OFF, clickable components
  *   2. Types of Faults — Open / Short / High Resistance toggle
  *   3. Testing with a Power Probe — step-by-step procedure
  *   4. Mini-Quiz — 3 diagnostic questions
+ *
+ * All content strings come from i18n keys under "lessons.electricalCircuitBasics.*"
+ * so the lesson is fully bilingual (EN / ES).
  */
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // ─── Brand tokens ──────────────────────────────────────────────────────────────
 const B_BLUE   = "#1E6FAE";
@@ -85,30 +89,8 @@ function InfoBox({ children, color = "blue" }) {
 }
 
 // ─── SECTION 1: Basic Circuit ─────────────────────────────────────────────────
-const COMPONENTS = {
-  battery: {
-    label: "🔋 Batería (12V)",
-    desc:  "La batería es la fuente de energía del circuito. Proporciona 12 voltios de corriente continua (DC). Sin batería no hay circuito.",
-  },
-  fuse: {
-    label: "⚡ Fusible",
-    desc:  "El fusible protege el circuito contra sobrecargas. Si la corriente supera el amperaje del fusible, el filamento se rompe y el circuito se abre — protegiendo los demás componentes.",
-  },
-  switch: {
-    label: "🔀 Interruptor",
-    desc:  "El interruptor controla el flujo de corriente. En posición ABIERTA, interrumpe el circuito (la lámpara se apaga). En posición CERRADA, completa el circuito (la lámpara enciende).",
-  },
-  lamp: {
-    label: "💡 Lámpara",
-    desc:  "La lámpara es la carga del circuito. Convierte energía eléctrica en luz y calor. Si la lámpara no enciende, puede ser la lámpara misma, o cualquier componente antes de ella.",
-  },
-  ground: {
-    label: "⏚ Tierra (Ground)",
-    desc:  "La tierra completa el circuito de regreso a la batería. Sin una buena conexión a tierra, el circuito no funciona aunque todos los demás componentes estén bien.",
-  },
-};
-
 function CircuitSection() {
+  const { t } = useTranslation();
   const [switchOn, setSwitchOn]   = useState(false);
   const [selected, setSelected]   = useState(null);
   const [quizAnswer, setQuizAnswer] = useState(null);
@@ -118,11 +100,13 @@ function CircuitSection() {
   const lampFill      = circuitClosed ? "#fef08a" : "#f1f5f9";
   const lampStroke    = circuitClosed ? B_ORANGE  : "#94a3b8";
 
+  const COMPONENT_KEYS = ["battery", "fuse", "switch", "lamp", "ground"];
+
   return (
     <SectionCard
       icon="⚡"
-      title="Circuito Básico de Lámpara"
-      subtitle="Haz clic en el interruptor para activar el circuito. Haz clic en cada componente para ver su descripción."
+      title={t("lessons.electricalCircuitBasics.section1Title")}
+      subtitle={t("lessons.electricalCircuitBasics.section1Subtitle")}
     >
       {/* SVG Circuit */}
       <div className="flex justify-center mb-6">
@@ -160,7 +144,7 @@ function CircuitSection() {
             <rect x="150" y="45" width="60" height="30" rx="6"
               fill={selected === "fuse" ? B_SOFT : "#f8fafc"}
               stroke={selected === "fuse" ? B_BLUE : "#94a3b8"} strokeWidth="2" />
-            <text x="180" y="60" textAnchor="middle" fontSize="10" fontWeight="700" fill="#334155">⚡ Fusible</text>
+            <text x="180" y="60" textAnchor="middle" fontSize="10" fontWeight="700" fill="#334155">⚡ Fuse</text>
             <text x="180" y="71" textAnchor="middle" fontSize="8" fill="#64748b">15A</text>
           </g>
 
@@ -208,13 +192,17 @@ function CircuitSection() {
       </div>
 
       {/* Component description */}
-      {selected && COMPONENTS[selected] && (
+      {selected && COMPONENT_KEYS.includes(selected) && (
         <div className="mb-4 rounded-2xl border-2 p-4 text-sm"
           style={{ borderColor: B_BLUE, background: B_SOFT }}>
-          <div className="font-extrabold text-slate-800 mb-1">{COMPONENTS[selected].label}</div>
-          <div className="text-slate-700">{COMPONENTS[selected].desc}</div>
+          <div className="font-extrabold text-slate-800 mb-1">
+            {t(`lessons.electricalCircuitBasics.components.${selected}.label`)}
+          </div>
+          <div className="text-slate-700">
+            {t(`lessons.electricalCircuitBasics.components.${selected}.desc`)}
+          </div>
           <button className="mt-2 text-xs text-blue-600 underline" onClick={() => setSelected(null)}>
-            Cerrar ✕
+            {t("lessons.close")}
           </button>
         </div>
       )}
@@ -230,37 +218,43 @@ function CircuitSection() {
             border:       `2px solid ${switchOn ? B_BLUE : "#cbd5e1"}`,
           }}
         >
-          {switchOn ? "🔌 Interruptor: ON" : "⭕ Interruptor: OFF"}
+          {switchOn
+            ? t("lessons.electricalCircuitBasics.switchOn")
+            : t("lessons.electricalCircuitBasics.switchOff")}
         </button>
         <span className="text-sm text-slate-600">
-          {switchOn ? "¡Circuito cerrado! La lámpara enciende." : "Circuito abierto. La lámpara apagada."}
+          {switchOn
+            ? t("lessons.electricalCircuitBasics.circuitClosed")
+            : t("lessons.electricalCircuitBasics.circuitOpen")}
         </span>
       </div>
 
       {/* Mini-quiz */}
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="font-extrabold text-slate-800 mb-3 text-sm">
-          🤔 Pregunta rápida: ¿Qué pasa si el fusible se quema?
+          {t("lessons.electricalCircuitBasics.quickQuestion")}
         </div>
         <div className="grid gap-2">
           {[
-            { id: "a", text: "La lámpara enciende más brillante",             correct: false },
-            { id: "b", text: "El circuito se abre y la lámpara no enciende",  correct: true  },
-            { id: "c", text: "La batería se descarga más rápido",              correct: false },
-            { id: "d", text: "Solo el interruptor deja de funcionar",          correct: false },
+            { id: "a", tKey: "q1a", correct: false },
+            { id: "b", tKey: "q1b", correct: true  },
+            { id: "c", tKey: "q1c", correct: false },
+            { id: "d", tKey: "q1d", correct: false },
           ].map((opt) => {
             const chosen = quizAnswer === opt.id;
             let bg = "bg-white border-slate-200";
             let label = null;
             if (chosen) {
               bg    = opt.correct ? "border-brand-primary bg-blue-50" : "border-brand-accent bg-orange-50";
-              label = opt.correct ? "✅ ¡Correcto!" : "❌ Incorrecto";
+              label = opt.correct
+                ? t("lessons.correct")
+                : t("lessons.incorrect");
             }
             return (
               <button key={opt.id} onClick={() => setQuizAnswer(opt.id)}
                 className={`text-left px-4 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${bg}`}>
                 <span className="mr-2 text-slate-500">{opt.id.toUpperCase()}.</span>
-                {opt.text}
+                {t(`lessons.electricalCircuitBasics.fuses.${opt.tKey}`)}
                 {label && (
                   <span className={`ml-2 text-xs font-extrabold ${opt.correct ? "text-blue-700" : "text-orange-700"}`}>
                     {label}
@@ -272,7 +266,7 @@ function CircuitSection() {
         </div>
         {quizAnswer && (
           <div className="mt-3 text-xs text-slate-600 rounded-xl bg-white border border-slate-200 p-3">
-            <strong>Explicación:</strong> Cuando el fusible se quema, su filamento interno se rompe y crea una abertura en el circuito. Esto detiene el flujo de corriente por completo — la lámpara no recibe voltaje y se apaga.
+            <strong>{t("lessons.explanation")}:</strong> {t("lessons.electricalCircuitBasics.fuseExplanation")}
           </div>
         )}
       </div>
@@ -281,71 +275,51 @@ function CircuitSection() {
 }
 
 // ─── SECTION 2: Types of Faults ───────────────────────────────────────────────
-const FAULTS = [
-  {
-    id: "normal",
-    label: "✅ Normal",
-    color: B_GREEN,
-    wireColor: B_BLUE,
-    lampOn: true,
-    title: "Circuito Normal",
-    desc: "Todos los componentes funcionan correctamente. El voltaje fluye desde la batería a través del fusible, interruptor y lámpara hasta tierra. La lámpara enciende.",
-    reading: "12V en todos los puntos de prueba",
-  },
-  {
-    id: "open",
-    label: "🔴 Circuito Abierto",
-    color: B_RED,
-    wireColor: B_RED,
-    lampOn: false,
-    title: "Circuito Abierto (Open Circuit)",
-    desc: "Una ruptura en el circuito impide el flujo de corriente. Puede ser un fusible quemado, un cable roto, un interruptor defectuoso o una mala conexión a tierra. La lámpara no enciende.",
-    reading: "12V antes del punto abierto, 0V después",
-  },
-  {
-    id: "short",
-    label: "⚠️ Cortocircuito",
-    color: B_ORANGE,
-    wireColor: B_ORANGE,
-    lampOn: false,
-    title: "Cortocircuito (Short Circuit)",
-    desc: "Un cable o componente crea un camino no deseado a tierra antes de llegar a la carga. Esto causa un flujo excesivo de corriente que quema el fusible. Es el tipo de falla más peligroso.",
-    reading: "El fusible se quema inmediatamente, 0V en la lámpara",
-  },
-  {
-    id: "resistance",
-    label: "🟡 Alta Resistencia",
-    color: "#eab308",
-    wireColor: "#eab308",
-    lampOn: true,
-    dim: true,
-    title: "Alta Resistencia",
-    desc: "Una conexión oxidada, terminal corroída o cable dañado crea resistencia adicional. La lámpara enciende pero con menos brillo. Con el tiempo puede causar calentamiento y falla completa.",
-    reading: "Caída de voltaje en el punto de alta resistencia (ej. 9V en lámpara en vez de 12V)",
-  },
-];
+const FAULT_IDS = ["normal", "open", "short", "resistance"];
 
 function FaultsSection() {
+  const { t } = useTranslation();
   const [fault, setFault] = useState("normal");
-  const current = FAULTS.find((f) => f.id === fault);
+
+  const FAULT_COLORS = {
+    normal:     B_GREEN,
+    open:       B_RED,
+    short:      B_ORANGE,
+    resistance: "#eab308",
+  };
+
+  const FAULT_WIRE_COLORS = {
+    normal:     B_BLUE,
+    open:       B_RED,
+    short:      B_ORANGE,
+    resistance: "#eab308",
+  };
+
+  const FAULT_LAMP_ON  = { normal: true,  open: false, short: false, resistance: true  };
+  const FAULT_LAMP_DIM = { normal: false, open: false, short: false, resistance: true  };
+
+  const color     = FAULT_COLORS[fault];
+  const wireColor = FAULT_WIRE_COLORS[fault];
+  const lampOn    = FAULT_LAMP_ON[fault];
+  const dim       = FAULT_LAMP_DIM[fault];
 
   return (
     <SectionCard
       icon="🔧"
-      title="Tipos de Fallas Eléctricas"
-      subtitle="Selecciona cada tipo de falla para ver cómo afecta el circuito."
+      title={t("lessons.electricalCircuitBasics.section2Title")}
+      subtitle={t("lessons.electricalCircuitBasics.section2Subtitle")}
     >
       {/* Fault selector */}
       <div className="flex flex-wrap gap-2 mb-5">
-        {FAULTS.map((f) => (
-          <button key={f.id} onClick={() => setFault(f.id)}
+        {FAULT_IDS.map((id) => (
+          <button key={id} onClick={() => setFault(id)}
             className="px-4 py-2 rounded-2xl text-sm font-extrabold border-2 transition-all"
             style={{
-              borderColor: fault === f.id ? f.color : "#e2e8f0",
-              background:  fault === f.id ? f.color + "18" : "white",
-              color:       fault === f.id ? f.color : "#64748b",
+              borderColor: fault === id ? FAULT_COLORS[id] : "#e2e8f0",
+              background:  fault === id ? FAULT_COLORS[id] + "18" : "white",
+              color:       fault === id ? FAULT_COLORS[id] : "#64748b",
             }}>
-            {f.label}
+            {t(`lessons.electricalCircuitBasics.faults.${id}.label`)}
           </button>
         ))}
       </div>
@@ -353,31 +327,31 @@ function FaultsSection() {
       {/* Fault SVG */}
       <div className="flex justify-center mb-5">
         <svg viewBox="0 0 420 200" className="w-full max-w-lg">
-          {current.id === "open" ? (
+          {fault === "open" ? (
             <>
-              <path d="M60,60 H230" stroke={current.wireColor} strokeWidth="4" fill="none" strokeLinecap="round" />
+              <path d="M60,60 H230" stroke={wireColor} strokeWidth="4" fill="none" strokeLinecap="round" />
               <path d="M270,60 H340" stroke="#cbd5e1" strokeWidth="4" fill="none" strokeLinecap="round" />
               <line x1="238" y1="50" x2="248" y2="72" stroke={B_RED} strokeWidth="3" />
               <line x1="252" y1="50" x2="262" y2="72" stroke={B_RED} strokeWidth="3" />
               <text x="250" y="45" textAnchor="middle" fontSize="9" fill={B_RED} fontWeight="700">OPEN</text>
             </>
-          ) : current.id === "short" ? (
+          ) : fault === "short" ? (
             <>
-              <path d="M60,60 H180" stroke={current.wireColor} strokeWidth="4" fill="none" strokeLinecap="round" />
+              <path d="M60,60 H180" stroke={wireColor} strokeWidth="4" fill="none" strokeLinecap="round" />
               <path d="M180,60 L180,160" stroke={B_RED} strokeWidth="4" strokeDasharray="6 4" fill="none" />
               <text x="195" y="115" fontSize="9" fill={B_RED} fontWeight="700">SHORT!</text>
               <path d="M180,60 H340" stroke="#cbd5e1" strokeWidth="4" fill="none" strokeLinecap="round" />
             </>
           ) : (
-            <path d="M60,60 H340" stroke={current.wireColor} strokeWidth="4"
-              className={current.lampOn && !current.dim ? "electron-wire" : ""}
+            <path d="M60,60 H340" stroke={wireColor} strokeWidth="4"
+              className={lampOn && !dim ? "electron-wire" : ""}
               fill="none" strokeLinecap="round" />
           )}
-          <path d="M340,160 H60" stroke={current.id === "open" ? "#cbd5e1" : current.wireColor}
+          <path d="M340,160 H60" stroke={fault === "open" ? "#cbd5e1" : wireColor}
             strokeWidth="4" fill="none" strokeLinecap="round" />
-          <line x1="60"  y1="60"  x2="60"  y2="160" stroke={current.wireColor} strokeWidth="4" />
+          <line x1="60"  y1="60"  x2="60"  y2="160" stroke={wireColor} strokeWidth="4" />
           <line x1="340" y1="60"  x2="340" y2="160"
-            stroke={current.id === "open" ? "#cbd5e1" : current.wireColor} strokeWidth="4" />
+            stroke={fault === "open" ? "#cbd5e1" : wireColor} strokeWidth="4" />
 
           {/* Battery */}
           <rect x="20" y="90" width="80" height="38" rx="8" fill="#f8fafc" stroke="#94a3b8" strokeWidth="2" />
@@ -386,35 +360,35 @@ function FaultsSection() {
 
           {/* Fuse */}
           <rect x="150" y="45" width="60" height="28" rx="6"
-            fill={current.id === "short" ? "#fee2e2" : "#f8fafc"}
-            stroke={current.id === "short" ? B_RED : "#94a3b8"} strokeWidth="2" />
+            fill={fault === "short" ? "#fee2e2" : "#f8fafc"}
+            stroke={fault === "short" ? B_RED : "#94a3b8"} strokeWidth="2" />
           <text x="180" y="60" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="700">
-            {current.id === "short" ? "💥 FUSIBLE" : "⚡ Fusible"}
+            {fault === "short" ? "💥 FUSE" : "⚡ Fuse"}
           </text>
           <text x="180" y="70" textAnchor="middle" fontSize="8" fill="#64748b">
-            {current.id === "short" ? "QUEMADO" : "15A"}
+            {fault === "short" ? "BLOWN" : "15A"}
           </text>
 
           {/* Switch */}
           <rect x="235" y="44" width="55" height="28" rx="6"
-            fill={current.id === "open" ? "#fee2e2" : "#f0fdf4"}
-            stroke={current.id === "open" ? B_RED : "#86efac"} strokeWidth="2" />
+            fill={fault === "open" ? "#fee2e2" : "#f0fdf4"}
+            stroke={fault === "open" ? B_RED : "#86efac"} strokeWidth="2" />
           <text x="262" y="62" textAnchor="middle" fontSize="9" fill="#334155" fontWeight="700">
-            {current.id === "open" ? "🔴 OPEN" : "🟢 ON"}
+            {fault === "open" ? "🔴 OPEN" : "🟢 ON"}
           </text>
 
           {/* Lamp */}
-          {current.lampOn && (
+          {lampOn && (
             <circle cx="340" cy="110" r="26" fill="#fef08a"
-              opacity={current.dim ? 0.3 : 0.4}
-              className={current.dim ? "" : "lamp-glow"} />
+              opacity={dim ? 0.3 : 0.4}
+              className={dim ? "" : "lamp-glow"} />
           )}
           <circle cx="340" cy="110" r="21"
-            fill={current.lampOn ? (current.dim ? "#fef9c3" : "#fef08a") : "#f1f5f9"}
-            stroke={current.lampOn ? B_ORANGE : "#94a3b8"} strokeWidth="2.5" />
+            fill={lampOn ? (dim ? "#fef9c3" : "#fef08a") : "#f1f5f9"}
+            stroke={lampOn ? B_ORANGE : "#94a3b8"} strokeWidth="2.5" />
           <text x="340" y="107" textAnchor="middle" fontSize="13">💡</text>
           <text x="340" y="119" textAnchor="middle" fontSize="8" fill="#64748b">
-            {current.dim ? "TENUE" : current.lampOn ? "ON" : "OFF"}
+            {dim ? "DIM" : lampOn ? "ON" : "OFF"}
           </text>
 
           {/* Ground */}
@@ -427,98 +401,49 @@ function FaultsSection() {
 
       {/* Fault description */}
       <div className="rounded-2xl border-2 p-4 text-sm mb-4"
-        style={{ borderColor: current.color, background: current.color + "10" }}>
-        <div className="font-extrabold text-slate-800 mb-1">{current.title}</div>
-        <div className="text-slate-700 mb-2">{current.desc}</div>
+        style={{ borderColor: color, background: color + "10" }}>
+        <div className="font-extrabold text-slate-800 mb-1">
+          {t(`lessons.electricalCircuitBasics.faults.${fault}.title`)}
+        </div>
+        <div className="text-slate-700 mb-2">
+          {t(`lessons.electricalCircuitBasics.faults.${fault}.desc`)}
+        </div>
         <div className="rounded-xl bg-white border px-3 py-2 text-xs font-mono text-slate-600 border-slate-200">
-          📊 Power Probe: {current.reading}
+          📊 Power Probe: {t(`lessons.electricalCircuitBasics.faults.${fault}.reading`)}
         </div>
       </div>
 
       <InfoBox>
-        <strong>Consejo de diagnóstico:</strong> Siempre empieza probando la fuente de poder (batería). Si la fuente está bien, prueba secuencialmente cada componente hacia la carga. El punto donde el voltaje desaparece es donde está la falla.
+        <strong>{t("lessons.diagTip")}:</strong> {t("lessons.electricalCircuitBasics.diagTipContent")}
       </InfoBox>
     </SectionCard>
   );
 }
 
 // ─── SECTION 3: Power Probe Testing ──────────────────────────────────────────
-const PROBE_STEPS = [
-  {
-    step: 1,
-    title: "Conectar Power Probe a la batería",
-    desc: "Conecta el cable ROJO del Power Probe al terminal POSITIVO (+) de la batería. Conecta el cable NEGRO al terminal NEGATIVO (−) o a tierra del chasis.",
-    probeState: "ready",
-    probeLabel: "POWER PROBE\nLISTO",
-    probeColor: B_GREEN,
-    testPoint: null,
-    tip: "El Power Probe siempre necesita referencia directa de la batería para funcionar correctamente.",
-  },
-  {
-    step: 2,
-    title: "Probar la fuente: Terminal + de la batería",
-    desc: "Toca con la punta del Power Probe el terminal positivo (+) de la batería. Debes ver 12V y la luz VERDE encender.",
-    probeState: "positive",
-    probeLabel: "12.6V\n✅ POSITIVO",
-    probeColor: B_GREEN,
-    testPoint: "battery",
-    tip: "Si no ves 12V aquí, el problema es la batería. Cárgala o reemplázala.",
-  },
-  {
-    step: 3,
-    title: "Probar salida del fusible",
-    desc: "Toca la salida del fusible (lado hacia la carga). Si el fusible está bueno, debes ver 12V. Si ves 0V, el fusible está quemado.",
-    probeState: "positive",
-    probeLabel: "12.6V\n✅ FUSIBLE OK",
-    probeColor: B_GREEN,
-    testPoint: "fuse",
-    tip: "Puedes probar ambos lados del fusible. Si el lado de entrada tiene voltaje pero el de salida no, el fusible está quemado.",
-  },
-  {
-    step: 4,
-    title: "Probar entrada del interruptor",
-    desc: "Toca el terminal de entrada del interruptor (el que viene del fusible). Debes ver 12V aquí independientemente de si el interruptor está abierto o cerrado.",
-    probeState: "positive",
-    probeLabel: "12.6V\n✅ VOLTAJE OK",
-    probeColor: B_GREEN,
-    testPoint: "switch_in",
-    tip: "Si no hay voltaje en la entrada del interruptor, el problema está antes — revisa el fusible y los cables.",
-  },
-  {
-    step: 5,
-    title: "Probar salida del interruptor (ON)",
-    desc: "Con el interruptor en posición ON, toca su terminal de salida. Si el interruptor funciona bien, debes ver 12V. Si ves 0V con el interruptor ON, el interruptor está defectuoso.",
-    probeState: "fault",
-    probeLabel: "0V\n❌ INTERRUPTOR\nDEFECTUOSO",
-    probeColor: B_RED,
-    testPoint: "switch_out",
-    tip: "Este es el diagnóstico clave: 12V entrada + 0V salida con switch ON = switch malo. ¡Reemplaza el interruptor!",
-  },
-  {
-    step: 6,
-    title: "Verificar tierra de la lámpara",
-    desc: "Toca la conexión a tierra de la lámpara con el Power Probe. Si el Power Probe muestra una señal de tierra, el ground está bien.",
-    probeState: "ground",
-    probeLabel: "GND\n✅ TIERRA OK",
-    probeColor: B_BLUE,
-    testPoint: "ground",
-    tip: "Una mala tierra puede causar que la lámpara encienda tenuemente o no encienda en absoluto, aunque tenga voltaje en la entrada.",
-  },
+const PROBE_STEP_KEYS = [
+  { step: 1, key: "step1", probeState: "ready",    probeColor: B_GREEN, testPoint: null       },
+  { step: 2, key: "step2", probeState: "positive", probeColor: B_GREEN, testPoint: "battery"  },
+  { step: 3, key: "step3", probeState: "positive", probeColor: B_GREEN, testPoint: "fuse"     },
+  { step: 4, key: "step4", probeState: "positive", probeColor: B_GREEN, testPoint: "switch_in"},
+  { step: 5, key: "step5", probeState: "fault",    probeColor: B_RED,   testPoint: "switch_out"},
+  { step: 6, key: "step6", probeState: "ground",   probeColor: B_BLUE,  testPoint: "ground"   },
 ];
 
 function PowerProbeSection() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
-  const current = PROBE_STEPS[step];
+  const current = PROBE_STEP_KEYS[step];
 
   return (
     <SectionCard
       icon="🔌"
-      title="Diagnóstico con Power Probe"
-      subtitle="Procedimiento paso a paso para localizar fallas en el circuito."
+      title={t("lessons.electricalCircuitBasics.section3Title")}
+      subtitle={t("lessons.electricalCircuitBasics.section3Subtitle")}
     >
       {/* Step dots */}
       <div className="flex items-center gap-2 mb-5 flex-wrap">
-        {PROBE_STEPS.map((s, i) => (
+        {PROBE_STEP_KEYS.map((s, i) => (
           <button key={i} onClick={() => setStep(i)}
             className="w-9 h-9 rounded-full text-sm font-extrabold border-2 transition-all"
             style={{
@@ -530,7 +455,7 @@ function PowerProbeSection() {
           </button>
         ))}
         <span className="text-xs text-slate-500 ml-1">
-          Paso {step + 1} de {PROBE_STEPS.length}
+          {t("lessons.step")} {step + 1} {t("lessons.of")} {PROBE_STEP_KEYS.length}
         </span>
       </div>
 
@@ -555,7 +480,7 @@ function PowerProbeSection() {
           <rect x="150" y="55" width="60" height="28" rx="6"
             fill={current.testPoint === "fuse" ? B_SOFT : "#f8fafc"}
             stroke={current.testPoint === "fuse" ? B_BLUE : "#94a3b8"} strokeWidth="2" />
-          <text x="180" y="70" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="700">⚡ Fusible</text>
+          <text x="180" y="70" textAnchor="middle" fontSize="10" fill="#334155" fontWeight="700">⚡ Fuse</text>
           <text x="180" y="80" textAnchor="middle" fontSize="8" fill="#64748b">15A</text>
 
           {/* Switch */}
@@ -586,7 +511,7 @@ function PowerProbeSection() {
           {/* Power Probe display */}
           <rect x="365" y="15" width="88" height="52" rx="8" fill="#1e293b" stroke={current.probeColor} strokeWidth="2.5" />
           <text x="409" y="31" textAnchor="middle" fontSize="8" fontWeight="700" fill={current.probeColor}>POWER PROBE</text>
-          {current.probeLabel.split("\n").map((line, i) => (
+          {t(`lessons.electricalCircuitBasics.probe.${current.key}Label`).split("\n").map((line, i) => (
             <text key={i} x="409" y={43 + i * 11} textAnchor="middle" fontSize="9" fontWeight="700"
               fill={current.probeColor}>{line}</text>
           ))}
@@ -602,27 +527,31 @@ function PowerProbeSection() {
             {current.step}
           </span>
           <div>
-            <div className="font-extrabold text-slate-800 mb-1">{current.title}</div>
-            <div className="text-sm text-slate-700">{current.desc}</div>
+            <div className="font-extrabold text-slate-800 mb-1">
+              {t(`lessons.electricalCircuitBasics.probe.${current.key}Title`)}
+            </div>
+            <div className="text-sm text-slate-700">
+              {t(`lessons.electricalCircuitBasics.probe.${current.key}Desc`)}
+            </div>
           </div>
         </div>
       </div>
 
       <InfoBox color={current.probeState === "fault" ? "orange" : "blue"}>
-        💡 <strong>Tip:</strong> {current.tip}
+        💡 <strong>{t("lessons.tipPrefix")}:</strong> {t(`lessons.electricalCircuitBasics.probe.${current.key}Tip`)}
       </InfoBox>
 
       {/* Navigation */}
       <div className="flex justify-between mt-5">
         <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0}
           className="px-5 py-2 rounded-2xl text-sm font-extrabold border-2 border-slate-200 text-slate-600 disabled:opacity-40 hover:bg-slate-50 transition-all">
-          ← Anterior
+          {t("lessons.previous")}
         </button>
-        <button onClick={() => setStep((s) => Math.min(PROBE_STEPS.length - 1, s + 1))}
-          disabled={step === PROBE_STEPS.length - 1}
+        <button onClick={() => setStep((s) => Math.min(PROBE_STEP_KEYS.length - 1, s + 1))}
+          disabled={step === PROBE_STEP_KEYS.length - 1}
           className="px-5 py-2 rounded-2xl text-sm font-extrabold text-white transition-all disabled:opacity-40"
           style={{ background: B_BLUE }}>
-          Siguiente →
+          {t("lessons.next")}
         </button>
       </div>
     </SectionCard>
@@ -630,46 +559,47 @@ function PowerProbeSection() {
 }
 
 // ─── SECTION 4: Final Quiz ────────────────────────────────────────────────────
-const QUIZ_QUESTIONS = [
+const QUIZ_Q_KEYS = [
   {
     id: 1,
-    q: "¿Qué muestra el Power Probe cuando hay un circuito abierto en el lado de la carga?",
+    qKey: "q1",
     options: [
-      { id: "a", text: "12V con luz verde",                      correct: false },
-      { id: "b", text: "0V — no hay voltaje en la carga",        correct: true  },
-      { id: "c", text: "La batería se descarga rápido",          correct: false },
-      { id: "d", text: "El fusible se quema inmediatamente",     correct: false },
+      { id: "a", tKey: "q1a", correct: false },
+      { id: "b", tKey: "q1b", correct: true  },
+      { id: "c", tKey: "q1c", correct: false },
+      { id: "d", tKey: "q1d", correct: false },
     ],
-    explanation: "En un circuito abierto, la corriente no puede fluir. El Power Probe no detectará voltaje en el lado de la carga (después del punto de ruptura). Antes del punto de ruptura seguirá mostrando 12V.",
+    expKey: "q1exp",
   },
   {
     id: 2,
-    q: "¿Dónde debes conectar el cable NEGRO (negativo) del Power Probe para obtener lecturas precisas?",
+    qKey: "q2",
     options: [
-      { id: "a", text: "A cualquier parte metálica del vehículo",                               correct: false },
-      { id: "b", text: "Al terminal negativo de la batería o tierra del chasis comprobada",     correct: true  },
-      { id: "c", text: "Al terminal positivo de la batería",                                    correct: false },
-      { id: "d", text: "No importa — el Power Probe se calibra solo",                           correct: false },
+      { id: "a", tKey: "q2a", correct: false },
+      { id: "b", tKey: "q2b", correct: true  },
+      { id: "c", tKey: "q2c", correct: false },
+      { id: "d", tKey: "q2d", correct: false },
     ],
-    explanation: "La referencia de tierra debe ser sólida y directa. Una tierra mala dará lecturas incorrectas. Siempre usa el terminal negativo de la batería o un punto de tierra del chasis verificado.",
+    expKey: "q2exp",
   },
   {
     id: 3,
-    q: "Tienes 12V en la entrada del interruptor pero 0V en su salida con el interruptor en posición ON. ¿Cuál es el problema?",
+    qKey: "q3",
     options: [
-      { id: "a", text: "La lámpara está quemada",        correct: false },
-      { id: "b", text: "El fusible está quemado",         correct: false },
-      { id: "c", text: "El interruptor está defectuoso",  correct: true  },
-      { id: "d", text: "La batería tiene baja carga",     correct: false },
+      { id: "a", tKey: "q3a", correct: false },
+      { id: "b", tKey: "q3b", correct: false },
+      { id: "c", tKey: "q3c", correct: true  },
+      { id: "d", tKey: "q3d", correct: false },
     ],
-    explanation: "12V en la entrada y 0V en la salida con el switch ON es el diagnóstico definitivo de un interruptor defectuoso. El componente que tiene voltaje en su entrada pero no lo pasa a su salida es el componente fallado.",
+    expKey: "q3exp",
   },
 ];
 
 function QuizSection({ onComplete }) {
+  const { t } = useTranslation();
   const [answers, setAnswers] = useState({});
-  const allDone = Object.keys(answers).length === QUIZ_QUESTIONS.length;
-  const score   = QUIZ_QUESTIONS.filter((q) => {
+  const allDone = Object.keys(answers).length === QUIZ_Q_KEYS.length;
+  const score   = QUIZ_Q_KEYS.filter((q) => {
     const sel = answers[q.id];
     return sel && q.options.find((o) => o.id === sel)?.correct;
   }).length;
@@ -677,16 +607,16 @@ function QuizSection({ onComplete }) {
   return (
     <SectionCard
       icon="📝"
-      title="Examen Final"
-      subtitle="3 preguntas de diagnóstico. Selecciona la mejor respuesta para cada pregunta."
+      title={t("lessons.electricalCircuitBasics.section4Title")}
+      subtitle={t("lessons.electricalCircuitBasics.section4Subtitle")}
     >
       <div className="space-y-6">
-        {QUIZ_QUESTIONS.map((q) => {
+        {QUIZ_Q_KEYS.map((q) => {
           const chosen = answers[q.id];
           return (
             <div key={q.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <div className="font-extrabold text-slate-800 mb-3 text-sm">
-                {q.id}. {q.q}
+                {q.id}. {t(`lessons.electricalCircuitBasics.quiz.${q.qKey}`)}
               </div>
               <div className="grid gap-2">
                 {q.options.map((opt) => {
@@ -696,8 +626,8 @@ function QuizSection({ onComplete }) {
                   if (iChosen) {
                     bg    = opt.correct ? "border-brand-primary bg-blue-50" : "border-brand-accent bg-orange-50";
                     badge = opt.correct
-                      ? <span className="ml-2 text-xs font-extrabold text-blue-700">✅ Correcto</span>
-                      : <span className="ml-2 text-xs font-extrabold text-orange-700">❌ Incorrecto</span>;
+                      ? <span className="ml-2 text-xs font-extrabold text-blue-700">{t("lessons.correct")}</span>
+                      : <span className="ml-2 text-xs font-extrabold text-orange-700">{t("lessons.incorrect")}</span>;
                   } else if (chosen && opt.correct) {
                     bg = "border-blue-200 bg-blue-50/60";
                   }
@@ -707,7 +637,7 @@ function QuizSection({ onComplete }) {
                       disabled={!!chosen}
                       className={`text-left px-4 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all ${bg} disabled:cursor-default`}>
                       <span className="mr-2 text-slate-500">{opt.id.toUpperCase()}.</span>
-                      {opt.text}
+                      {t(`lessons.electricalCircuitBasics.quiz.${opt.tKey}`)}
                       {badge}
                     </button>
                   );
@@ -715,7 +645,7 @@ function QuizSection({ onComplete }) {
               </div>
               {chosen && (
                 <div className="mt-3 text-xs text-slate-600 rounded-xl bg-white border border-slate-200 p-3">
-                  <strong>Explicación:</strong> {q.explanation}
+                  <strong>{t("lessons.explanation")}:</strong> {t(`lessons.electricalCircuitBasics.quiz.${q.expKey}`)}
                 </div>
               )}
             </div>
@@ -733,27 +663,27 @@ function QuizSection({ onComplete }) {
             {score === 3 ? "🎉" : score >= 2 ? "👍" : "📚"}
           </div>
           <div className="text-xl font-extrabold text-slate-800 mb-1">
-            {score} / {QUIZ_QUESTIONS.length} correctas
+            {score} {t("lessons.outOf", { total: QUIZ_Q_KEYS.length })}
           </div>
           <div className="text-sm text-slate-600">
             {score === 3
-              ? "¡Excelente! Dominaste los conceptos de diagnóstico eléctrico básico."
+              ? t("lessons.scoreExcellent")
               : score >= 2
-              ? "¡Buen trabajo! Repasa los conceptos que fallaste y vuelve a intentarlo."
-              : "Repasa las secciones anteriores y vuelve a intentarlo. ¡Tú puedes!"}
+              ? t("lessons.scoreGood")
+              : t("lessons.scoreReview")}
           </div>
           {score < 3 && (
             <button onClick={() => setAnswers({})}
               className="mt-3 px-4 py-2 rounded-2xl text-sm font-extrabold text-white"
               style={{ background: B_BLUE }}>
-              Intentar de nuevo
+              {t("lessons.tryAgain")}
             </button>
           )}
           {score === 3 && onComplete && (
             <button onClick={onComplete}
               className="mt-3 px-4 py-2 rounded-2xl text-sm font-extrabold text-white"
               style={{ background: B_GREEN }}>
-              ✅ Marcar lección completada
+              {t("lessons.markLessonComplete")}
             </button>
           )}
         </div>
@@ -764,6 +694,7 @@ function QuizSection({ onComplete }) {
 
 // ─── Main exported component ──────────────────────────────────────────────────
 export function ElectricalCircuitBasics() {
+  const { t } = useTranslation();
   const [completedSections, setCompletedSections] = useState(new Set());
   const [lessonDone, setLessonDone]               = useState(false);
 
@@ -771,6 +702,13 @@ export function ElectricalCircuitBasics() {
 
   const markSection = (id) =>
     setCompletedSections((prev) => new Set([...prev, id]));
+
+  const NAV_PILLS = [
+    { id: "circuit", labelKey: "lessons.electricalCircuitBasics.navPills.circuit" },
+    { id: "faults",  labelKey: "lessons.electricalCircuitBasics.navPills.faults"  },
+    { id: "probe",   labelKey: "lessons.electricalCircuitBasics.navPills.probe"   },
+    { id: "quiz",    labelKey: "lessons.electricalCircuitBasics.navPills.quiz"    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -781,35 +719,30 @@ export function ElectricalCircuitBasics() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div className="text-xs font-extrabold uppercase tracking-wider mb-1" style={{ color: B_BLUE }}>
-              📖 Lección Interactiva
+              📖 {t("lessons.interactiveLesson")}
             </div>
             <h2 className="text-2xl font-extrabold text-slate-800">
-              Circuitos Eléctricos Básicos
+              {t("lessons.electricalCircuitBasics.title")}
             </h2>
             <p className="text-sm text-slate-600 mt-1">
-              Aprende cómo funciona el circuito de una lámpara automotriz y cómo diagnosticar fallas con el Power Probe.
+              {t("lessons.electricalCircuitBasics.description")}
             </p>
           </div>
           <div className="flex-shrink-0 text-right">
-            <div className="text-xs text-slate-500 mb-1">Progreso</div>
+            <div className="text-xs text-slate-500 mb-1">{t("lessons.progressLabel")}</div>
             <div className="w-32 h-3 rounded-full bg-slate-100 overflow-hidden">
               <div className="h-full rounded-full transition-all duration-500"
                 style={{ width: `${progress}%`, background: B_BLUE }} />
             </div>
             <div className="text-xs font-extrabold mt-1" style={{ color: B_BLUE }}>
-              {completedSections.size} / 4 secciones
+              {completedSections.size} / 4 {t("lessons.sections")}
             </div>
           </div>
         </div>
 
         {/* Section nav pills */}
         <div className="flex flex-wrap gap-2 mt-4">
-          {[
-            { id: "circuit", label: "⚡ Circuito Básico"   },
-            { id: "faults",  label: "🔧 Tipos de Fallas"   },
-            { id: "probe",   label: "🔌 Power Probe"        },
-            { id: "quiz",    label: "📝 Examen Final"       },
-          ].map((s) => (
+          {NAV_PILLS.map((s) => (
             <a key={s.id} href={`#lesson-${s.id}`}
               className="px-3 py-1.5 rounded-full text-xs font-extrabold border-2 transition-all"
               style={{
@@ -817,7 +750,7 @@ export function ElectricalCircuitBasics() {
                 background:  completedSections.has(s.id) ? "#f0fdf4" : "white",
                 color:       completedSections.has(s.id) ? B_GREEN : "#64748b",
               }}>
-              {completedSections.has(s.id) ? "✓ " : ""}{s.label}
+              {completedSections.has(s.id) ? "✓ " : ""}{t(s.labelKey)}
             </a>
           ))}
         </div>
@@ -828,9 +761,9 @@ export function ElectricalCircuitBasics() {
         <div className="lesson-section rounded-3xl border-2 p-5 text-center"
           style={{ borderColor: B_GREEN, background: "#f0fdf4" }}>
           <div className="text-4xl mb-2">🏆</div>
-          <div className="text-xl font-extrabold text-slate-800">¡Lección Completada!</div>
+          <div className="text-xl font-extrabold text-slate-800">{t("lessons.lessonComplete")}</div>
           <div className="text-sm text-slate-600 mt-1">
-            Completaste "Circuitos Eléctricos Básicos". ¡Continúa con el siguiente módulo!
+            {t("lessons.lessonCompleteBody", { title: t("lessons.electricalCircuitBasics.title") })}
           </div>
         </div>
       )}
@@ -846,7 +779,9 @@ export function ElectricalCircuitBasics() {
               background:  completedSections.has("circuit") ? "#f0fdf4" : B_SOFT,
               color:       completedSections.has("circuit") ? B_GREEN : B_BLUE,
             }}>
-            {completedSections.has("circuit") ? "✓ Sección completada" : "✓ Marcar como completada"}
+            {completedSections.has("circuit")
+              ? `✓ ${t("lessons.sectionComplete")}`
+              : `✓ ${t("lessons.markComplete")}`}
           </button>
         </div>
       </div>
@@ -861,7 +796,9 @@ export function ElectricalCircuitBasics() {
               background:  completedSections.has("faults") ? "#f0fdf4" : B_SOFT,
               color:       completedSections.has("faults") ? B_GREEN : B_BLUE,
             }}>
-            {completedSections.has("faults") ? "✓ Sección completada" : "✓ Marcar como completada"}
+            {completedSections.has("faults")
+              ? `✓ ${t("lessons.sectionComplete")}`
+              : `✓ ${t("lessons.markComplete")}`}
           </button>
         </div>
       </div>
@@ -876,7 +813,9 @@ export function ElectricalCircuitBasics() {
               background:  completedSections.has("probe") ? "#f0fdf4" : B_SOFT,
               color:       completedSections.has("probe") ? B_GREEN : B_BLUE,
             }}>
-            {completedSections.has("probe") ? "✓ Sección completada" : "✓ Marcar como completada"}
+            {completedSections.has("probe")
+              ? `✓ ${t("lessons.sectionComplete")}`
+              : `✓ ${t("lessons.markComplete")}`}
           </button>
         </div>
       </div>
