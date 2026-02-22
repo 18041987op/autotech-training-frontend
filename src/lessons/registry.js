@@ -9,14 +9,9 @@
  *
  * Module UUIDs come from Supabase → modules table → id column.
  */
-// eslint-disable-next-line no-unused-vars
 import { ElectricalCircuitBasics } from "./ElectricalCircuitBasics";
 
 export const lessonRegistry = {
-  // ── Electrical Diagnostics Fundamentals ──────────────────────────────────
-  // Replace with the actual UUID from Supabase for this module:
-  // "PASTE-MODULE-UUID-HERE": ElectricalCircuitBasics,
-
-  // Example (uncomment and replace UUID after checking Supabase):
-  // "7fb7c91a-c975-4b2d-a811-00526c20d48c": ElectricalCircuitBasics,
+  // ── Procedimientos de Diagnóstico (Eléctrico y Mecánico) ─────────────────
+  "7fb7c91a-c97e-40bd-a8b1-5889b7f47e30": ElectricalCircuitBasics,
 };
