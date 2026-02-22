@@ -5,7 +5,7 @@ import { BookOpen, GraduationCap, Layers, Shield, Sparkles } from "lucide-react"
 import { AnimatedCard } from "../components/AnimatedCard";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { useProgress, useProgressBadges } from "../hooks/useProgress";
-import { BADGE_ANIMATIONS, BADGE_DEF, ALL_BADGE_IDS, AnimatedBadge, LockedBadge } from "../components/BadgeSystem";
+import { BADGE_ANIMATIONS, ALL_BADGE_IDS, AnimatedBadge, LockedBadge } from "../components/BadgeSystem";
 
 const cardData = [
   { icon: Layers,        titleKey: "home.cards.requiredThisWeek", blurbKey: "home.blurbRequired",    to: "/assessments" },
