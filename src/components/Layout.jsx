@@ -68,10 +68,9 @@ export function Layout({ user, onSignOut }) {
   const closeMobile = () => setMobileOpen(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-      <div className="flex flex-1">
+    <div className="h-screen bg-slate-50 text-slate-900 flex overflow-hidden">
         {/* ── Desktop Sidebar ── */}
-        <aside className="hidden md:flex md:w-72 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5 md:sticky md:top-0 md:h-screen md:overflow-y-auto">
+        <aside className="hidden md:flex md:flex-shrink-0 md:w-64 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5 md:h-full md:overflow-y-auto">
           <Brand />
           <UserCard user={user} />
           <NavSection
@@ -81,14 +80,14 @@ export function Layout({ user, onSignOut }) {
           />
         </aside>
 
-        {/* ── Main content area ── */}
-        <main className="flex-1 flex flex-col min-h-screen">
+        {/* ── Main content area (scrolls independently) ── */}
+        <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
           <TopBar
             onSignOut={onSignOut}
             onOpenMobileMenu={() => setMobileOpen(true)}
           />
 
-          <div className="flex-1 mx-auto w-full max-w-6xl px-4 py-6">
+          <div className="flex-1 w-full px-4 py-6">
             <Breadcrumbs />
             <Outlet context={{ user }} />
           </div>
@@ -96,7 +95,6 @@ export function Layout({ user, onSignOut }) {
           {/* ── Page footer ── */}
           <AppFooter />
         </main>
-      </div>
 
       {/* ── Mobile Drawer ── */}
       {mobileOpen ? (
@@ -288,7 +286,7 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
 
   return (
     <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
 
         {/* Left: mobile hamburger + brand OR desktop search */}
         <div className="flex items-center gap-3 min-w-0">
@@ -378,7 +376,7 @@ function AppFooter() {
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-slate-200 bg-white mt-auto">
-      <div className="mx-auto max-w-6xl px-4 py-5">
+      <div className="px-4 py-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
           {/* Left: brand — landscape logo, height-constrained */}
