@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
+import { lessonRegistry } from "../lessons/registry";
 
 // ─── Inline edit modal (admin-only) ───────────────────────────────────────────
 
@@ -208,6 +209,19 @@ export function ModuleDetailPage() {
 
   // Admin: inline edit modal
   const [editOpen, setEditOpen] = useState(false);
+
+  // Active tab
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Interactive lesson (registered component for this module, if any)
+  const LessonComponent = lessonRegistry[module?.id] || null;
+
+  // When module loads and a lesson exists, switch to "lesson" tab by default
+  useEffect(() => {
+    if (module?.id && lessonRegistry[module.id]) {
+      setActiveTab("lesson");
+    }
+  }, [module?.id]);
 
   // Admin subtitle (existing translation)
   const adminResourcesSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
@@ -481,7 +495,49 @@ export function ModuleDetailPage() {
         </div>
       </div>
 
-      {/* Assessments list */}
+      {/* ── Tab navigation ───────────────────────────────────────────────── */}
+      <div className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm overflow-x-auto">
+        {LessonComponent && (
+          <button
+            onClick={() => setActiveTab("lesson")}
+            className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
+            style={{
+              background: activeTab === "lesson" ? "#1E6FAE" : "transparent",
+              color:      activeTab === "lesson" ? "white"   : "#64748b",
+            }}
+          >
+            📖 Lección
+          </button>
+        )}
+        <button
+          onClick={() => setActiveTab("overview")}
+          className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
+          style={{
+            background: activeTab === "overview" ? "#1E6FAE" : "transparent",
+            color:      activeTab === "overview" ? "white"   : "#64748b",
+          }}
+        >
+          📋 Contenido
+        </button>
+        <button
+          onClick={() => setActiveTab("assessments")}
+          className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
+          style={{
+            background: activeTab === "assessments" ? "#1E6FAE" : "transparent",
+            color:      activeTab === "assessments" ? "white"   : "#64748b",
+          }}
+        >
+          🎯 Evaluaciones
+        </button>
+      </div>
+
+      {/* ── Lesson tab ───────────────────────────────────────────────────── */}
+      {activeTab === "lesson" && LessonComponent && (
+        <LessonComponent />
+      )}
+
+      {/* ── Assessments tab ──────────────────────────────────────────────── */}
+      {activeTab === "assessments" && (
       <div className="card p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
@@ -598,84 +654,87 @@ export function ModuleDetailPage() {
           </div>
         )}
       </div>
+      )} {/* end activeTab === "assessments" */}
 
-      {/* Resources */}
-      <div className="card p-6">
-        <h2 className="text-lg font-extrabold">
-          {isAdmin ? t("moduleDetail.resourcesTitle") : "Module content"}
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
+      {/* ── Content (overview) tab: resources + full text ─────────────────── */}
+      {activeTab === "overview" && (
+        <>
+          <div className="card p-6">
+            <h2 className="text-lg font-extrabold">
+              {isAdmin ? t("moduleDetail.resourcesTitle") : "Module content"}
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
-        {resources.length === 0 ? (
-          <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noResources")}</div>
-        ) : (
-          <div className="mt-4 grid gap-3">
-            {resources.map((r) => (
-              <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                  <div className="min-w-0">
-                    <div className="font-extrabold truncate">{r.name}</div>
-                    {/* Hide mimeType from non-admin to keep it less "technical" */}
-                    {isAdmin ? <div className="text-xs text-slate-500">{r.mimeType}</div> : null}
+            {resources.length === 0 ? (
+              <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noResources")}</div>
+            ) : (
+              <div className="mt-4 grid gap-3">
+                {resources.map((r) => (
+                  <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                      <div className="min-w-0">
+                        <div className="font-extrabold truncate">{r.name}</div>
+                        {isAdmin ? <div className="text-xs text-slate-500">{r.mimeType}</div> : null}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 sm:justify-end">
+                        {isAdmin && r.webViewLink ? (
+                          <a
+                            className="btn-outline-sm px-3 py-1.5"
+                            href={r.webViewLink}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {t("actions.openInDrive")}
+                          </a>
+                        ) : null}
+
+                        <button
+                          className="btn-primary btn-sm px-3 py-1.5 disabled:opacity-60"
+                          onClick={() => openFull(r.id)}
+                          disabled={!r.hasText}
+                          title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}
+                          type="button"
+                        >
+                          {isAdmin ? t("moduleDetail.fullText") : "Read"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
+                      {r.hasText ? (
+                        r.previewText
+                      ) : (
+                        <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
+                      )}
+                    </div>
                   </div>
-
-                  <div className="flex flex-wrap gap-2 sm:justify-end">
-                    {/* Admin only: Open in Drive */}
-                    {isAdmin && r.webViewLink ? (
-                      <a
-                        className="btn-outline-sm px-3 py-1.5"
-                        href={r.webViewLink}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {t("actions.openInDrive")}
-                      </a>
-                    ) : null}
-
-                    <button
-                      className="btn-primary btn-sm px-3 py-1.5 disabled:opacity-60"
-                      onClick={() => openFull(r.id)}
-                      disabled={!r.hasText}
-                      title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}
-                      type="button"
-                    >
-                      {isAdmin ? t("moduleDetail.fullText") : "Read"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
-                  {r.hasText ? (
-                    r.previewText
-                  ) : (
-                    <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
-                  )}
-                </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Expanded full text section */}
-      {active ? (
-        <div ref={fullTextRef} className="card p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-extrabold">{active.name}</h3>
-              {isAdmin ? <p className="text-xs text-slate-500">{active.mimeType}</p> : null}
+          {/* Expanded full text section */}
+          {active ? (
+            <div ref={fullTextRef} className="card p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-extrabold">{active.name}</h3>
+                  {isAdmin ? <p className="text-xs text-slate-500">{active.mimeType}</p> : null}
+                </div>
+
+                <button className="btn-outline-sm" onClick={() => setActive(null)} type="button">
+                  {t("actions.close")}
+                </button>
+              </div>
+
+              <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-sm text-slate-800">
+                {active.text || "—"}
+              </pre>
             </div>
-
-            <button className="btn-outline-sm" onClick={() => setActive(null)} type="button">
-              {t("actions.close")}
-            </button>
-          </div>
-
-          <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-sm text-slate-800">
-            {active.text || "—"}
-          </pre>
-        </div>
-      ) : null}
+          ) : null}
+        </>
+      )} {/* end activeTab === "overview" */}
 
       {/* Admin: Inline Edit Modal */}
       {editOpen && module ? (
