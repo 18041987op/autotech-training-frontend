@@ -578,6 +578,620 @@
         "q3d": "The battery is low",
         "q3exp": "12V at the input and 0V at the output with the switch ON is the definitive diagnosis of a defective switch. The component that has voltage at its input but does not pass it to its output is the failed component."
       }
+    },
+
+    "alternatorAndBattery": {
+      "title": "Alternator & Battery",
+      "description": "How the charging system works, how to test a battery with a voltmeter, and how to diagnose alternator output.",
+      "section1Title": "Charging System Overview",
+      "section1Subtitle": "Start the engine to see the system in action. Click each component to learn about it.",
+      "section2Title": "Battery Testing Procedure",
+      "section2Subtitle": "Step-by-step voltmeter test for battery condition.",
+      "section3Title": "Alternator Output Testing",
+      "section3Subtitle": "Select each condition to understand what the voltmeter tells you.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 charging system questions. Select the best answer.",
+      "engineOn": "🔑 Engine: ON",
+      "engineOff": "🔑 Engine: OFF",
+      "chargingActive": "Alternator charging battery.",
+      "batteryOnly": "Battery powering everything.",
+      "section1Tip": "A healthy charging system reads 13.8–14.8V at the battery with the engine running.",
+      "altDiagTip": "Test alternator output at the battery terminals with engine running. Load test by turning on headlights, AC blower, and rear defroster.",
+      "navPills": {
+        "system":  "🔋 Charging System",
+        "battery": "🔌 Battery Test",
+        "alt":     "⚡ Alternator Test",
+        "quiz":    "📝 Final Quiz"
+      },
+      "components": {
+        "battery": {
+          "label": "🔋 Battery (12V)",
+          "desc": "Stores electrical energy. At rest a fully charged battery reads 12.6V. When the engine runs the alternator recharges it to 13.8–14.8V."
+        },
+        "alternator": {
+          "label": "⚡ Alternator",
+          "desc": "Converts mechanical energy from the engine (via belt) into DC electricity. Keeps the battery charged and powers all electrical systems when the engine runs."
+        },
+        "regulator": {
+          "label": "📊 Voltage Regulator",
+          "desc": "Controls alternator output. Limits voltage to approximately 14.5V to prevent overcharging. Often built into the alternator."
+        },
+        "belt": {
+          "label": "🔄 Serpentine Belt",
+          "desc": "Drives the alternator from the engine crankshaft. A broken or slipping belt means zero charging — battery will drain quickly."
+        }
+      },
+      "battTest": {
+        "batt1Title": "Step 1 — Resting Voltage",
+        "batt1Desc": "With engine OFF and no loads, touch voltmeter probes to battery terminals. 12.6V = fully charged. 12.4V = 75%. Below 12.0V = discharged.",
+        "batt1Tip": "Wait 10 minutes after charging before testing resting voltage for accurate reading.",
+        "batt2Title": "Step 2 — Low Battery Warning",
+        "batt2Desc": "Reading below 12.4V indicates partial discharge. Charge the battery and retest. Do not replace before charging and retesting.",
+        "batt2Tip": "A partially discharged battery can test as failed. Always charge first.",
+        "batt3Title": "Step 3 — Load Test (Cranking)",
+        "batt3Desc": "Voltage should NOT drop below 9.6V while cranking. Below 9.6V = battery cannot supply required current — replace battery.",
+        "batt3Tip": "Cold batteries test weaker. If borderline in cold weather, retest at operating temperature.",
+        "batt4Title": "Step 4 — Battery Passes",
+        "batt4Desc": "Battery holds above 9.6V during load test and recovers to 12.6V at rest. Battery is good — check alternator and charging system.",
+        "batt4Tip": "Always document battery test results on the repair order for customer records."
+      },
+      "altStates": {
+        "good": {
+          "label": "✅ Good Output",
+          "title": "Normal Alternator Output",
+          "desc": "13.8–14.8V at battery terminals with engine running. Load test: add headlights, AC, blower — voltage stays above 13.0V. Alternator is good."
+        },
+        "low": {
+          "label": "⚠️ Low Output",
+          "title": "Low Alternator Output",
+          "desc": "Below 13.5V with engine running. Causes: worn brushes, failing diodes, bad stator/rotor, slipping or broken belt. Battery will drain over time."
+        },
+        "high": {
+          "label": "🔴 High Output",
+          "title": "High Alternator Output (Overcharging)",
+          "desc": "Above 15V with engine running. Cause: voltage regulator failure. Will overcharge battery, boil electrolyte, and damage electrical components. Replace alternator."
+        },
+        "ripple": {
+          "label": "〜 AC Ripple",
+          "title": "AC Ripple — Bad Diodes",
+          "desc": "Set multimeter to AC mode at battery terminals. More than 0.5V AC = bad rectifier diodes in the alternator. Causes battery drain and electrical gremlins."
+        }
+      },
+      "quiz": {
+        "q1": "What is the normal alternator output voltage with the engine running?",
+        "q1a": "11.5–12.5V",
+        "q1b": "13.8–14.8V",
+        "q1c": "15.0–16.0V",
+        "q1d": "10.0–11.0V",
+        "q1exp": "A healthy alternator produces 13.8–14.8V DC at the battery terminals with the engine running. This is enough to keep the battery charged while powering all vehicle electrical systems.",
+        "q2": "AC ripple above 0.5V at the battery terminals (with engine running) indicates:",
+        "q2a": "The battery needs replacement",
+        "q2b": "The serpentine belt is slipping",
+        "q2c": "Bad rectifier diodes in the alternator",
+        "q2d": "The voltage regulator is open",
+        "q2exp": "AC ripple above 0.5V means the alternator's rectifier diodes are not fully converting AC to DC. This causes electrical interference, battery drain, and should be repaired by replacing the alternator.",
+        "q3": "A vehicle battery cranks fine but the battery dies after driving. What is the most likely cause?",
+        "q3a": "The battery has a bad cell",
+        "q3b": "The fuse is blown",
+        "q3c": "The battery is overcharged",
+        "q3d": "The alternator is not charging",
+        "q3exp": "If the battery cranks well (holds voltage under load) but dies after driving, the alternator is not recharging it. Check the serpentine belt, alternator output voltage, and alternator connections."
+      }
+    },
+
+    "oilChange": {
+      "title": "Oil Change & Fluid Services",
+      "description": "Oil viscosity selection, drain and fill procedure, and fluid inspection checklist.",
+      "section1Title": "Oil Viscosity & Specifications",
+      "section1Subtitle": "Select each oil type to see where it is used and what it means.",
+      "section2Title": "Drain & Fill Procedure",
+      "section2Subtitle": "Step-by-step oil change from drain to dipstick check.",
+      "section3Title": "Fluid Inspection Checklist",
+      "section3Subtitle": "Check and log condition of all fluids during every oil change.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 oil service questions. Select the best answer.",
+      "section1Tip": "Always use the viscosity specified by the manufacturer — not what is in stock. Wrong oil viscosity can void warranty and cause engine damage.",
+      "section2Tip": "Never use an impact gun on the drain plug. Hand-tight plus 1/4 turn. Overtightening strips the oil pan threads.",
+      "section3Tip": "Every fluid check is a sales opportunity. Document low or dirty fluids on the RO for the service advisor.",
+      "commonVehicles": "Common vehicles",
+      "checklistComplete": "Fluid Inspection Complete",
+      "checklistCompleteDesc": "All fluids checked and conditions logged. Present findings to service advisor before vehicle delivery.",
+      "fluidConditions": {
+        "ok": "✅ OK",
+        "low": "⚠️ Low",
+        "dirty": "🟡 Dirty",
+        "replace": "🔴 Replace"
+      },
+      "navPills": {
+        "viscosity": "🛢️ Oil Specs",
+        "procedure": "🔧 Procedure",
+        "fluids":    "🔍 Fluid Check",
+        "quiz":      "📝 Final Quiz"
+      },
+      "specs": {
+        "0w20": {
+          "title": "Lightweight — Best cold flow",
+          "desc": "Most modern fuel-efficient engines. Reduces startup wear. Used in many hybrids and direct-injection engines. Always verify with door jamb sticker or owner's manual."
+        },
+        "5w20": {
+          "title": "Light duty — Good cold flow",
+          "desc": "Common in older Ford platforms (5.4L, 4.6L), Lincoln, and some Chrysler vehicles. Check oil cap and dipstick for confirmation."
+        },
+        "5w30": {
+          "title": "All-purpose — Most common",
+          "desc": "Most GM vehicles, many older Japanese and European imports. The most widely stocked weight in most shops."
+        },
+        "5w40": {
+          "title": "Heavier — European & diesel",
+          "desc": "VW, Audi, BMW, Mercedes-Benz, European diesel trucks. Often requires specific API/ACEA rating. Check for LL-01, 507.00, or similar spec."
+        }
+      },
+      "fluids": {
+        "coolant": {
+          "label": "Coolant",
+          "checkWhat": "Level + color (clear or rust)"
+        },
+        "brake": {
+          "label": "Brake Fluid",
+          "checkWhat": "Level + color (clear = good, dark = replace)"
+        },
+        "power": {
+          "label": "Power Steering",
+          "checkWhat": "Level + condition (foam or burnt smell)"
+        },
+        "washer": {
+          "label": "Washer Fluid",
+          "checkWhat": "Level"
+        },
+        "transmission": {
+          "label": "Transmission Fluid",
+          "checkWhat": "Level + color (pink = ok, dark/burnt = service)"
+        }
+      },
+      "procedure": {
+        "step1Title": "Position vehicle and prepare",
+        "step1Desc": "Drive vehicle onto lift or ramps. Warm up engine 2–3 minutes if cold (warm oil drains faster). Gather drain pan, drain plug socket, oil filter wrench, funnel, and correct oil.",
+        "step1Tip": "Warm oil drains faster and more completely, but hot oil can burn. Warm, not hot.",
+        "step2Title": "Drain the oil",
+        "step2Desc": "Place drain pan under drain plug. Remove drain plug slowly — let oil flow away from you. Remove oil filter. Let oil drain completely (3–5 minutes minimum). Inspect drain plug threads and crush washer.",
+        "step2Tip": "If drain plug gasket is damaged or threads are stripped — flag for repair before reinstalling.",
+        "step3Title": "Install drain plug and new filter",
+        "step3Desc": "Install new filter hand-tight plus 3/4 turn. Install drain plug with new crush washer if required. Torque drain plug to spec (typically 25–35 ft-lbs). Never use an impact gun.",
+        "step3Tip": "Pre-fill the oil filter if accessible — reduces dry-start time on first startup.",
+        "step4Title": "Fill with new oil",
+        "step4Desc": "Pour correct oil type and quantity per spec (usually 4–7 quarts depending on engine). Start engine and check for leaks around drain plug and filter. Run for 30 seconds.",
+        "step4Tip": "Check dipstick twice — once right after fill, once after 1 minute of running to let filter fill.",
+        "step5Title": "Verify level and reset monitor",
+        "step5Desc": "Recheck oil level on dipstick — must be between MIN and MAX marks. Reset oil life monitor per vehicle procedure. Add oil sticker to windshield. Log on repair order.",
+        "step5Tip": "Oil life reset procedure varies by vehicle. Check AllData or owner's manual. Skipping reset = confused customer at next visit."
+      },
+      "quiz": {
+        "q1": "A customer's vehicle calls for 0W-20 oil, but only 5W-30 is available in the shop. What do you do?",
+        "q1a": "Use 5W-30 — it's close enough",
+        "q1b": "Use the correct 0W-20 — order or get from supplier",
+        "q1c": "Mix 0W-20 and 5W-30 50/50",
+        "q1d": "Skip the oil change until correct oil arrives",
+        "q1exp": "Always use the manufacturer-specified viscosity. Using wrong oil can void the warranty and cause premature engine wear in modern engines with tight tolerances. Order the correct oil or explain to the customer.",
+        "q2": "Engine oil appears pitch black and gritty with metal particles. What is the correct action?",
+        "q2a": "Change oil immediately and flag for engine inspection",
+        "q2b": "Add an oil treatment additive",
+        "q2c": "Change oil — metal particles are normal",
+        "q2d": "Drain and refill with heavier oil",
+        "q2exp": "Metal particles in engine oil indicate internal wear. Change oil immediately and flag for further inspection. Document on the repair order. This may indicate a failing bearing, timing component, or other serious issue.",
+        "q3": "After filling, the dipstick shows oil level is exactly at the MIN mark. What do you do?",
+        "q3a": "Add 1 quart — always fill to MAX",
+        "q3b": "The level is fine — MIN is acceptable",
+        "q3c": "Drain some oil — MIN means too much oil",
+        "q3d": "Add oil to bring level to the middle of MIN–MAX range",
+        "q3exp": "The MIN mark is the absolute minimum acceptable level, not the target. Add enough oil to bring the level to the middle or upper portion of the safe zone (between MIN and MAX). Do not overfill above MAX."
+      }
+    },
+
+    "brakeSystem": {
+      "title": "Brake System Inspection & Service",
+      "description": "Disc brake components, pad and rotor measurement, and brake bleeding procedure.",
+      "section1Title": "Disc Brake Components",
+      "section1Subtitle": "Click each component to learn what it does.",
+      "section2Title": "Pad & Rotor Measurement",
+      "section2Subtitle": "Use the sliders to set pad and rotor thickness and see the status.",
+      "section3Title": "Brake Bleeding Procedure",
+      "section3Subtitle": "Step-by-step procedure to bleed air from the brake system.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 brake service questions. Select the best answer.",
+      "section1Tip": "Always measure BOTH inner and outer pads. The inner pad often wears faster. Document all measurements on the repair order.",
+      "section2Tip": "If the rotor is within spec but the customer complains of pulsation, check runout with a dial indicator. Max runout: 0.002 inches (0.05mm).",
+      "section3Tip": "Never let the master cylinder reservoir run dry while bleeding — you will introduce air into the system and have to start over.",
+      "padThickness": "Brake Pad Thickness",
+      "rotorThickness": "Rotor Thickness",
+      "padLabel": "Pad",
+      "rotorLabel": "Rotor",
+      "statusOk": "✅ OK",
+      "statusWarn": "⚠️ Warn",
+      "statusReplace": "🔴 Replace",
+      "bleedOrder": "Bleed Order",
+      "navPills": {
+        "components":  "🛑 Components",
+        "measurement": "📏 Measurement",
+        "bleeding":    "💧 Bleeding",
+        "quiz":        "📝 Final Quiz"
+      },
+      "parts": {
+        "rotor": {
+          "label": "⚙️ Rotor (Disc)",
+          "desc": "Cast iron disc rotating with the wheel. Both sides are friction surfaces. Must be within minimum thickness spec. Grooves, heat spots, or cracks require replacement."
+        },
+        "pad": {
+          "label": "🔴 Brake Pads",
+          "desc": "Friction material bonded to a metal backing plate. Inner and outer pads per caliper. Minimum thickness is 2mm. Warn customer at 4mm or less (25% life remaining)."
+        },
+        "caliper": {
+          "label": "🔵 Caliper",
+          "desc": "Hydraulically actuated clamp. Floating caliper type slides on two caliper pins. Pins must be lubricated with caliper pin grease — not general-purpose grease."
+        },
+        "piston": {
+          "label": "🔩 Piston",
+          "desc": "Hydraulic piston inside the caliper bore. Brake fluid pressure pushes the piston outward to clamp pads against rotor. Check for leaks around the piston seal."
+        },
+        "hose": {
+          "label": "🟡 Brake Hose",
+          "desc": "Flexible line connecting the hard brake line to the caliper. Can swell internally creating a one-way valve — causes brake drag and pulls to one side. Inspect when pads/rotors are replaced."
+        }
+      },
+      "bleeding": {
+        "bleed1Title": "Top off master cylinder reservoir",
+        "bleed1Desc": "Fill reservoir to MAX line with DOT 3 or DOT 4 brake fluid (per vehicle spec). Never mix DOT ratings. Keep cap nearby. Check level frequently throughout bleeding process.",
+        "bleed1Tip": "Check door jamb or owner's manual for correct DOT rating. Most modern vehicles use DOT 3 or DOT 4.",
+        "bleed2Title": "Attach hose to RR bleeder screw",
+        "bleed2Desc": "Start at the Right Rear (farthest from master cylinder). Attach 6-inch clear hose to bleeder nipple. Place other end in a clear jar with some brake fluid (prevents drawing air back in).",
+        "bleed2Tip": "Open the bleeder screw only 3/4 turn. Too much and the screw may come out or break off.",
+        "bleed3Title": "Pump and hold pedal",
+        "bleed3Desc": "With helper inside: pump pedal 3 times, hold it down. Say 'holding' — open bleeder 3/4 turn and let fluid out. Say 'closing' — close bleeder BEFORE releasing pedal. Repeat until no air bubbles.",
+        "bleed3Tip": "Never release the pedal before closing the bleeder. Releasing with bleeder open sucks air back into the caliper.",
+        "bleed4Title": "Move to LR → RF → LF",
+        "bleed4Desc": "Follow bleed order: RR → LR → RF → LF. After each caliper, top off the master cylinder. Continue until clean, bubble-free fluid flows from each bleeder screw.",
+        "bleed4Tip": "Keep a close eye on the reservoir — if it runs dry you push air into the system and must start over.",
+        "bleed5Title": "Test pedal and verify",
+        "bleed5Desc": "Pump pedal several times — it should feel firm and rise progressively. Test brake pressure before moving vehicle. Top off reservoir to MAX. Replace cap securely.",
+        "bleed5Tip": "A spongy or low pedal after bleeding = residual air. Repeat the process starting at the farthest wheel again."
+      },
+      "quiz": {
+        "q1": "Brake pad measures 2mm. What is the correct action?",
+        "q1a": "No action needed — 2mm is within spec",
+        "q1b": "Recommend replacement at next service",
+        "q1c": "Replace immediately — at minimum thickness limit",
+        "q1d": "Warn customer and recheck at 3,000 miles",
+        "q1exp": "2mm is the MINIMUM acceptable brake pad thickness. At or below 2mm, the pad must be replaced immediately. There is no safety margin remaining and metal-to-metal contact is imminent.",
+        "q2": "A customer complains of pulsation when braking. What do you check first?",
+        "q2a": "Tire pressure on all four wheels",
+        "q2b": "Brake fluid level in master cylinder",
+        "q2c": "Caliper slide pin lubrication",
+        "q2d": "Rotor thickness variation and runout",
+        "q2exp": "Brake pulsation (pedal vibration when braking) is typically caused by rotor thickness variation (warping) or lateral runout. Measure rotor thickness at multiple points around the disc and check runout with a dial indicator.",
+        "q3": "What is the correct brake bleeding sequence?",
+        "q3a": "LF → RF → LR → RR",
+        "q3b": "RR → LR → RF → LF",
+        "q3c": "All four at the same time",
+        "q3d": "RF → LF → RR → LR",
+        "q3exp": "Bleed from the farthest wheel from the master cylinder (RR) to the closest (LF): RR → LR → RF → LF. This purges air completely through the longest brake lines first."
+      }
+    },
+
+    "tireService": {
+      "title": "Tire Service, TPMS & Rotation",
+      "description": "Reading tire sidewalls, TPMS inflation, and rotation patterns.",
+      "section1Title": "Tire Sizing — Reading the Sidewall",
+      "section1Subtitle": "Tap each number on the tire code to learn what it means.",
+      "section2Title": "TPMS & Inflation",
+      "section2Subtitle": "Adjust each tire pressure with the sliders. Target: 32 PSI (check door jamb).",
+      "section3Title": "Rotation Patterns",
+      "section3Subtitle": "Select a pattern to see how tires move on each rotation.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 tire service questions. Select the best answer.",
+      "section1Tip": "Never use the MAX PSI on the tire sidewall — that is the maximum, not the recommended. Always use the door jamb sticker inflation spec.",
+      "section2Tip": "After mounting any tire: always relearn the TPMS sensor. Walk the customer through the relearn if required by vehicle (drive relearn vs. tool relearn).",
+      "section3Tip": "Some directional tires can ONLY move front-to-rear on the same side. Check sidewall for the rotation arrow before cross-rotating.",
+      "allPressuresOk": "All Pressures Within Range",
+      "allPressuresOkDesc": "All four tires are within 30–35 PSI range. Verify against door jamb sticker for exact spec.",
+      "pressureIssues": "Pressure Issue Detected",
+      "pressureIssuesDesc": "One or more tires outside of recommended range. Target: {{spec}} PSI per door jamb sticker.",
+      "pressureStatus": {
+        "ok":     "✅ OK",
+        "warn":   "⚠️ Check",
+        "low":    "⬇️ Low",
+        "high":   "⬆️ High",
+        "danger": "🔴 Danger"
+      },
+      "navPills": {
+        "sizing":   "🔵 Tire Sizing",
+        "tpms":     "💨 TPMS",
+        "rotation": "🔄 Rotation",
+        "quiz":     "📝 Final Quiz"
+      },
+      "sidewall": {
+        "width": {
+          "label": "Section Width (mm)",
+          "desc": "The width of the tire in millimeters, measured from sidewall to sidewall. In P225/60R16, this is 225mm (~8.9 inches). A wider tire provides more contact patch but may affect handling and fuel economy."
+        },
+        "aspect": {
+          "label": "Aspect Ratio (%)",
+          "desc": "The sidewall height as a percentage of the section width. A 60 aspect ratio means the sidewall is 60% of 225mm = 135mm tall. Lower number = stiffer, sportier handling. Higher number = more cushion."
+        },
+        "construction": {
+          "label": "Construction Type",
+          "desc": "R = Radial. The most common modern tire construction. Radial belts run perpendicular to the direction of travel, providing better fuel economy, wear, and handling. 'B' = Bias-ply (older, rarely used)."
+        },
+        "diameter": {
+          "label": "Rim Diameter (inches)",
+          "desc": "The wheel/rim diameter in inches that this tire fits. This must match the rim. A 16\" tire only fits a 16\" rim. Never attempt to mount a tire on a mismatched rim size."
+        }
+      },
+      "patterns": {
+        "forward": {
+          "label": "Forward Cross (FWD)",
+          "desc": "Front tires move straight to the rear. Rear tires cross to the front (RR → FL, LR → FR). Best for front-wheel drive vehicles where fronts wear faster."
+        },
+        "xPattern": {
+          "label": "X-Pattern (FWD/AWD)",
+          "desc": "All four tires cross during rotation (FL → RR, FR → RL, RL → FR, RR → FL). Recommended for AWD and some FWD vehicles. More even wear across all four tires."
+        },
+        "rearward": {
+          "label": "Rearward Cross (RWD)",
+          "desc": "Rear tires move straight to the front. Front tires cross to the rear (FR → RL, FL → RR). Best for rear-wheel drive and 4WD vehicles."
+        }
+      },
+      "quiz": {
+        "q1": "In the tire code P225/60R16, what does '225' represent?",
+        "q1a": "Section width in millimeters",
+        "q1b": "Aspect ratio percentage",
+        "q1c": "Maximum load rating in kg",
+        "q1d": "Rim diameter in millimeters",
+        "q1exp": "225 is the section width of the tire in millimeters, measured from sidewall to sidewall at the widest point. In the code P225/60R16: P=Passenger, 225=width mm, 60=aspect ratio, R=Radial, 16=rim inches.",
+        "q2": "The TPMS warning light comes on (horseshoe with ! symbol). What should you do?",
+        "q2a": "Ignore it — it resets on its own",
+        "q2b": "Check and adjust all four tire pressures using a gauge",
+        "q2c": "Replace the TPMS sensor immediately",
+        "q2d": "Add 5 PSI to all tires",
+        "q2exp": "The TPMS light means one or more tires are 25% or more below recommended pressure. Use a calibrated tire gauge to check all four tires and inflate to the door jamb sticker specification.",
+        "q3": "A customer has a FWD vehicle. Which rotation pattern should you use?",
+        "q3a": "Rearward cross (rear straight forward, fronts cross)",
+        "q3b": "Forward cross (fronts straight back, rears cross to front)",
+        "q3c": "Same-side rotation only (no crossing)",
+        "q3d": "X-pattern for FWD is never used",
+        "q3exp": "FWD vehicles use a forward cross pattern: front tires move straight to the rear, and rear tires cross to the front (RR→FL, LR→FR). This evens out wear since FWD front tires wear faster from steering and acceleration."
+      }
+    },
+
+    "engineCooling": {
+      "title": "Engine Cooling System Service",
+      "description": "Cooling system components, coolant types and mixing, and pressure testing procedure.",
+      "section1Title": "Cooling System Components",
+      "section1Subtitle": "Start the engine to see coolant flow. Click each component to learn about it.",
+      "section2Title": "Coolant Types & Mixing Ratios",
+      "section2Subtitle": "Select a coolant type and adjust the mix ratio to see freeze protection.",
+      "section3Title": "Pressure Testing Procedure",
+      "section3Subtitle": "Step-by-step cooling system pressure test to find leaks.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 cooling system questions. Select the best answer.",
+      "engineRunning": "🔑 Engine: RUNNING",
+      "engineOff": "🔑 Engine: OFF",
+      "coolantCirculating": "Coolant flowing through system.",
+      "systemAtRest": "Engine at rest. Do not open radiator cap.",
+      "section1Tip": "NEVER open the radiator cap on a hot engine — pressurized coolant will spray out and cause serious burns. Always wait until the engine is completely cool.",
+      "section2Tip": "Never mix different coolant colors/types. Mixing IAT (green) with OAT (orange) can create a gel-like substance that clogs the cooling system.",
+      "section3Tip": "If system cannot hold pressure, check for external leaks first. If no external leak, suspect a head gasket — look for bubbles in the coolant and white exhaust smoke.",
+      "serviceLife": "Service life",
+      "type": "Type",
+      "mixRatio": "Coolant to Water Mix Ratio",
+      "freezePoint": "Freeze protection",
+      "mixOk": "Ideal mix (40–60%)",
+      "mixWarn": "Adjust ratio — outside ideal range",
+      "navPills": {
+        "components": "🌡️ Components",
+        "coolants":   "🧪 Coolant Types",
+        "pressure":   "🔧 Pressure Test",
+        "quiz":       "📝 Final Quiz"
+      },
+      "parts": {
+        "radiator": {
+          "label": "🌡️ Radiator",
+          "desc": "Dissipates heat from coolant using finned aluminum tubes. Air passes through fins and absorbs heat. Check for bent fins, cracks, and leaks around end tanks."
+        },
+        "thermostat": {
+          "label": "🌡️ Thermostat",
+          "desc": "Wax pellet valve that opens at ~195°F to allow coolant to flow to the radiator. Stuck closed = engine overheats. Stuck open = slow warmup, poor heater output."
+        },
+        "waterpump": {
+          "label": "💧 Water Pump",
+          "desc": "Centrifugal pump that circulates coolant through the system. Driven by serpentine belt or timing chain. Failure symptoms: overheating, coolant leak from weep hole, noisy bearing."
+        },
+        "expansion": {
+          "label": "🫙 Expansion Tank",
+          "desc": "Stores coolant as it expands with temperature. The pressure cap on this tank (or radiator) maintains system pressure (13–16 PSI) to raise the boiling point of coolant."
+        },
+        "hoses": {
+          "label": "🔗 Radiator Hoses",
+          "desc": "Upper hose carries hot coolant from engine to radiator. Lower hose returns cooled coolant to water pump. Check for softness, hardness, cracking, bulging, and collapsing under pressure."
+        }
+      },
+      "coolants": {
+        "green": {
+          "label": "🟢 Green (IAT)",
+          "title": "Traditional Green — Inorganic Additive Technology",
+          "desc": "Silicate and phosphate-based inhibitors. Used in older domestic and import vehicles. Short service life — must be changed every 2 years or 30,000 miles. Common in pre-2000 vehicles."
+        },
+        "orange": {
+          "label": "🟠 Orange (OAT)",
+          "title": "DEX-COOL Orange — Organic Acid Technology",
+          "desc": "GM factory fill for most vehicles since 1996. Organic acid inhibitors. 5-year/150,000-mile service life. Do NOT mix with green IAT — will gel and clog the system."
+        },
+        "yellow": {
+          "label": "🟡 Yellow/Gold (HOAT)",
+          "title": "Yellow — Hybrid OAT",
+          "desc": "Hybrid formula combining organic acids with silicate protection. Used in most modern Asian and European vehicles. 5-year/150,000-mile service life. Check OEM specification."
+        },
+        "blue": {
+          "label": "🔵 Blue (HOAT)",
+          "title": "Blue — Hybrid OAT (Asian/European)",
+          "desc": "Common in Honda, Acura, Toyota, Subaru, and European vehicles. Hybrid organic acid formula. 5-year/150,000-mile service life. Do not substitute without checking compatibility."
+        },
+        "purple": {
+          "label": "🟣 Purple (HOAT)",
+          "title": "Purple — Hybrid OAT (Universal)",
+          "desc": "Universal HOAT formula marketed as compatible with most vehicles. Still always verify compatibility before using. 5-year service life. Prestone and Peak make common purple universal coolants."
+        }
+      },
+      "pressureTest": {
+        "press1Title": "Let engine cool completely",
+        "press1Desc": "Wait until the engine is completely cool (minimum 1 hour after running). Never open the radiator cap or add cold coolant to a hot engine — risk of severe burns and cracking the block.",
+        "press1Tip": "Place your hand on the radiator. If it is warm to the touch, wait longer. Only proceed when completely cool.",
+        "press2Title": "Attach pressure tester",
+        "press2Desc": "Select the adapter that matches the radiator cap neck. Attach the pressure tester pump to the neck. Check that the adapter seals correctly before pumping.",
+        "press2Tip": "Some vehicles have the pressure cap on the expansion tank, not the radiator. Use the correct adapter for the cap location.",
+        "press3Title": "Pump to rated pressure",
+        "press3Desc": "Pump the tester to the pressure rating printed on the radiator cap (typically 13–16 PSI). Do not exceed the cap rating. Observe the gauge for 2 full minutes.",
+        "press3Tip": "If the gauge drops during the 2-minute hold, there is a leak in the system. If it holds, the system is pressure-tight.",
+        "press4Title": "Inspect all components",
+        "press4Desc": "While holding pressure, inspect all hoses, clamps, radiator, water pump, heater core connections, and head gasket area. Look for coolant seeping, dripping, or spraying.",
+        "press4Tip": "Head gasket leaks may not show as external drips. Look for bubbles in the overflow tank and white exhaust smoke with sweet smell.",
+        "press5Title": "Release pressure and test cap",
+        "press5Desc": "Slowly release the tester pressure. Attach the radiator cap to the tester cap adapter and pump — the cap should hold rated pressure and release at that pressure. A cap that releases too early or too late needs replacement.",
+        "press5Tip": "A failing pressure cap is a common and inexpensive cause of overheating. Always test the cap during a cooling system inspection."
+      },
+      "quiz": {
+        "q1": "Why should you never open a radiator cap on a hot engine?",
+        "q1a": "It will release coolant additives into the air",
+        "q1b": "Pressurized steam and coolant will spray out causing burns",
+        "q1c": "It will contaminate the coolant with air",
+        "q1d": "The cap may not reseal properly",
+        "q1exp": "The cooling system is pressurized (13–16 PSI) to raise the boiling point. Opening the cap releases this pressure instantly — superheated coolant flashes to steam and sprays violently, causing severe burns. Always wait until completely cool.",
+        "q2": "An engine overheats only at highway speed (75+ mph) but runs normal in town. The most likely cause is:",
+        "q2a": "A stuck-closed thermostat",
+        "q2b": "A bad water pump bearing",
+        "q2c": "Low engine oil level",
+        "q2d": "Low coolant level or restricted airflow through the radiator",
+        "q2exp": "At highway speed, the engine produces maximum heat but the water pump may not be circulating enough coolant, or airflow through the radiator is restricted (bugs, bent fins). Low coolant level reduces heat transfer at high load. A stuck-closed thermostat would overheat in town too.",
+        "q3": "Can you mix green (IAT) coolant with orange (OAT) coolant in an emergency?",
+        "q3a": "No — they react and form gel deposits that clog the system",
+        "q3b": "Yes — all coolants are compatible when diluted 50/50",
+        "q3c": "Yes — briefly, then flush at next service",
+        "q3d": "Only if both are diluted first with distilled water",
+        "q3exp": "Mixing IAT (green silicate) with OAT (organic acid) coolants causes a chemical reaction that can create a gel-like sludge. This sludge can clog small passages in the heater core, radiator, and water pump. Never mix without verifying compatibility. Use universal coolant or flush and refill completely."
+      }
+    },
+
+    "vehicleSafety": {
+      "title": "Vehicle Safety & Lift Operation",
+      "description": "Lift types, safe vehicle lifting procedure, and PPE requirements for shop safety.",
+      "section1Title": "Lift Types",
+      "section1Subtitle": "Select each lift type to see how it works and when to use it.",
+      "section2Title": "Safe Lift Procedure",
+      "section2Subtitle": "Step-by-step procedure for safely lifting a vehicle on a 2-post lift.",
+      "section3Title": "PPE & Safety Checklist",
+      "section3Subtitle": "Check off your PPE before starting any job. All items required.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 shop safety questions. Select the best answer.",
+      "section1Tip": "Always locate the lift points on the door jamb sticker or factory service manual before lifting. Wrong lift points can damage rocker panels and pinch welds.",
+      "section2Tip": "CRITICAL: Always engage the lift safety locks before getting under any vehicle. A hydraulic failure without locks engaged can result in fatal injury.",
+      "section3Tip": "PPE is not optional. Safety glasses must be worn at all times in the shop — flying debris, chemical splashes, and sparks can cause permanent eye damage.",
+      "bestFor": "Best used for",
+      "ppeProgress": "PPE Checked",
+      "ppeReady": "All PPE Checked",
+      "ppeReadyDesc": "You are equipped and ready. Proceed with the job safely.",
+      "navPills": {
+        "lifts":     "🏗️ Lift Types",
+        "procedure": "⬆️ Lift Procedure",
+        "ppe":       "🦺 PPE",
+        "quiz":      "📝 Final Quiz"
+      },
+      "lifts": {
+        "twoPost": {
+          "label": "2-Post Lift",
+          "title": "2-Post Lift — Most Common",
+          "desc": "Two vertical columns with adjustable swing arms that contact the vehicle's pinch weld lift points. Provides full undercar access. Must be positioned precisely on the correct lift points.",
+          "bestFor": "Most undercar service: brakes, exhaust, suspension, oil changes."
+        },
+        "fourPost": {
+          "label": "4-Post Lift",
+          "title": "4-Post Runway Lift",
+          "desc": "Vehicle drives onto two steel runways supported by four posts. More stable than 2-post. Does not require precise arm placement on lift points. Vehicle wheels remain on runways.",
+          "bestFor": "Wheel alignments, transmission R&R, heavy trucks, long-term storage."
+        },
+        "scissor": {
+          "label": "Scissor Lift",
+          "title": "Scissor/Mid-Rise Lift",
+          "desc": "Compact lift that raises from a single central platform. Lower maximum height than 2-post or 4-post. Good for quick inspection and service without requiring full undercar access.",
+          "bestFor": "Quick lube operations, tire rotations, fast inspection."
+        },
+        "floor": {
+          "label": "Floor Jack",
+          "title": "Floor Jack + Jack Stands",
+          "desc": "Portable hydraulic jack for raising individual corners or the entire vehicle. MUST be used with jack stands — NEVER work under a vehicle supported only by a floor jack. Hydraulic seals can fail.",
+          "bestFor": "Quick tire changes, spot repairs. ALWAYS place jack stands before getting under the vehicle."
+        }
+      },
+      "liftSteps": {
+        "lift1Title": "Inspect the lift before use",
+        "lift1Desc": "Check the lift for damage: hydraulic leaks, damaged arms, frayed cables, bent columns, and worn rubber pads. Never use a damaged lift. Tag it out and report to the supervisor.",
+        "lift1Tip": "Do a quick walk-around of the lift before every vehicle. It takes 30 seconds and can prevent a catastrophic accident.",
+        "lift2Title": "Position vehicle and locate lift points",
+        "lift2Desc": "Drive vehicle onto the lift. Check door jamb sticker or AllData for lift point locations. Position each arm pad directly under the pinch weld lift points. Pads must be solid and level.",
+        "lift2Tip": "Wrong lift points can bend rocker panels, crack side skirts, and cause the vehicle to fall. When in doubt, check AllData or ask a supervisor.",
+        "lift3Title": "Raise to working height — check midway",
+        "lift3Desc": "Raise the vehicle slowly about 12 inches off the ground. Stop and check that all four pads are making solid, even contact. Shake the vehicle from all four corners. If anything feels unstable, lower and reposition.",
+        "lift3Tip": "This midway check is the most important safety step. A vehicle that is not properly seated on the pads WILL fall when raised higher.",
+        "lift4Title": "Engage safety locks",
+        "lift4Desc": "Raise to final working height. Engage the lift safety locks (ratchet teeth or safety pins). Tug the vehicle from the side to verify it is locked. Lower the lift until it rests on the safety locks.",
+        "lift4Tip": "Safety locks must be engaged EVERY time, on EVERY lift cycle. This is not optional. A lift without locked safety locks is one hydraulic failure away from dropping the vehicle.",
+        "lift5Title": "Work safely — clear before lowering",
+        "lift5Desc": "Verify lift is resting on safety locks. Work safely under vehicle. When work is complete: remove all tools, parts, and drain pans. Clear all personnel from under and around the vehicle before lowering.",
+        "lift5Tip": "Before lowering, do a full walkaround. Check under, around, and inside the wheel wells for any tools or equipment left behind."
+      },
+      "ppe": {
+        "glasses": {
+          "label": "Safety Glasses",
+          "why": "Flying debris, chemical splash, UV from welding"
+        },
+        "gloves": {
+          "label": "Nitrile Gloves",
+          "why": "Chemical exposure, hot components, cuts"
+        },
+        "boots": {
+          "label": "Steel-Toe Boots",
+          "why": "Dropped tools, rolling equipment, sharp metal"
+        },
+        "jacket": {
+          "label": "Shop Jacket / Apron",
+          "why": "Hot fluids, rotating machinery, abrasion"
+        },
+        "noRings": {
+          "label": "Remove Rings & Watches",
+          "why": "Jewelry can catch on machinery and cause degloving"
+        },
+        "hairTied": {
+          "label": "Tie Back Long Hair",
+          "why": "Long hair can be caught by rotating equipment"
+        }
+      },
+      "quiz": {
+        "q1": "A lift safety lock will not engage. What should you do?",
+        "q1a": "Use a chain or strap to secure the vehicle instead",
+        "q1b": "Tag out the lift, report to supervisor, and do NOT use it",
+        "q1c": "Raise the vehicle higher until the lock catches",
+        "q1d": "Work quickly under the vehicle before the hydraulics can fail",
+        "q1exp": "A lift with a non-functioning safety lock is OUT OF SERVICE. Tag it out, place a 'Do Not Use' sign, and report to the supervisor immediately. Never work under a vehicle without functional safety locks — hydraulic seals can fail without warning.",
+        "q2": "Where do you find the correct lift points for a specific vehicle?",
+        "q2a": "Under the driver's floor mat",
+        "q2b": "On the vehicle identification plate (VIN tag)",
+        "q2c": "On the door jamb sticker or in AllData/Mitchell",
+        "q2d": "At the center of the rocker panel",
+        "q2exp": "Correct lift points are found on the door jamb sticker (which shows basic service info) or in AllData/Mitchell factory service data. Every vehicle has specific designated lift points — typically on the pinch welds. Wrong lift points can damage the vehicle.",
+        "q3": "You need to change the exhaust on a customer vehicle. You only have a floor jack available. What do you do?",
+        "q3a": "Proceed carefully with the floor jack — exhaust work is quick",
+        "q3b": "Work under the vehicle with the floor jack for support",
+        "q3c": "Use two floor jacks for more stability",
+        "q3d": "Do not proceed until proper jack stands or a lift is available",
+        "q3exp": "NEVER work under a vehicle supported only by a floor jack. Floor jacks are lifting devices, not safety stands. Hydraulic seals can fail without warning, causing the vehicle to drop instantly. Always use proper jack stands or a lift for any work that requires getting under the vehicle."
+      }
     }
   },
   "adminModules": {

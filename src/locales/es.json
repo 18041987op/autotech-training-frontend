@@ -576,6 +576,620 @@
         "q3d": "La batería tiene baja carga",
         "q3exp": "12V en la entrada y 0V en la salida con el switch ON es el diagnóstico definitivo de un interruptor defectuoso. El componente que tiene voltaje en su entrada pero no lo pasa a su salida es el componente fallado."
       }
+    },
+
+    "alternatorAndBattery": {
+      "title": "Alternador y Batería",
+      "description": "Cómo funciona el sistema de carga, cómo probar una batería con voltímetro y cómo diagnosticar la salida del alternador.",
+      "section1Title": "Resumen del Sistema de Carga",
+      "section1Subtitle": "Enciende el motor para ver el sistema en acción. Haz clic en cada componente para aprender sobre él.",
+      "section2Title": "Procedimiento de Prueba de Batería",
+      "section2Subtitle": "Prueba de voltímetro paso a paso para evaluar la condición de la batería.",
+      "section3Title": "Prueba de Salida del Alternador",
+      "section3Subtitle": "Selecciona cada condición para entender lo que el voltímetro te indica.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas del sistema de carga. Selecciona la mejor respuesta.",
+      "engineOn": "🔑 Motor: ENCENDIDO",
+      "engineOff": "🔑 Motor: APAGADO",
+      "chargingActive": "El alternador está cargando la batería.",
+      "batteryOnly": "La batería está alimentando todo.",
+      "section1Tip": "Un sistema de carga saludable lee 13.8–14.8V en la batería con el motor encendido.",
+      "altDiagTip": "Prueba la salida del alternador en los terminales de la batería con el motor encendido. Realiza prueba de carga encendiendo luces, AC y ventilador.",
+      "navPills": {
+        "system":  "🔋 Sistema de Carga",
+        "battery": "🔌 Prueba Batería",
+        "alt":     "⚡ Prueba Alternador",
+        "quiz":    "📝 Examen Final"
+      },
+      "components": {
+        "battery": {
+          "label": "🔋 Batería (12V)",
+          "desc": "Almacena energía eléctrica. En reposo una batería completamente cargada lee 12.6V. Cuando el motor corre el alternador la recarga a 13.8–14.8V."
+        },
+        "alternator": {
+          "label": "⚡ Alternador",
+          "desc": "Convierte energía mecánica del motor (mediante correa) en electricidad DC. Mantiene la batería cargada y alimenta todos los sistemas eléctricos mientras el motor funciona."
+        },
+        "regulator": {
+          "label": "📊 Regulador de Voltaje",
+          "desc": "Controla la salida del alternador. Limita el voltaje a aproximadamente 14.5V para evitar sobrecargar la batería. Frecuentemente integrado en el alternador."
+        },
+        "belt": {
+          "label": "🔄 Correa Serpentina",
+          "desc": "Mueve el alternador desde el cigüeñal del motor. Una correa rota o que patina significa cero carga — la batería se descargará rápidamente."
+        }
+      },
+      "battTest": {
+        "batt1Title": "Paso 1 — Voltaje en Reposo",
+        "batt1Desc": "Con motor APAGADO y sin cargas, toca las puntas del voltímetro en los terminales de la batería. 12.6V = completamente cargada. 12.4V = 75%. Menos de 12.0V = descargada.",
+        "batt1Tip": "Espera 10 minutos después de cargar antes de probar el voltaje en reposo para una lectura precisa.",
+        "batt2Title": "Paso 2 — Advertencia de Batería Baja",
+        "batt2Desc": "Una lectura por debajo de 12.4V indica descarga parcial. Carga la batería y vuelve a probar. No reemplaces antes de cargar y re-probar.",
+        "batt2Tip": "Una batería parcialmente descargada puede resultar defectuosa en la prueba. Siempre carga primero.",
+        "batt3Title": "Paso 3 — Prueba de Carga (Arranque)",
+        "batt3Desc": "El voltaje NO debe caer por debajo de 9.6V mientras arranca. Menos de 9.6V = la batería no puede suministrar la corriente requerida — reemplazar.",
+        "batt3Tip": "Las baterías frías prueban más débiles. Si está en el límite con frío, vuelve a probar a temperatura de operación.",
+        "batt4Title": "Paso 4 — Batería Aprueba",
+        "batt4Desc": "La batería mantiene más de 9.6V durante la prueba de carga y se recupera a 12.6V en reposo. La batería está bien — verifica el alternador y el sistema de carga.",
+        "batt4Tip": "Siempre documenta los resultados de la prueba de batería en la orden de reparación para los registros del cliente."
+      },
+      "altStates": {
+        "good": {
+          "label": "✅ Buena Salida",
+          "title": "Salida Normal del Alternador",
+          "desc": "13.8–14.8V en los terminales de batería con motor encendido. Prueba de carga: agrega luces, AC, ventilador — el voltaje se mantiene sobre 13.0V. El alternador está bien."
+        },
+        "low": {
+          "label": "⚠️ Baja Salida",
+          "title": "Salida Baja del Alternador",
+          "desc": "Menos de 13.5V con motor encendido. Causas: escobillas desgastadas, diodos defectuosos, estátor/rotor fallando, correa patinando o rota. La batería se descargará con el tiempo."
+        },
+        "high": {
+          "label": "🔴 Alta Salida",
+          "title": "Alta Salida del Alternador (Sobrecarga)",
+          "desc": "Más de 15V con motor encendido. Causa: falla del regulador de voltaje. Sobrecargará la batería, hervirá el electrolito y dañará componentes eléctricos. Reemplazar alternador."
+        },
+        "ripple": {
+          "label": "〜 Ripple de AC",
+          "title": "Ripple de AC — Diodos Defectuosos",
+          "desc": "Pon el multímetro en modo AC en los terminales de batería. Más de 0.5V AC = diodos rectificadores defectuosos en el alternador. Causa descarga de batería y problemas eléctricos."
+        }
+      },
+      "quiz": {
+        "q1": "¿Cuál es el voltaje normal de salida del alternador con el motor encendido?",
+        "q1a": "11.5–12.5V",
+        "q1b": "13.8–14.8V",
+        "q1c": "15.0–16.0V",
+        "q1d": "10.0–11.0V",
+        "q1exp": "Un alternador saludable produce 13.8–14.8V DC en los terminales de batería con el motor encendido. Esto es suficiente para mantener la batería cargada mientras alimenta todos los sistemas eléctricos del vehículo.",
+        "q2": "Un ripple de AC mayor a 0.5V en los terminales de batería (con motor encendido) indica:",
+        "q2a": "La batería necesita reemplazo",
+        "q2b": "La correa serpentina está patinando",
+        "q2c": "Diodos rectificadores defectuosos en el alternador",
+        "q2d": "El regulador de voltaje está abierto",
+        "q2exp": "Un ripple de AC mayor a 0.5V significa que los diodos rectificadores del alternador no están convirtiendo completamente el AC a DC. Esto causa interferencia eléctrica, descarga de batería y debe repararse reemplazando el alternador.",
+        "q3": "El motor de un vehículo arranca bien pero la batería se descarga después de manejar. ¿Cuál es la causa más probable?",
+        "q3a": "La batería tiene una celda mala",
+        "q3b": "El fusible está quemado",
+        "q3c": "La batería está sobrecargada",
+        "q3d": "El alternador no está cargando",
+        "q3exp": "Si la batería arranca bien (mantiene voltaje bajo carga) pero se descarga después de manejar, el alternador no la está recargando. Verifica la correa serpentina, voltaje de salida del alternador y conexiones."
+      }
+    },
+
+    "oilChange": {
+      "title": "Cambio de Aceite y Servicios de Fluidos",
+      "description": "Selección de viscosidad de aceite, procedimiento de drenaje y llenado, y lista de verificación de fluidos.",
+      "section1Title": "Viscosidad y Especificaciones de Aceite",
+      "section1Subtitle": "Selecciona cada tipo de aceite para ver dónde se usa y qué significa.",
+      "section2Title": "Procedimiento de Drenaje y Llenado",
+      "section2Subtitle": "Cambio de aceite paso a paso desde el drenaje hasta verificar el nivel.",
+      "section3Title": "Lista de Verificación de Fluidos",
+      "section3Subtitle": "Verifica y registra la condición de todos los fluidos en cada cambio de aceite.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas de servicio de aceite. Selecciona la mejor respuesta.",
+      "section1Tip": "Siempre usa la viscosidad especificada por el fabricante — no la que hay en stock. Usar aceite con viscosidad incorrecta puede anular la garantía y causar daño al motor.",
+      "section2Tip": "Nunca uses pistola de impacto en el tapón de drenaje. Aprieta a mano más 1/4 vuelta. Sobre-apretar desperfecta las roscas del cárter.",
+      "section3Tip": "Cada revisión de fluidos es una oportunidad de venta. Documenta fluidos bajos o sucios en la orden de reparación para el asesor de servicio.",
+      "commonVehicles": "Vehículos comunes",
+      "checklistComplete": "Inspección de Fluidos Completa",
+      "checklistCompleteDesc": "Todos los fluidos verificados y condiciones registradas. Presenta los hallazgos al asesor de servicio antes de entregar el vehículo.",
+      "fluidConditions": {
+        "ok": "✅ OK",
+        "low": "⚠️ Bajo",
+        "dirty": "🟡 Sucio",
+        "replace": "🔴 Reemplazar"
+      },
+      "navPills": {
+        "viscosity": "🛢️ Especificaciones",
+        "procedure": "🔧 Procedimiento",
+        "fluids":    "🔍 Fluidos",
+        "quiz":      "📝 Examen Final"
+      },
+      "specs": {
+        "0w20": {
+          "title": "Ligero — Mejor flujo en frío",
+          "desc": "Motores modernos de alta eficiencia. Reduce el desgaste en arranque. Usado en muchos híbridos y motores de inyección directa. Siempre verificar con la etiqueta de la puerta o manual del propietario."
+        },
+        "5w20": {
+          "title": "Servicio ligero — Buen flujo en frío",
+          "desc": "Común en plataformas Ford antiguas (5.4L, 4.6L), Lincoln y algunos Chrysler. Confirmar en la tapa del aceite y varilla."
+        },
+        "5w30": {
+          "title": "Todo uso — El más común",
+          "desc": "La mayoría de vehículos GM, muchas importaciones japonesas y europeas antiguas. El peso más almacenado en la mayoría de los talleres."
+        },
+        "5w40": {
+          "title": "Más pesado — Europeo y diésel",
+          "desc": "VW, Audi, BMW, Mercedes-Benz, camiones diésel europeos. A menudo requiere calificación específica API/ACEA. Busca LL-01, 507.00 o especificación similar."
+        }
+      },
+      "fluids": {
+        "coolant": {
+          "label": "Refrigerante",
+          "checkWhat": "Nivel + color (claro o con óxido)"
+        },
+        "brake": {
+          "label": "Líquido de Frenos",
+          "checkWhat": "Nivel + color (claro = bien, oscuro = reemplazar)"
+        },
+        "power": {
+          "label": "Dirección Hidráulica",
+          "checkWhat": "Nivel + condición (espuma u olor a quemado)"
+        },
+        "washer": {
+          "label": "Agua de Limpiaparabrisas",
+          "checkWhat": "Nivel"
+        },
+        "transmission": {
+          "label": "Fluido de Transmisión",
+          "checkWhat": "Nivel + color (rosa = ok, oscuro/quemado = servicio)"
+        }
+      },
+      "procedure": {
+        "step1Title": "Posicionar vehículo y preparar",
+        "step1Desc": "Coloca el vehículo en el elevador o rampas. Calienta el motor 2–3 minutos si está frío (el aceite caliente drena más rápido). Reúne bandeja, llave del tapón, llave del filtro, embudo y aceite correcto.",
+        "step1Tip": "El aceite caliente drena más rápido y completo, pero el aceite muy caliente puede quemar. Caliente, no ardiendo.",
+        "step2Title": "Drenar el aceite",
+        "step2Desc": "Coloca la bandeja debajo del tapón. Retira el tapón lentamente — deja que el aceite fluya lejos de ti. Retira el filtro. Deja drenar completamente (mínimo 3–5 minutos). Inspecciona roscas y empaque del tapón.",
+        "step2Tip": "Si el empaque o las roscas del tapón están dañadas — márcalos para reparación antes de reinstalar.",
+        "step3Title": "Instalar tapón y filtro nuevo",
+        "step3Desc": "Instala el filtro nuevo a mano más 3/4 vuelta. Instala el tapón con empaque nuevo si es requerido. Aprieta el tapón al torque especificado (típicamente 25–35 ft-lbs). Nunca uses pistola de impacto.",
+        "step3Tip": "Pre-llena el filtro si es accesible — reduce el tiempo de arranque en seco en el primer encendido.",
+        "step4Title": "Llenar con aceite nuevo",
+        "step4Desc": "Vierte el tipo y cantidad correcta de aceite según especificación (normalmente 4–7 cuartos dependiendo del motor). Arranca el motor y verifica fugas alrededor del tapón y filtro. Corre por 30 segundos.",
+        "step4Tip": "Revisa la varilla dos veces — una inmediatamente después de llenar, otra después de 1 minuto corriendo para que el filtro se llene.",
+        "step5Title": "Verificar nivel y reiniciar monitor",
+        "step5Desc": "Vuelve a verificar el nivel en la varilla — debe estar entre las marcas MIN y MAX. Reinicia el monitor de vida del aceite según el procedimiento del vehículo. Coloca etiqueta en el parabrisas. Registra en orden de reparación.",
+        "step5Tip": "El procedimiento de reinicio varía por vehículo. Consulta AllData o manual del propietario. Saltarlo = cliente confundido en la siguiente visita."
+      },
+      "quiz": {
+        "q1": "El vehículo de un cliente requiere aceite 0W-20, pero solo hay 5W-30 disponible. ¿Qué haces?",
+        "q1a": "Usar 5W-30 — está suficientemente cerca",
+        "q1b": "Usar el 0W-20 correcto — pedir o conseguir del proveedor",
+        "q1c": "Mezclar 0W-20 y 5W-30 al 50%",
+        "q1d": "Posponer el cambio hasta tener el aceite correcto",
+        "q1exp": "Siempre usa la viscosidad especificada por el fabricante. Usar aceite incorrecto puede anular la garantía y causar desgaste prematuro en motores modernos con tolerancias ajustadas. Pide el aceite correcto o explica al cliente.",
+        "q2": "El aceite del motor se ve negro intenso y arenoso con partículas metálicas. ¿Qué acción es correcta?",
+        "q2a": "Cambiar el aceite inmediatamente y señalar para inspección del motor",
+        "q2b": "Agregar un aditivo de aceite",
+        "q2c": "Cambiar el aceite — las partículas metálicas son normales",
+        "q2d": "Drenar y rellenar con aceite más pesado",
+        "q2exp": "Las partículas metálicas en el aceite del motor indican desgaste interno. Cambia el aceite inmediatamente y señala para inspección adicional. Documenta en la orden de reparación. Puede indicar un cojinete fallando u otro problema serio.",
+        "q3": "Después de llenar, la varilla muestra el nivel exactamente en la marca MIN. ¿Qué haces?",
+        "q3a": "Agregar 1 cuarto — siempre llenar al MAX",
+        "q3b": "El nivel está bien — MIN es aceptable",
+        "q3c": "Drenar un poco — MIN significa demasiado aceite",
+        "q3d": "Agregar aceite para llevar el nivel a la mitad del rango MIN–MAX",
+        "q3exp": "La marca MIN es el nivel mínimo aceptable absoluto, no el objetivo. Agrega suficiente aceite para llevar el nivel a la parte media o superior de la zona segura (entre MIN y MAX). No llenes más allá del MAX."
+      }
+    },
+
+    "brakeSystem": {
+      "title": "Inspección y Servicio del Sistema de Frenos",
+      "description": "Componentes del freno de disco, medición de pastillas y rotores, y procedimiento de purgado.",
+      "section1Title": "Componentes del Freno de Disco",
+      "section1Subtitle": "Haz clic en cada componente para aprender qué hace.",
+      "section2Title": "Medición de Pastillas y Rotores",
+      "section2Subtitle": "Usa los deslizadores para establecer el grosor y ver el estado.",
+      "section3Title": "Procedimiento de Purgado de Frenos",
+      "section3Subtitle": "Procedimiento paso a paso para purgar aire del sistema de frenos.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas de servicio de frenos. Selecciona la mejor respuesta.",
+      "section1Tip": "Siempre mide AMBAS pastillas interior y exterior. La pastilla interior frecuentemente se desgasta más rápido. Documenta todas las mediciones en la orden de reparación.",
+      "section2Tip": "Si el rotor está dentro de especificación pero el cliente se queja de vibración, verifica el runout con un indicador de carátula. Runout máximo: 0.002 pulgadas (0.05mm).",
+      "section3Tip": "Nunca dejes que el depósito del cilindro maestro se vacíe mientras purgas — introducirías aire en el sistema y tendrías que empezar de nuevo.",
+      "padThickness": "Grosor de la Pastilla",
+      "rotorThickness": "Grosor del Rotor",
+      "padLabel": "Pastilla",
+      "rotorLabel": "Rotor",
+      "statusOk": "✅ OK",
+      "statusWarn": "⚠️ Advertir",
+      "statusReplace": "🔴 Reemplazar",
+      "bleedOrder": "Orden de Purgado",
+      "navPills": {
+        "components":  "🛑 Componentes",
+        "measurement": "📏 Medición",
+        "bleeding":    "💧 Purgado",
+        "quiz":        "📝 Examen Final"
+      },
+      "parts": {
+        "rotor": {
+          "label": "⚙️ Rotor (Disco)",
+          "desc": "Disco de hierro fundido que gira con la rueda. Ambos lados son superficies de fricción. Debe estar dentro del grosor mínimo especificado. Ranuras, puntos de calor o grietas requieren reemplazo."
+        },
+        "pad": {
+          "label": "🔴 Pastillas de Freno",
+          "desc": "Material de fricción unido a una placa de respaldo metálica. Pastillas interior y exterior por mordaza. Grosor mínimo es 2mm. Advertir al cliente a 4mm o menos (25% de vida restante)."
+        },
+        "caliper": {
+          "label": "🔵 Mordaza",
+          "desc": "Abrazadera hidráulica. La mordaza flotante desliza sobre dos pines. Los pines deben lubricarse con grasa para pines de mordaza — no grasa de propósito general."
+        },
+        "piston": {
+          "label": "🔩 Pistón",
+          "desc": "Pistón hidráulico dentro del cilindro de la mordaza. La presión del líquido de frenos empuja el pistón hacia afuera para sujetar las pastillas contra el rotor. Verifica fugas alrededor del sello del pistón."
+        },
+        "hose": {
+          "label": "🟡 Manguera de Freno",
+          "desc": "Línea flexible que conecta la línea rígida de freno con la mordaza. Puede hincharse internamente creando una válvula unidireccional — causa arrastramiento de frenos y jaloneos hacia un lado."
+        }
+      },
+      "bleeding": {
+        "bleed1Title": "Llenar el depósito del cilindro maestro",
+        "bleed1Desc": "Llena el depósito hasta la línea MAX con fluido de frenos DOT 3 o DOT 4 (según especificación del vehículo). Nunca mezcles calificaciones DOT. Mantén la tapa cerca y verifica el nivel frecuentemente.",
+        "bleed1Tip": "Verifica la etiqueta de la puerta o manual del propietario para la calificación DOT correcta. La mayoría de vehículos modernos usan DOT 3 o DOT 4.",
+        "bleed2Title": "Conectar manguera al purgador RR",
+        "bleed2Desc": "Empieza en la Rueda Trasera Derecha (la más lejana del cilindro maestro). Conecta una manguera transparente de 6 pulgadas al purgador. Coloca el otro extremo en un frasco con fluido de frenos.",
+        "bleed2Tip": "Abre el purgador solo 3/4 de vuelta. Si lo abres demasiado puede salirse o romperse.",
+        "bleed3Title": "Bombear y mantener el pedal",
+        "bleed3Desc": "Con ayudante adentro: bombea el pedal 3 veces, mantenlo presionado. Di 'sosteniendo' — abre el purgador 3/4 vuelta y deja salir fluido. Di 'cerrando' — cierra ANTES de soltar el pedal. Repite hasta no ver burbujas.",
+        "bleed3Tip": "Nunca sueltes el pedal antes de cerrar el purgador. Soltar con el purgador abierto succiona aire de regreso a la mordaza.",
+        "bleed4Title": "Continuar con LR → RF → LF",
+        "bleed4Desc": "Sigue el orden de purgado: RR → LR → RF → LF. Después de cada mordaza, llena el cilindro maestro. Continúa hasta que fluido limpio sin burbujas fluya de cada purgador.",
+        "bleed4Tip": "Mantén un ojo en el depósito — si se vacía introduces aire al sistema y debes empezar de nuevo.",
+        "bleed5Title": "Probar pedal y verificar",
+        "bleed5Desc": "Bombea el pedal varias veces — debe sentirse firme y subir progresivamente. Prueba la presión de frenos antes de mover el vehículo. Llena el depósito al MAX. Reemplaza la tapa firmemente.",
+        "bleed5Tip": "Un pedal esponjoso o bajo después del purgado = aire residual. Repite el proceso comenzando desde la rueda más lejana nuevamente."
+      },
+      "quiz": {
+        "q1": "Una pastilla de freno mide 2mm. ¿Cuál es la acción correcta?",
+        "q1a": "No se requiere acción — 2mm está dentro de especificación",
+        "q1b": "Recomendar reemplazo en el próximo servicio",
+        "q1c": "Reemplazar inmediatamente — en el límite mínimo de grosor",
+        "q1d": "Advertir al cliente y revisar a las 3,000 millas",
+        "q1exp": "2mm es el grosor MÍNIMO aceptable de pastilla de freno. En o por debajo de 2mm, la pastilla debe reemplazarse inmediatamente. No queda margen de seguridad y el contacto metal-a-metal es inminente.",
+        "q2": "Un cliente se queja de vibración al frenar. ¿Qué revisas primero?",
+        "q2a": "Presión de las cuatro llantas",
+        "q2b": "Nivel del líquido de frenos en el cilindro maestro",
+        "q2c": "Lubricación de los pines de la mordaza",
+        "q2d": "Variación de grosor y runout del rotor",
+        "q2exp": "La vibración al frenar (temblor del pedal) es típicamente causada por variación del grosor del rotor (alabeo) o runout lateral. Mide el grosor del rotor en múltiples puntos y verifica el runout con un indicador de carátula.",
+        "q3": "¿Cuál es la secuencia correcta de purgado de frenos?",
+        "q3a": "LF → RF → LR → RR",
+        "q3b": "RR → LR → RF → LF",
+        "q3c": "Los cuatro al mismo tiempo",
+        "q3d": "RF → LF → RR → LR",
+        "q3exp": "Purga desde la rueda más lejana al cilindro maestro (RR) hasta la más cercana (LF): RR → LR → RF → LF. Esto purga el aire completamente a través de las líneas de freno más largas primero."
+      }
+    },
+
+    "tireService": {
+      "title": "Servicio de Llantas, TPMS y Rotación",
+      "description": "Lectura del flanco de la llanta, inflado TPMS y patrones de rotación.",
+      "section1Title": "Tamaño de Llanta — Leyendo el Flanco",
+      "section1Subtitle": "Toca cada número en el código de la llanta para aprender qué significa.",
+      "section2Title": "TPMS e Inflado",
+      "section2Subtitle": "Ajusta la presión de cada llanta con los deslizadores. Objetivo: 32 PSI (verifica etiqueta de la puerta).",
+      "section3Title": "Patrones de Rotación",
+      "section3Subtitle": "Selecciona un patrón para ver cómo se mueven las llantas en cada rotación.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas de servicio de llantas. Selecciona la mejor respuesta.",
+      "section1Tip": "Nunca uses el PSI MÁXIMO en el flanco de la llanta — ese es el máximo, no el recomendado. Siempre usa la especificación de inflado de la etiqueta de la puerta.",
+      "section2Tip": "Después de montar cualquier llanta: siempre vuelve a aprender el sensor TPMS. Indica al cliente el procedimiento de reaprendizaje si es requerido por el vehículo.",
+      "section3Tip": "Algunas llantas direccionales SOLO pueden moverse adelante-atrás en el mismo lado. Verifica la flecha de rotación en el flanco antes de cruzar.",
+      "allPressuresOk": "Todas las Presiones en Rango",
+      "allPressuresOkDesc": "Las cuatro llantas están en el rango de 30–35 PSI. Verifica con la etiqueta de la puerta para la especificación exacta.",
+      "pressureIssues": "Problema de Presión Detectado",
+      "pressureIssuesDesc": "Una o más llantas fuera del rango recomendado. Objetivo: {{spec}} PSI según etiqueta de la puerta.",
+      "pressureStatus": {
+        "ok":     "✅ OK",
+        "warn":   "⚠️ Revisar",
+        "low":    "⬇️ Bajo",
+        "high":   "⬆️ Alto",
+        "danger": "🔴 Peligro"
+      },
+      "navPills": {
+        "sizing":   "🔵 Tamaño Llanta",
+        "tpms":     "💨 TPMS",
+        "rotation": "🔄 Rotación",
+        "quiz":     "📝 Examen Final"
+      },
+      "sidewall": {
+        "width": {
+          "label": "Ancho de Sección (mm)",
+          "desc": "El ancho de la llanta en milímetros, medido de flanco a flanco. En P225/60R16, esto es 225mm (~8.9 pulgadas). Una llanta más ancha proporciona mayor área de contacto pero puede afectar manejo y consumo de combustible."
+        },
+        "aspect": {
+          "label": "Relación de Aspecto (%)",
+          "desc": "La altura del flanco como porcentaje del ancho de sección. Una relación de 60 significa que el flanco es el 60% de 225mm = 135mm de alto. Número menor = manejo más rígido y deportivo. Número mayor = más amortiguación."
+        },
+        "construction": {
+          "label": "Tipo de Construcción",
+          "desc": "R = Radial. La construcción de llanta moderna más común. Las bandas radiales corren perpendiculares a la dirección de marcha, proporcionando mejor economía de combustible, desgaste y manejo."
+        },
+        "diameter": {
+          "label": "Diámetro del Rin (pulgadas)",
+          "desc": "El diámetro del rin en pulgadas al que se adapta esta llanta. Esto debe coincidir con el rin. Una llanta de 16\" solo entra en un rin de 16\". Nunca intentes montar una llanta en un rin de tamaño diferente."
+        }
+      },
+      "patterns": {
+        "forward": {
+          "label": "Cruz Hacia Adelante (FWD)",
+          "desc": "Las llantas delanteras van directamente atrás. Las llantas traseras cruzan hacia adelante (RR→FL, LR→FR). Mejor para vehículos de tracción delantera donde los delanteros se desgastan más rápido."
+        },
+        "xPattern": {
+          "label": "Patrón X (FWD/AWD)",
+          "desc": "Las cuatro llantas cruzan durante la rotación. Recomendado para AWD y algunos FWD. Desgaste más uniforme en las cuatro llantas."
+        },
+        "rearward": {
+          "label": "Cruz Hacia Atrás (RWD)",
+          "desc": "Las llantas traseras van directamente al frente. Las delanteras cruzan atrás. Mejor para vehículos de tracción trasera y 4x4."
+        }
+      },
+      "quiz": {
+        "q1": "En el código P225/60R16, ¿qué representa el '225'?",
+        "q1a": "Ancho de sección en milímetros",
+        "q1b": "Porcentaje de relación de aspecto",
+        "q1c": "Calificación máxima de carga en kg",
+        "q1d": "Diámetro del rin en milímetros",
+        "q1exp": "225 es el ancho de sección de la llanta en milímetros, medido de flanco a flanco en el punto más ancho. En el código P225/60R16: P=Pasajero, 225=ancho mm, 60=relación de aspecto, R=Radial, 16=pulgadas del rin.",
+        "q2": "La luz de advertencia TPMS se enciende (herradura con ! símbolo). ¿Qué debes hacer?",
+        "q2a": "Ignorarla — se reinicia sola",
+        "q2b": "Verificar y ajustar la presión de las cuatro llantas con manómetro",
+        "q2c": "Reemplazar el sensor TPMS inmediatamente",
+        "q2d": "Agregar 5 PSI a todas las llantas",
+        "q2exp": "La luz TPMS significa que una o más llantas están 25% o más por debajo de la presión recomendada. Usa un manómetro calibrado para verificar las cuatro llantas e inflar según la especificación de la etiqueta de la puerta.",
+        "q3": "Un cliente tiene un vehículo FWD. ¿Qué patrón de rotación debes usar?",
+        "q3a": "Cruz hacia atrás (traseras directas al frente, delanteras cruzan)",
+        "q3b": "Cruz hacia adelante (delanteras directas atrás, traseras cruzan al frente)",
+        "q3c": "Rotación del mismo lado solamente (sin cruzar)",
+        "q3d": "El patrón X nunca se usa para FWD",
+        "q3exp": "Los vehículos FWD usan el patrón de cruz hacia adelante: las llantas delanteras van directamente atrás, y las traseras cruzan al frente (RR→FL, LR→FR). Esto nivela el desgaste ya que las llantas delanteras FWD se desgastan más rápido por la dirección y aceleración."
+      }
+    },
+
+    "engineCooling": {
+      "title": "Servicio del Sistema de Enfriamiento",
+      "description": "Componentes del sistema de enfriamiento, tipos de refrigerante y mezcla, y prueba de presión.",
+      "section1Title": "Componentes del Sistema de Enfriamiento",
+      "section1Subtitle": "Enciende el motor para ver el flujo del refrigerante. Haz clic en cada componente.",
+      "section2Title": "Tipos de Refrigerante y Relaciones de Mezcla",
+      "section2Subtitle": "Selecciona un tipo de refrigerante y ajusta la relación de mezcla para ver la protección.",
+      "section3Title": "Procedimiento de Prueba de Presión",
+      "section3Subtitle": "Prueba de presión del sistema de enfriamiento paso a paso para encontrar fugas.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas del sistema de enfriamiento. Selecciona la mejor respuesta.",
+      "engineRunning": "🔑 Motor: EN MARCHA",
+      "engineOff": "🔑 Motor: APAGADO",
+      "coolantCirculating": "Refrigerante fluyendo a través del sistema.",
+      "systemAtRest": "Motor en reposo. No abrir la tapa del radiador.",
+      "section1Tip": "NUNCA abras la tapa del radiador en un motor caliente — el refrigerante a presión saldrá en vapor y causará quemaduras graves. Siempre espera a que el motor esté completamente frío.",
+      "section2Tip": "Nunca mezcles diferentes colores/tipos de refrigerante. Mezclar IAT (verde) con OAT (naranja) puede crear una sustancia gelatinosa que obstruye el sistema.",
+      "section3Tip": "Si el sistema no puede mantener presión, verifica primero por fugas externas. Si no hay fugas externas, sospecha de la junta de culata — busca burbujas en el refrigerante y humo blanco en el escape.",
+      "serviceLife": "Vida de servicio",
+      "type": "Tipo",
+      "mixRatio": "Relación de Mezcla Refrigerante/Agua",
+      "freezePoint": "Protección contra congelamiento",
+      "mixOk": "Mezcla ideal (40–60%)",
+      "mixWarn": "Ajustar relación — fuera del rango ideal",
+      "navPills": {
+        "components": "🌡️ Componentes",
+        "coolants":   "🧪 Tipos de Refrigerante",
+        "pressure":   "🔧 Prueba de Presión",
+        "quiz":       "📝 Examen Final"
+      },
+      "parts": {
+        "radiator": {
+          "label": "🌡️ Radiador",
+          "desc": "Disipa el calor del refrigerante usando tubos de aluminio con aletas. El aire pasa a través de las aletas y absorbe el calor. Verifica aletas dobladas, grietas y fugas alrededor de los tanques extremos."
+        },
+        "thermostat": {
+          "label": "🌡️ Termostato",
+          "desc": "Válvula de cera que se abre a ~195°F para permitir el flujo del refrigerante hacia el radiador. Atascado cerrado = motor se sobrecalienta. Atascado abierto = calentamiento lento, poco calefacción."
+        },
+        "waterpump": {
+          "label": "💧 Bomba de Agua",
+          "desc": "Bomba centrífuga que hace circular el refrigerante. Accionada por correa serpentina o cadena de distribución. Síntomas de falla: sobrecalentamiento, fuga por el orificio de goteo, rodamiento ruidoso."
+        },
+        "expansion": {
+          "label": "🫙 Depósito de Expansión",
+          "desc": "Almacena refrigerante conforme se expande con la temperatura. La tapa de presión en este depósito (o radiador) mantiene la presión del sistema (13–16 PSI) para elevar el punto de ebullición."
+        },
+        "hoses": {
+          "label": "🔗 Mangueras del Radiador",
+          "desc": "La manguera superior lleva refrigerante caliente del motor al radiador. La manguera inferior regresa refrigerante enfriado a la bomba de agua. Verifica suavidad, dureza, grietas, abultamientos y colapso bajo presión."
+        }
+      },
+      "coolants": {
+        "green": {
+          "label": "🟢 Verde (IAT)",
+          "title": "Verde Tradicional — Tecnología Aditiva Inorgánica",
+          "desc": "Inhibidores a base de silicato y fosfato. Usado en vehículos domésticos e importados más antiguos. Corta vida útil — debe cambiarse cada 2 años o 30,000 millas. Común en vehículos anteriores al año 2000."
+        },
+        "orange": {
+          "label": "🟠 Naranja (OAT)",
+          "title": "DEX-COOL Naranja — Tecnología de Ácido Orgánico",
+          "desc": "Fabricación original de GM para la mayoría de vehículos desde 1996. Inhibidores de ácido orgánico. Vida útil de 5 años/150,000 millas. NO mezclar con IAT verde — puede gelificarse y obstruir el sistema."
+        },
+        "yellow": {
+          "label": "🟡 Amarillo/Dorado (HOAT)",
+          "title": "Amarillo — OAT Híbrido",
+          "desc": "Fórmula híbrida que combina ácidos orgánicos con protección de silicato. Usado en la mayoría de vehículos asiáticos y europeos modernos. Vida útil de 5 años/150,000 millas. Verificar especificación OEM."
+        },
+        "blue": {
+          "label": "🔵 Azul (HOAT)",
+          "title": "Azul — OAT Híbrido (Asiático/Europeo)",
+          "desc": "Común en Honda, Acura, Toyota, Subaru y vehículos europeos. Fórmula de ácido orgánico híbrido. Vida útil de 5 años/150,000 millas. No sustituir sin verificar compatibilidad."
+        },
+        "purple": {
+          "label": "🟣 Morado (HOAT)",
+          "title": "Morado — OAT Híbrido (Universal)",
+          "desc": "Fórmula HOAT universal comercializada como compatible con la mayoría de vehículos. Siempre verifica compatibilidad antes de usar. Vida útil de 5 años. Prestone y Peak fabrican refrigerantes universales morados comunes."
+        }
+      },
+      "pressureTest": {
+        "press1Title": "Dejar el motor enfriar completamente",
+        "press1Desc": "Espera hasta que el motor esté completamente frío (mínimo 1 hora después de funcionar). Nunca abras la tapa del radiador ni agregues refrigerante frío a un motor caliente — riesgo de quemaduras graves y agrietamiento del bloque.",
+        "press1Tip": "Pon tu mano sobre el radiador. Si está tibio al tacto, espera más. Solo procede cuando esté completamente frío.",
+        "press2Title": "Conectar el probador de presión",
+        "press2Desc": "Selecciona el adaptador que coincida con el cuello de la tapa del radiador. Conecta la bomba del probador de presión al cuello. Verifica que el adaptador selle correctamente antes de bombear.",
+        "press2Tip": "Algunos vehículos tienen la tapa de presión en el depósito de expansión, no en el radiador. Usa el adaptador correcto para la ubicación de la tapa.",
+        "press3Title": "Bombear a la presión nominal",
+        "press3Desc": "Bombea el probador a la calificación de presión impresa en la tapa del radiador (típicamente 13–16 PSI). No excedas la calificación de la tapa. Observa el manómetro durante 2 minutos completos.",
+        "press3Tip": "Si el manómetro cae durante la retención de 2 minutos, hay una fuga en el sistema. Si se mantiene, el sistema está hermético a la presión.",
+        "press4Title": "Inspeccionar todos los componentes",
+        "press4Desc": "Mientras mantienes la presión, inspecciona todas las mangueras, abrazaderas, radiador, bomba de agua, conexiones del calefactor y área de la junta de culata. Busca refrigerante supurando, goteando o rociando.",
+        "press4Tip": "Las fugas de junta de culata pueden no mostrar goteos externos. Busca burbujas en el depósito y humo blanco con olor dulce en el escape.",
+        "press5Title": "Liberar presión y probar la tapa",
+        "press5Desc": "Libera lentamente la presión del probador. Conecta la tapa del radiador al adaptador de tapa del probador y bombea — la tapa debe mantener la presión nominal y liberarse a esa presión. Una tapa que libera demasiado temprano o tarde necesita reemplazo.",
+        "press5Tip": "Una tapa de presión que falla es una causa común y económica de sobrecalentamiento. Siempre prueba la tapa durante una inspección del sistema de enfriamiento."
+      },
+      "quiz": {
+        "q1": "¿Por qué nunca debes abrir la tapa del radiador en un motor caliente?",
+        "q1a": "Liberará aditivos del refrigerante al aire",
+        "q1b": "Vapor y refrigerante a presión saldrán causando quemaduras",
+        "q1c": "Contaminará el refrigerante con aire",
+        "q1d": "La tapa puede no volver a sellar correctamente",
+        "q1exp": "El sistema de enfriamiento está presurizado (13–16 PSI) para elevar el punto de ebullición. Abrir la tapa libera esta presión instantáneamente — el refrigerante sobrecalentado se convierte en vapor y sale violentamente, causando quemaduras graves. Siempre espera a que esté completamente frío.",
+        "q2": "Un motor se sobrecalienta solo a velocidad en autopista (75+ mph) pero funciona normal en ciudad. La causa más probable es:",
+        "q2a": "Un termostato atascado cerrado",
+        "q2b": "Un rodamiento defectuoso en la bomba de agua",
+        "q2c": "Nivel bajo de aceite del motor",
+        "q2d": "Nivel bajo de refrigerante o flujo de aire restringido a través del radiador",
+        "q2exp": "A alta velocidad, el motor produce calor máximo pero la bomba de agua puede no circular suficiente refrigerante, o el flujo de aire a través del radiador está restringido. Un termostato atascado cerrado también se sobrecalentaría en ciudad.",
+        "q3": "¿Puedes mezclar refrigerante verde (IAT) con naranja (OAT) en una emergencia?",
+        "q3a": "No — reaccionan y forman depósitos de gel que obstruyen el sistema",
+        "q3b": "Sí — todos los refrigerantes son compatibles cuando se diluyen 50/50",
+        "q3c": "Sí — brevemente, luego lavar en el próximo servicio",
+        "q3d": "Solo si ambos se diluyen primero con agua destilada",
+        "q3exp": "Mezclar IAT (silicato verde) con OAT (ácido orgánico) causa una reacción química que puede crear una especie de lodo gelatinoso. Este lodo puede obstruir pasajes pequeños en el calentador, radiador y bomba de agua. Nunca mezcles sin verificar compatibilidad."
+      }
+    },
+
+    "vehicleSafety": {
+      "title": "Seguridad del Vehículo y Operación del Elevador",
+      "description": "Tipos de elevadores, procedimiento seguro de levantamiento y requerimientos de EPP para seguridad en el taller.",
+      "section1Title": "Tipos de Elevadores",
+      "section1Subtitle": "Selecciona cada tipo de elevador para ver cómo funciona y cuándo usarlo.",
+      "section2Title": "Procedimiento Seguro de Elevación",
+      "section2Subtitle": "Procedimiento paso a paso para levantar un vehículo de forma segura en un elevador de 2 postes.",
+      "section3Title": "Lista de Verificación de EPP y Seguridad",
+      "section3Subtitle": "Verifica tu EPP antes de comenzar cualquier trabajo. Todos los elementos son obligatorios.",
+      "section4Title": "Examen Final",
+      "section4Subtitle": "3 preguntas de seguridad en el taller. Selecciona la mejor respuesta.",
+      "section1Tip": "Siempre localiza los puntos de levantamiento en la etiqueta de la puerta o en el manual de servicio de fábrica antes de levantar. Los puntos incorrectos pueden dañar umbrales y pinch welds.",
+      "section2Tip": "CRÍTICO: Siempre engancha los seguros de seguridad del elevador antes de meterte debajo de cualquier vehículo. Una falla hidráulica sin seguros puede resultar en lesión fatal.",
+      "section3Tip": "El EPP no es opcional. Los lentes de seguridad deben usarse en todo momento en el taller — los escombros voladores, salpicaduras de químicos y chispas pueden causar daño ocular permanente.",
+      "bestFor": "Mejor usado para",
+      "ppeProgress": "EPP Verificado",
+      "ppeReady": "Todo el EPP Verificado",
+      "ppeReadyDesc": "Estás equipado y listo. Procede con el trabajo de forma segura.",
+      "navPills": {
+        "lifts":     "🏗️ Tipos de Elevadores",
+        "procedure": "⬆️ Procedimiento",
+        "ppe":       "🦺 EPP",
+        "quiz":      "📝 Examen Final"
+      },
+      "lifts": {
+        "twoPost": {
+          "label": "Elevador de 2 Postes",
+          "title": "Elevador de 2 Postes — El Más Común",
+          "desc": "Dos columnas verticales con brazos giratorios ajustables que contactan los puntos de levantamiento del vehículo. Proporciona acceso completo debajo del vehículo. Debe posicionarse precisamente en los puntos correctos.",
+          "bestFor": "La mayoría del servicio debajo del vehículo: frenos, escape, suspensión, cambios de aceite."
+        },
+        "fourPost": {
+          "label": "Elevador de 4 Postes",
+          "title": "Elevador de Pista de 4 Postes",
+          "desc": "El vehículo conduce sobre dos rieles de acero soportados por cuatro postes. Más estable que el de 2 postes. No requiere colocación precisa de brazos en puntos de levantamiento.",
+          "bestFor": "Alineaciones de ruedas, trabajos de transmisión, camiones pesados, almacenamiento a largo plazo."
+        },
+        "scissor": {
+          "label": "Elevador de Tijera",
+          "title": "Elevador de Tijera / Media Altura",
+          "desc": "Elevador compacto que sube desde una plataforma central única. Altura máxima menor que 2 o 4 postes. Bueno para inspección rápida y servicio sin requerir acceso completo debajo.",
+          "bestFor": "Operaciones de cambio de aceite rápido, rotación de llantas, inspección rápida."
+        },
+        "floor": {
+          "label": "Gato de Piso",
+          "title": "Gato de Piso + Soportes de Seguridad",
+          "desc": "Gato hidráulico portátil para levantar esquinas individuales o el vehículo completo. DEBE usarse con soportes de seguridad — NUNCA trabajes debajo de un vehículo soportado solo por un gato.",
+          "bestFor": "Cambios rápidos de llanta, reparaciones puntuales. SIEMPRE coloca soportes antes de meterte debajo del vehículo."
+        }
+      },
+      "liftSteps": {
+        "lift1Title": "Inspeccionar el elevador antes de usar",
+        "lift1Desc": "Verifica el elevador en busca de daños: fugas hidráulicas, brazos dañados, cables raídos, columnas dobladas y almohadillas de goma desgastadas. Nunca uses un elevador dañado. Etiquétalo como fuera de servicio y reporta al supervisor.",
+        "lift1Tip": "Haz una revisión rápida alrededor del elevador antes de cada vehículo. Toma 30 segundos y puede prevenir un accidente catastrófico.",
+        "lift2Title": "Posicionar vehículo y localizar puntos de levantamiento",
+        "lift2Desc": "Conduce el vehículo al elevador. Verifica la etiqueta de la puerta o AllData para las ubicaciones de los puntos de levantamiento. Posiciona cada almohadilla directamente debajo de los puntos de levantamiento del umbral. Las almohadillas deben estar sólidas y niveladas.",
+        "lift2Tip": "Los puntos incorrectos pueden doblar los umbrales, agrietar las faldas laterales y causar que el vehículo caiga. Ante la duda, verifica AllData o pregunta a un supervisor.",
+        "lift3Title": "Subir a altura de trabajo — verificar a mitad",
+        "lift3Desc": "Sube el vehículo lentamente unas 12 pulgadas del suelo. Detente y verifica que las cuatro almohadillas hacen contacto sólido y parejo. Sacude el vehículo desde las cuatro esquinas. Si algo se siente inestable, baja y reposiciona.",
+        "lift3Tip": "Esta verificación a mitad es el paso de seguridad más importante. Un vehículo que no está correctamente asentado en las almohadillas CAERÁ cuando se suba más.",
+        "lift4Title": "Enganchar los seguros de seguridad",
+        "lift4Desc": "Sube a la altura final de trabajo. Engancha los seguros de seguridad del elevador (dientes de trinquete o pasadores). Jala el vehículo de lado para verificar que está bloqueado. Baja el elevador hasta que descanse en los seguros.",
+        "lift4Tip": "Los seguros deben engancharse SIEMPRE, en CADA ciclo de elevación. Esto no es opcional. Un elevador sin seguros es una falla hidráulica que puede dejar caer el vehículo.",
+        "lift5Title": "Trabajar de forma segura — despejar antes de bajar",
+        "lift5Desc": "Verifica que el elevador descansa en los seguros. Trabaja de forma segura debajo del vehículo. Cuando el trabajo esté completo: retira todas las herramientas, piezas y bandejas. Despeja al personal de debajo y alrededor del vehículo antes de bajar.",
+        "lift5Tip": "Antes de bajar, haz un recorrido completo. Verifica debajo, alrededor y dentro de los pozos de rueda en busca de herramientas o equipos olvidados."
+      },
+      "ppe": {
+        "glasses": {
+          "label": "Lentes de Seguridad",
+          "why": "Escombros voladores, salpicaduras de químicos, UV de soldadura"
+        },
+        "gloves": {
+          "label": "Guantes de Nitrilo",
+          "why": "Exposición a químicos, componentes calientes, cortaduras"
+        },
+        "boots": {
+          "label": "Botas con Punta de Acero",
+          "why": "Herramientas caídas, equipo rodante, metal con filo"
+        },
+        "jacket": {
+          "label": "Chaqueta / Delantal de Taller",
+          "why": "Fluidos calientes, maquinaria en movimiento, abrasión"
+        },
+        "noRings": {
+          "label": "Quitar Anillos y Relojes",
+          "why": "Las joyas pueden engancharse en maquinaria y causar degloving"
+        },
+        "hairTied": {
+          "label": "Recoger el Pelo Largo",
+          "why": "El pelo largo puede ser atrapado por el equipo en movimiento"
+        }
+      },
+      "quiz": {
+        "q1": "El seguro de seguridad de un elevador no enganchará. ¿Qué debes hacer?",
+        "q1a": "Usar una cadena o correa para asegurar el vehículo en su lugar",
+        "q1b": "Etiquetar como fuera de servicio, reportar al supervisor y NO usar",
+        "q1c": "Subir el vehículo más alto hasta que el seguro enganche",
+        "q1d": "Trabajar rápido debajo del vehículo antes de que puedan fallar los hidráulicos",
+        "q1exp": "Un elevador con un seguro de seguridad que no funciona está FUERA DE SERVICIO. Etiquétalo, coloca un cartel de 'No Usar' y reporta al supervisor inmediatamente. Nunca trabajes debajo de un vehículo sin seguros funcionales — las juntas hidráulicas pueden fallar sin aviso.",
+        "q2": "¿Dónde encuentras los puntos de levantamiento correctos para un vehículo específico?",
+        "q2a": "Debajo del tapete del conductor",
+        "q2b": "En la placa de identificación del vehículo (placa VIN)",
+        "q2c": "En la etiqueta de la puerta o en AllData/Mitchell",
+        "q2d": "En el centro del umbral",
+        "q2exp": "Los puntos de levantamiento correctos se encuentran en la etiqueta de la puerta o en los datos de servicio de fábrica en AllData/Mitchell. Cada vehículo tiene puntos de levantamiento designados específicos — típicamente en los pinch welds. Los puntos incorrectos pueden dañar el vehículo.",
+        "q3": "Necesitas cambiar el escape de un vehículo del cliente. Solo tienes un gato de piso disponible. ¿Qué haces?",
+        "q3a": "Proceder con cuidado con el gato — el trabajo de escape es rápido",
+        "q3b": "Trabajar debajo del vehículo con el gato como soporte",
+        "q3c": "Usar dos gatos de piso para más estabilidad",
+        "q3d": "No proceder hasta tener soportes de seguridad o un elevador adecuado",
+        "q3exp": "NUNCA trabajes debajo de un vehículo soportado solo por un gato de piso. Los gatos son dispositivos de levantamiento, no soportes de seguridad. Las juntas hidráulicas pueden fallar sin aviso, causando que el vehículo caiga instantáneamente. Siempre usa soportes de seguridad adecuados o un elevador."
+      }
     }
   },
   "adminModules": {
