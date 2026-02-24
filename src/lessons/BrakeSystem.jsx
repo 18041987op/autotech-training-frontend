@@ -314,7 +314,6 @@ function BleedingSection() {
           {/* Wheels */}
           {WHEELS.map((w) => {
             const isActive = w.label === activeWheel;
-            const isDone   = activeWheel && BLEED_STEPS.findIndex((s) => s.key.includes(w.label.toLowerCase().replace("f","").replace("r","")) || step >= w.order);
             const highlight = isActive;
             return (
               <g key={w.label}>

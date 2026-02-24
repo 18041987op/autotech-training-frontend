@@ -230,7 +230,7 @@ export function ModuleDetailPage() {
       const ls = lessonRegistry[module.id] || lessonRegistryByTitle[module.title] || [];
       if (ls.length > 0) setActiveTab("lessons");
     }
-  }, [module?.id]);
+  }, [module?.id, module?.title]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Admin subtitle (existing translation)
   const adminResourcesSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
@@ -399,10 +399,6 @@ export function ModuleDetailPage() {
     return appendQuestions();
   };
 
-  const adaptiveButtonLabel = useMemo(() => {
-    if (!hasActiveAssessment) return "Generate Assessment";
-    return "Append more questions (10)";
-  }, [hasActiveAssessment]);
 
   const adaptiveButtonDisabled = useMemo(() => {
     if (!hasActiveAssessment) return genLoading;

@@ -9,7 +9,7 @@
  *
  * All content strings come from i18n keys under "lessons.oilChange.*"
  */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 const B_BLUE   = "#1E6FAE";
