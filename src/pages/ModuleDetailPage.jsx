@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
-import { lessonRegistry } from "../lessons/registry";
+import { lessonRegistry, lessonRegistryByTitle } from "../lessons/registry";
 
 // ─── Inline edit modal (admin-only) ───────────────────────────────────────────
 
@@ -213,8 +213,8 @@ export function ModuleDetailPage() {
   // Active tab
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Interactive lessons for this module (array of LessonConfig, or [])
-  const lessons = lessonRegistry[module?.id] || [];
+  // Interactive lessons for this module — try UUID first, then fall back to title
+  const lessons = lessonRegistry[module?.id] || lessonRegistryByTitle[module?.title] || [];
 
   // Which individual lesson is open (null = show gallery)
   const [activeLessonId, setActiveLessonId] = useState(null);
@@ -226,8 +226,9 @@ export function ModuleDetailPage() {
 
   // When module loads and lessons exist, switch to "lessons" tab by default
   useEffect(() => {
-    if (module?.id && (lessonRegistry[module.id] || []).length > 0) {
-      setActiveTab("lessons");
+    if (module?.id) {
+      const ls = lessonRegistry[module.id] || lessonRegistryByTitle[module.title] || [];
+      if (ls.length > 0) setActiveTab("lessons");
     }
   }, [module?.id]);
 
@@ -478,47 +479,43 @@ export function ModuleDetailPage() {
           </div>
 
           {isAdmin ? (
-            <div className="text-right space-y-2">
-              {/* Edit module shortcut */}
-              <button
-                className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-semibold flex items-center justify-center gap-2"
-                onClick={() => setEditOpen(true)}
-                type="button"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-                {t("actions.edit", "Edit Module")}
-              </button>
+            <div className="flex flex-wrap gap-2 md:flex-col md:items-end md:gap-2">
+              {/* Row 1: Edit + Sync side by side */}
+              <div className="flex gap-2">
+                <button
+                  className="btn-outline-sm rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
+                  onClick={() => setEditOpen(true)}
+                  type="button"
+                >
+                  <Pencil className="h-3 w-3" />
+                  {t("actions.edit", "Edit")}
+                </button>
 
-              <button
-                className="btn-primary rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
-                onClick={runSync}
-                disabled={syncing}
-                type="button"
-              >
-                {syncing ? t("actions.syncing") : t("actions.sync")}
-              </button>
+                <button
+                  className="btn-primary rounded-xl px-3 py-1.5 text-xs font-extrabold disabled:opacity-60"
+                  onClick={runSync}
+                  disabled={syncing}
+                  type="button"
+                >
+                  {syncing ? "…" : t("actions.sync")}
+                </button>
+              </div>
 
-              {/* Adaptive button: Generate first, then Append */}
+              {/* Adaptive button: Generate / Append */}
               <button
-                className="w-full btn-outline-sm rounded-2xl px-4 py-2 text-sm font-extrabold disabled:opacity-60"
+                className="btn-outline-sm rounded-xl px-3 py-1.5 text-xs font-extrabold disabled:opacity-60"
                 onClick={runAdaptiveAssessmentAction}
                 disabled={adaptiveButtonDisabled}
                 type="button"
                 title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
               >
                 {hasActiveAssessment
-                  ? (appendLoading ? "Appending…" : adaptiveButtonLabel)
-                  : (genLoading ? t("assessmentsUi.generating") : adaptiveButtonLabel)}
+                  ? (appendLoading ? "Appending…" : t("moduleDetail.admin.appendQuestions10"))
+                  : (genLoading ? t("assessmentsUi.generating") : t("moduleDetail.admin.generateAssessment"))}
               </button>
 
-              {syncMsg ? <div className="text-xs text-slate-600">{syncMsg}</div> : null}
-              {adaptiveButtonSubMsg ? <div className="text-xs text-slate-600">{adaptiveButtonSubMsg}</div> : null}
-
-              {appendStop ? (
-                <div className="text-xs text-slate-500">
-                  Bank generation stopped. Add more content + Sync, then Generate again.
-                </div>
-              ) : null}
+              {syncMsg ? <div className="text-xs text-slate-500 w-full md:text-right">{syncMsg}</div> : null}
+              {adaptiveButtonSubMsg ? <div className="text-xs text-slate-500 w-full md:text-right">{adaptiveButtonSubMsg}</div> : null}
             </div>
           ) : null}
         </div>
@@ -578,23 +575,23 @@ export function ModuleDetailPage() {
           ) : (
             /* Lesson gallery */
             <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
                 {lessons.map((lesson) => (
                   <button
                     key={lesson.id}
                     onClick={() => setActiveLessonId(lesson.id)}
-                    className="text-left rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm hover:border-blue-400 hover:shadow-md transition-all"
+                    className="text-left rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-sm hover:border-blue-400 hover:shadow-md transition-all"
                     type="button"
                   >
-                    <div className="text-3xl mb-3">{lesson.icon}</div>
-                    <div className="font-extrabold text-slate-800 mb-1">
+                    <div className="text-2xl mb-2">{lesson.icon}</div>
+                    <div className="font-extrabold text-slate-800 text-sm mb-1 leading-snug">
                       {t(lesson.titleKey)}
                     </div>
-                    <div className="text-sm text-slate-500 mb-4">
+                    <div className="text-xs text-slate-500 mb-3 line-clamp-2">
                       {t(lesson.descriptionKey)}
                     </div>
                     <div
-                      className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-extrabold text-white"
+                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-extrabold text-white"
                       style={{ background: "#1E6FAE" }}
                     >
                       {t("moduleDetail.user.read", "Open")} →
