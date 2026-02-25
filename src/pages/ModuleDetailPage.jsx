@@ -486,7 +486,18 @@ export function ModuleDetailPage() {
         {/* Zone 1 — Title + description */}
         <div className="px-6 pt-6 pb-4">
           <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{moduleTitle}</h1>
-          <p className="mt-1.5 text-sm text-slate-500 leading-relaxed">{moduleDescription || "—"}</p>
+          <p
+            className="mt-1.5 text-sm text-slate-500 leading-relaxed"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+            title={moduleDescription || ""}
+          >
+            {moduleDescription || "—"}
+          </p>
         </div>
 
         {/* Zone 2 — AI Coach inline search bar */}

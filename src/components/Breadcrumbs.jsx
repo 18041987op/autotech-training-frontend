@@ -135,7 +135,9 @@ export function Breadcrumbs() {
       </Link>
 
       {pathnames.map((seg, i) => {
-        const to = `/${pathnames.slice(0, i + 1).join("/")}`;
+        // "modules" segment has no list page — redirect to /training instead
+        const rawTo = `/${pathnames.slice(0, i + 1).join("/")}`;
+        const to = rawTo === "/modules" ? "/training" : rawTo;
         const isLast = i === pathnames.length - 1;
         const label = displayLabel(seg, i);
 
