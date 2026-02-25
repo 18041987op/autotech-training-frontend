@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { apiFetch } from "../lib/api";
+import { apiFetch, getToken } from "../lib/api";
+
+const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 const CATEGORIES = [
   { value: "universal", labelKey: "modules.categories.universal" },
@@ -54,11 +56,11 @@ export function AdminModulesPage() {
     setMigDone(null);
     setMigProgress(null);
     try {
-      const resp = await fetch("/api/admin/migrate-translate-questions", {
+      const resp = await fetch(`${API_BASE}/api/admin/migrate-translate-questions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${getToken()}`,
         },
       });
       const reader = resp.body.getReader();
