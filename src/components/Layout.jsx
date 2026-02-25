@@ -20,7 +20,6 @@ import {
   ExternalLink
 } from "lucide-react";
 
-import { LanguageToggle } from "./LanguageToggle";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { GlobalSearch } from "./GlobalSearch";
 import { NotificationCenter } from "./NotificationCenter";
@@ -48,20 +47,20 @@ export function Layout({ user, onSignOut }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const baseNav = [
-    { to: "/",           label: t("nav.home"),        icon: HomeIcon,       end: true },
-    { to: "/onboarding", label: t("nav.onboarding"),  icon: BookOpen },
-    { to: "/training",   label: t("nav.training"),    icon: GraduationCap },
-    { to: "/assessments",label: t("nav.assessments"), icon: Layers },
-    { to: "/ai",         label: t("nav.aiCoach"),     icon: MessageSquare },
-    { to: "/progress",   label: t("nav.myProgress"),  icon: LineChart },
-    { to: "/culture",    label: t("nav.culture"),     icon: Shield },
+    { to: "/",            label: t("nav.home"),        icon: HomeIcon,       end: true },
+    { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
+    { to: "/training",    label: t("nav.training"),    icon: GraduationCap },
+    { to: "/assessments", label: t("nav.assessments"), icon: Layers },
+    { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
+    { to: "/progress",    label: t("nav.myProgress"),  icon: LineChart },
+    { to: "/culture",     label: t("nav.culture"),     icon: Shield },
+    { to: "/settings",    label: t("nav.settings"),    icon: SettingsIcon },
   ];
 
   const adminExtra = isAdmin
     ? [
-        { to: "/settings",       label: t("nav.settings"), icon: SettingsIcon },
-        { to: "/admin/users",    label: t("nav.users"),    icon: Users },
-        { to: "/admin/content",  label: t("nav.content"),  icon: FolderKanban },
+        { to: "/admin/users",   label: t("nav.users"),   icon: Users },
+        { to: "/admin/content", label: t("nav.content"), icon: FolderKanban },
       ]
     : [];
 
@@ -209,7 +208,6 @@ function BrandInline() {
 
 // ─── UserCard ────────────────────────────────────────────────────────────────
 function UserCard({ user }) {
-  const { t } = useTranslation();
   return (
     <div className="card p-3">
       <div className="flex items-center justify-between gap-2">
@@ -219,12 +217,6 @@ function UserCard({ user }) {
         </div>
         <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium capitalize">
           {user?.role}
-        </span>
-      </div>
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <LanguageToggle />
-        <span className="text-xs font-semibold text-slate-500">
-          {t("common.language")}
         </span>
       </div>
     </div>
@@ -340,28 +332,20 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
             </button>
 
             {moreOpen && (
-              <div className="absolute right-0 top-full mt-2 w-44 rounded-2xl border border-slate-200 bg-white shadow-lg overflow-hidden z-30">
-                {/* Notifications row */}
-                <div className="px-3 py-2 border-b border-slate-100 flex items-center gap-2">
+              <div className="absolute right-0 top-full mt-2 rounded-2xl border border-slate-200 bg-white shadow-lg overflow-hidden z-30">
+                <div className="flex items-center gap-1 px-2 py-2">
                   <NotificationCenter />
-                  <span className="text-sm text-slate-700">Notifications</span>
-                </div>
-
-                {/* Dark mode row */}
-                <div className="px-3 py-2 border-b border-slate-100 flex items-center gap-2">
                   <DarkModeToggle />
-                  <span className="text-sm text-slate-700">Theme</span>
+                  <button
+                    onClick={() => { setMoreOpen(false); onSignOut(); }}
+                    className="flex items-center justify-center rounded-xl border border-slate-200 p-2 text-red-500 hover:bg-red-50 transition-colors"
+                    title={t("auth.signOut")}
+                    aria-label={t("auth.signOut")}
+                    type="button"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </button>
                 </div>
-
-                {/* Sign out row */}
-                <button
-                  onClick={() => { setMoreOpen(false); onSignOut(); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  type="button"
-                >
-                  <LogOut className="h-4 w-4" />
-                  {t("auth.signOut")}
-                </button>
               </div>
             )}
           </div>
