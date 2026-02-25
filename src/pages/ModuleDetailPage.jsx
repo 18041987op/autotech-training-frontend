@@ -6,6 +6,7 @@ import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
 import { lessonRegistry, lessonRegistryByTitle } from "../lessons/registry";
+import { ToastContainer, useToast } from "../components/Toast";
 
 // ─── Inline edit modal (admin-only) ───────────────────────────────────────────
 
@@ -192,17 +193,17 @@ export function ModuleDetailPage() {
   const [err, setErr] = useState("");
 
   const [syncing, setSyncing] = useState(false);
-  const [syncMsg, setSyncMsg] = useState("");
 
   const [genLoading, setGenLoading] = useState(false);
-  const [genMsg, setGenMsg] = useState("");
 
   // Append questions UI state
   const [appendLoading, setAppendLoading] = useState(false);
-  const [appendMsg, setAppendMsg] = useState("");
   const [appendStop, setAppendStop] = useState(false);
 
   const fullTextRef = useRef(null);
+
+  // Toast notifications
+  const { toasts, showToast, removeToast } = useToast();
 
   // Modal state for AI Coach (keeps user on this page)
   const [aiOpen, setAiOpen] = useState(false);
@@ -311,14 +312,13 @@ export function ModuleDetailPage() {
   }, [assessments]);
 
   const runSync = async () => {
-    setSyncMsg("");
     setSyncing(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/sync`, { method: "POST" });
-      setSyncMsg(`Sync complete: ${out.totalFiles} files • extracted text from ${out.extractedWithText}`);
+      showToast(`↻ Sync complete: ${out.totalFiles} files, ${out.extractedWithText} extracted`, "success");
       await load();
     } catch (e) {
-      setSyncMsg(e.message || "Sync failed");
+      showToast(e.message || "Sync failed", "error");
     } finally {
       setSyncing(false);
     }
@@ -346,51 +346,41 @@ export function ModuleDetailPage() {
   };
 
   const generateAssessment = async () => {
-    setGenMsg("");
     setGenLoading(true);
-
-    // reset append UI when generating a new bank
-    setAppendMsg("");
     setAppendStop(false);
-
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/generate-assessment`, { method: "POST" });
-      setGenMsg(`${t("assessmentsUi.created")}: ${out.title}`);
+      showToast(`✨ Assessment created: ${out.title}`, "success");
       await loadAssessments();
     } catch (e) {
-      setGenMsg(e.message || "Failed");
+      showToast(e.message || "Generation failed", "error");
     } finally {
       setGenLoading(false);
     }
   };
 
   const appendQuestions = async () => {
-    setAppendMsg("");
     setAppendLoading(true);
     try {
       const out = await apiFetch(`/api/admin/modules/${id}/append-questions`, { method: "POST" });
 
       const inserted = typeof out.insertedCount === "number" ? out.insertedCount : 0;
-      const dupes = typeof out.duplicateCount === "number" ? out.duplicateCount : 0;
+      const dupes    = typeof out.duplicateCount  === "number" ? out.duplicateCount  : 0;
       const totalNow = typeof out.totalQuestionsNow === "number" ? out.totalQuestionsNow : null;
-      const streak = typeof out.lowNoveltyStreak === "number" ? out.lowNoveltyStreak : null;
-
-      const parts = [];
-      parts.push(out.message || "Append complete");
-      parts.push(`Inserted: ${inserted}`);
-      parts.push(`Duplicates: ${dupes}`);
-      if (totalNow != null) parts.push(`Total: ${totalNow}/200`);
-      if (streak != null) parts.push(`Low-novelty streak: ${streak}/2`);
-
-      const reason = out.stopReason ? ` • ${out.stopReason}` : "";
-      setAppendMsg(parts.join(" • ") + reason);
 
       const stop = out.stop === true;
       setAppendStop(stop);
 
+      if (stop) {
+        showToast(`⚡ Bank complete — ${totalNow ?? "??"}/200 questions`, "info", 6000);
+      } else {
+        const msg = `⚡ +${inserted} questions added${dupes ? ` (${dupes} dupes skipped)` : ""}${totalNow != null ? ` • Total: ${totalNow}/200` : ""}`;
+        showToast(msg, inserted > 0 ? "success" : "warning");
+      }
+
       await loadAssessments();
     } catch (e) {
-      setAppendMsg(e.message || "Append failed");
+      showToast(e.message || "Append failed", "error");
     } finally {
       setAppendLoading(false);
     }
@@ -409,11 +399,6 @@ export function ModuleDetailPage() {
     if (!hasActiveAssessment) return genLoading;
     return appendLoading || appendStop;
   }, [hasActiveAssessment, genLoading, appendLoading, appendStop]);
-
-  const adaptiveButtonSubMsg = useMemo(() => {
-    if (!hasActiveAssessment) return genMsg;
-    return appendMsg;
-  }, [hasActiveAssessment, genMsg, appendMsg]);
 
   const openFull = async (rid) => {
     try {
@@ -616,40 +601,30 @@ export function ModuleDetailPage() {
               </button>
 
               {/* CENTER: Generate / Append assessment */}
-              <div className="flex flex-col items-center gap-0.5">
-                <button
-                  className="flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all"
-                  style={{ background: appendStop ? "#94a3b8" : "#1E6FAE" }}
-                  onClick={runAdaptiveAssessmentAction}
-                  disabled={adaptiveButtonDisabled}
-                  type="button"
-                  title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
-                >
-                  <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
-                  {hasActiveAssessment
-                    ? (appendLoading ? "+10…" : "+10 Questions")
-                    : (genLoading ? "Generating…" : "Generate")}
-                </button>
-                {adaptiveButtonSubMsg && (
-                  <span className="text-[10px] text-slate-400 text-center">{adaptiveButtonSubMsg}</span>
-                )}
-              </div>
+              <button
+                className="flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all"
+                style={{ background: appendStop ? "#94a3b8" : "#1E6FAE" }}
+                onClick={runAdaptiveAssessmentAction}
+                disabled={adaptiveButtonDisabled}
+                type="button"
+                title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
+              >
+                <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
+                {hasActiveAssessment
+                  ? (appendLoading ? "+10…" : "+10 Questions")
+                  : (genLoading ? "Generating…" : "Generate")}
+              </button>
 
               {/* RIGHT: Sync */}
-              <div className="flex flex-col items-end gap-0.5">
-                <button
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-extrabold text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 transition-all"
-                  onClick={runSync}
-                  disabled={syncing}
-                  type="button"
-                >
-                  <span>{syncing ? "⏳" : "↻"}</span>
-                  {syncing ? "Syncing…" : "Sync Drive"}
-                </button>
-                {syncMsg && (
-                  <span className="text-[10px] text-slate-400">{syncMsg}</span>
-                )}
-              </div>
+              <button
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-extrabold text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 transition-all"
+                onClick={runSync}
+                disabled={syncing}
+                type="button"
+              >
+                <span>{syncing ? "⏳" : "↻"}</span>
+                {syncing ? "Syncing…" : "Sync Drive"}
+              </button>
             </div>
           </div>
         )}
@@ -990,6 +965,9 @@ export function ModuleDetailPage() {
           </div>
         </div>
       ) : null}
+
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }
