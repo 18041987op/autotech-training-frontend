@@ -207,6 +207,11 @@ export function ModuleDetailPage() {
   // Modal state for AI Coach (keeps user on this page)
   const [aiOpen, setAiOpen] = useState(false);
 
+  // Inline AI Coach search bar state
+  const [aiQuery, setAiQuery] = useState("");
+  const [aiInlineResult, setAiInlineResult] = useState(null);
+  const [aiInlineLoading, setAiInlineLoading] = useState(false);
+
   // Admin: inline edit modal
   const [editOpen, setEditOpen] = useState(false);
 
@@ -453,68 +458,190 @@ export function ModuleDetailPage() {
     );
   }
 
+  // ── Inline AI Coach ask ────────────────────────────────────────────────────
+  const askAiInline = async () => {
+    if (!aiQuery.trim()) return;
+    setAiInlineLoading(true);
+    setAiInlineResult(null);
+    try {
+      const data = await apiFetch("/api/ai/coach", {
+        method: "POST",
+        body: { question: aiQuery.trim(), moduleId: module?.id || null },
+      });
+      setAiInlineResult(data);
+    } catch (e) {
+      setAiInlineResult({ answer: e?.message || "Error getting AI response", takeaways: [], nextStep: "" });
+    } finally {
+      setAiInlineLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="card p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-2xl font-extrabold">{moduleTitle}</h1>
-            <p className="mt-2 text-sm text-slate-600">{moduleDescription || "—"}</p>
+      {/* ── Header card ──────────────────────────────────────────────────────── */}
+      <div
+        className="card overflow-hidden"
+        style={{ background: "linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)" }}
+      >
+        {/* Zone 1 — Title + description */}
+        <div className="px-6 pt-6 pb-4">
+          <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{moduleTitle}</h1>
+          <p className="mt-1.5 text-sm text-slate-500 leading-relaxed">{moduleDescription || "—"}</p>
+        </div>
 
-            <div className="mt-4">
+        {/* Zone 2 — AI Coach inline search bar */}
+        <div className="px-6 pb-5">
+          <div
+            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm"
+            style={{ boxShadow: "0 1px 6px rgba(30,111,174,0.08), inset 0 1px 2px rgba(0,0,0,0.03)" }}
+          >
+            {/* Bot icon */}
+            <span className="text-xl shrink-0" role="img" aria-label="AI Coach">🤖</span>
+
+            {/* Text input */}
+            <input
+              type="text"
+              className="flex-1 bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none min-w-0"
+              placeholder="Ask AI Coach anything about this module…"
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") askAiInline(); }}
+            />
+
+            {/* Clear button when there's text */}
+            {aiQuery && (
               <button
-                className="btn-outline-sm"
                 type="button"
-                onClick={() => setAiOpen(true)}
-                title="Ask AI Coach about this module"
+                onClick={() => { setAiQuery(""); setAiInlineResult(null); }}
+                className="shrink-0 text-slate-300 hover:text-slate-500 transition-colors text-lg leading-none"
+                aria-label="Clear"
               >
-                Ask AI Coach
+                ×
               </button>
-            </div>
+            )}
+
+            {/* Send button */}
+            <button
+              type="button"
+              onClick={askAiInline}
+              disabled={aiInlineLoading || !aiQuery.trim()}
+              className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold text-white disabled:opacity-40 transition-all"
+              style={{ background: "#1E6FAE" }}
+            >
+              {aiInlineLoading ? (
+                <span className="animate-pulse">…</span>
+              ) : (
+                <>Ask <span>→</span></>
+              )}
+            </button>
+
+            {/* Full modal link */}
+            <button
+              type="button"
+              onClick={() => setAiOpen(true)}
+              className="shrink-0 text-xs text-slate-400 hover:text-blue-600 transition-colors whitespace-nowrap hidden sm:block"
+              title="Open full AI Coach"
+            >
+              Full chat ↗
+            </button>
           </div>
 
-          {isAdmin ? (
-            <div className="flex flex-wrap gap-2 md:flex-col md:items-end md:gap-2">
-              {/* Row 1: Edit + Sync side by side */}
-              <div className="flex gap-2">
-                <button
-                  className="btn-outline-sm rounded-xl px-3 py-1.5 text-xs font-semibold flex items-center gap-1.5"
-                  onClick={() => setEditOpen(true)}
-                  type="button"
-                >
-                  <Pencil className="h-3 w-3" />
-                  {t("actions.edit", "Edit")}
-                </button>
+          {/* Inline AI result (fade-in card) */}
+          {(aiInlineLoading || aiInlineResult) && (
+            <div
+              className="mt-3 rounded-2xl border border-blue-100 bg-white p-4 text-sm shadow-sm"
+              style={{ animation: "fadeSlideIn 0.25s ease" }}
+            >
+              <style>{`@keyframes fadeSlideIn { from { opacity:0; transform:translateY(-6px);} to { opacity:1; transform:translateY(0);} }`}</style>
+              {aiInlineLoading ? (
+                <div className="flex items-center gap-2 text-slate-400">
+                  <span className="animate-pulse text-lg">🤖</span>
+                  <span>Thinking…</span>
+                </div>
+              ) : (
+                <>
+                  <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{aiInlineResult.answer}</p>
+                  {aiInlineResult.takeaways?.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {aiInlineResult.takeaways.map((tk, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
+                          <span className="mt-0.5 text-blue-500">✦</span> {tk}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {aiInlineResult.nextStep && (
+                    <p className="mt-2 text-xs text-slate-500">
+                      <span className="font-semibold">Next step:</span> {aiInlineResult.nextStep}
+                    </p>
+                  )}
+                  <div className="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setAiOpen(true)}
+                      className="text-xs text-blue-500 hover:underline"
+                    >
+                      Open full AI Coach chat ↗
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
 
+        {/* Zone 3 — Admin toolbar (only if isAdmin) */}
+        {isAdmin && (
+          <div className="border-t border-slate-100 bg-slate-50 px-6 py-3">
+            <div className="flex items-center justify-between gap-3">
+              {/* LEFT: Edit */}
+              <button
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 transition-all"
+                onClick={() => setEditOpen(true)}
+                type="button"
+              >
+                <Pencil className="h-3 w-3" />
+                {t("actions.edit", "Edit")}
+              </button>
+
+              {/* CENTER: Generate / Append assessment */}
+              <div className="flex flex-col items-center gap-0.5">
                 <button
-                  className="btn-primary rounded-xl px-3 py-1.5 text-xs font-extrabold disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all"
+                  style={{ background: appendStop ? "#94a3b8" : "#1E6FAE" }}
+                  onClick={runAdaptiveAssessmentAction}
+                  disabled={adaptiveButtonDisabled}
+                  type="button"
+                  title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
+                >
+                  <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
+                  {hasActiveAssessment
+                    ? (appendLoading ? "Appending…" : t("moduleDetail.admin.appendQuestions10"))
+                    : (genLoading ? t("assessmentsUi.generating") : t("moduleDetail.admin.generateAssessment"))}
+                </button>
+                {adaptiveButtonSubMsg && (
+                  <span className="text-[10px] text-slate-400 text-center">{adaptiveButtonSubMsg}</span>
+                )}
+              </div>
+
+              {/* RIGHT: Sync */}
+              <div className="flex flex-col items-end gap-0.5">
+                <button
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-extrabold text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 transition-all"
                   onClick={runSync}
                   disabled={syncing}
                   type="button"
                 >
-                  {syncing ? "…" : t("actions.sync")}
+                  <span>{syncing ? "⏳" : "↻"}</span>
+                  {syncing ? "Syncing…" : t("actions.sync")}
                 </button>
+                {syncMsg && (
+                  <span className="text-[10px] text-slate-400">{syncMsg}</span>
+                )}
               </div>
-
-              {/* Adaptive button: Generate / Append */}
-              <button
-                className="btn-outline-sm rounded-xl px-3 py-1.5 text-xs font-extrabold disabled:opacity-60"
-                onClick={runAdaptiveAssessmentAction}
-                disabled={adaptiveButtonDisabled}
-                type="button"
-                title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
-              >
-                {hasActiveAssessment
-                  ? (appendLoading ? "Appending…" : t("moduleDetail.admin.appendQuestions10"))
-                  : (genLoading ? t("assessmentsUi.generating") : t("moduleDetail.admin.generateAssessment"))}
-              </button>
-
-              {syncMsg ? <div className="text-xs text-slate-500 w-full md:text-right">{syncMsg}</div> : null}
-              {adaptiveButtonSubMsg ? <div className="text-xs text-slate-500 w-full md:text-right">{adaptiveButtonSubMsg}</div> : null}
             </div>
-          ) : null}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* ── Tab navigation ───────────────────────────────────────────────── */}
