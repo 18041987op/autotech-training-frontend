@@ -280,70 +280,103 @@ export function AdminModulesPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <div className="flex items-start justify-between gap-4">
+      <div className="rounded-3xl border bg-white p-4 shadow-sm">
+        {/* Header row — wraps on mobile */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold">{t("adminModules.title")}</h1>
-            <p className="mt-2 text-sm text-slate-600">{t("adminModules.subtitle")}</p>
+            <h1 className="text-xl font-extrabold">{t("adminModules.title")}</h1>
+            <p className="mt-0.5 text-xs text-slate-500">{t("adminModules.subtitle")}</p>
           </div>
 
-          <div className="flex gap-2">
-            <button className="btn-outline-sm" onClick={load} type="button">
-              {t("actions.refresh")}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+              onClick={load}
+              type="button"
+            >
+              ↻ {t("actions.refresh")}
             </button>
-            <button className="btn-primary btn-sm" onClick={openCreate} type="button">
-              {t("adminModules.create")}
+            <button
+              className="rounded-xl px-3 py-1.5 text-xs font-extrabold text-white transition-all"
+              style={{ background: "#1E6FAE" }}
+              onClick={openCreate}
+              type="button"
+            >
+              + {t("adminModules.create")}
             </button>
           </div>
         </div>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-            <div className="text-xs font-semibold uppercase text-slate-500">
-              {t("adminModules.total")}
-            </div>
-            <div className="mt-2 text-2xl font-extrabold">{stats.total}</div>
+        {/* Stats — 2 cols on mobile, 5 on desktop */}
+        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+            <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t("adminModules.total")}</div>
+            <div className="mt-0.5 text-xl font-extrabold">{stats.total}</div>
           </div>
-
           {CATEGORIES.map((c) => (
-            <div key={c.value} className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-              <div className="text-xs font-semibold uppercase text-slate-500">
-                {t(c.labelKey)}
-              </div>
-              <div className="mt-2 text-2xl font-extrabold">{stats.byCat[c.value] || 0}</div>
+            <div key={c.value} className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+              <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{t(c.labelKey)}</div>
+              <div className="mt-0.5 text-xl font-extrabold">{stats.byCat[c.value] || 0}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
         {modules.map((m) => (
           <div
             key={m.id}
-            className="rounded-3xl border bg-white p-5 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+            className="rounded-2xl border bg-white p-3 shadow-sm transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary"
           >
-            <div className="flex items-start justify-between gap-3">
+            {/* Title + Edit button */}
+            <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="font-extrabold truncate">{m.title}</div>
-                <div className="mt-1 text-xs text-slate-500">
-                  {t(
-                    CATEGORIES.find((c) => c.value === m.category)?.labelKey ||
-                      "modules.categories.universal"
-                  )}
-                  {m.required ? ` • ${t("status.required")}` : ""}
+                <div
+                  className="text-xs font-extrabold leading-snug"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                  title={m.title}
+                >
+                  {m.title}
+                </div>
+                <div className="mt-0.5 text-[10px] text-slate-400">
+                  {t(CATEGORIES.find((c) => c.value === m.category)?.labelKey || "modules.categories.universal")}
+                  {m.required ? " • Req" : ""}
                 </div>
               </div>
-
-              <button className="btn-outline-sm" onClick={() => openEdit(m)} type="button">
+              <button
+                className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-600 hover:border-brand-primary hover:text-brand-primary transition-colors"
+                onClick={() => openEdit(m)}
+                type="button"
+              >
                 {t("actions.edit")}
               </button>
             </div>
 
-            <div className="mt-2 text-sm text-slate-600">{m.description || "—"}</div>
-
-            <div className="mt-3 text-xs text-slate-500">
-              Drive folder: {m.drive_folder || "—"} • Drive id: {m.drive_folder_id || "—"}
+            {/* Description — 2 lines max */}
+            <div
+              className="mt-1.5 text-[11px] text-slate-500 leading-snug"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+              title={m.description || ""}
+            >
+              {m.description || "—"}
             </div>
+
+            {/* Drive folder pill */}
+            {m.drive_folder && (
+              <div className="mt-1.5 truncate text-[10px] text-slate-400" title={m.drive_folder}>
+                📁 {m.drive_folder}
+              </div>
+            )}
           </div>
         ))}
       </div>
