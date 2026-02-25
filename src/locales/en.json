@@ -64,7 +64,12 @@
     },
     "signIn": "Sign in",
     "signingIn": "Signing in...",
-    "secureLogin": "Secure Login"
+    "secureLogin": "Secure Login",
+    "value": {
+      "focused": "Role-focused training",
+      "aiAssisted": "AI-powered coaching",
+      "bilingual": "English & Spanish"
+    }
   },
   "home": {
     "title": "Home",

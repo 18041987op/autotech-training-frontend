@@ -64,7 +64,12 @@
     },
     "signIn": "Iniciar sesión",
     "signingIn": "Iniciando sesión...",
-    "secureLogin": "Inicio de Sesión Seguro"
+    "secureLogin": "Inicio de Sesión Seguro",
+    "value": {
+      "focused": "Capacitación por rol",
+      "aiAssisted": "Asistencia con IA",
+      "bilingual": "Inglés y Español"
+    }
   },
   "home": {
     "title": "Inicio",
