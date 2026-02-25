@@ -44,6 +44,49 @@ export function AdminModulesPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  // ── Translation migration state ──────────────────────────────────────────
+  const [migrating, setMigrating]     = useState(false);
+  const [migDone, setMigDone]         = useState(null); // { total, translated, failed }
+  const [migProgress, setMigProgress] = useState(null); // { done, total, translated, failed }
+
+  const runMigration = async () => {
+    setMigrating(true);
+    setMigDone(null);
+    setMigProgress(null);
+    try {
+      const resp = await fetch("/api/admin/migrate-translate-questions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop(); // keep incomplete line
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const msg = JSON.parse(line);
+            if (msg.status === "done") { setMigDone(msg); setMigProgress(null); }
+            else if (msg.status === "progress") setMigProgress(msg);
+            else if (msg.status === "start") setMigProgress({ done: 0, total: msg.total, translated: 0, failed: 0 });
+          } catch { /* ignore parse errors */ }
+        }
+      }
+    } catch (e) {
+      setMigDone({ error: e.message });
+    } finally {
+      setMigrating(false);
+    }
+  };
+
   const [editing, setEditing] = useState(null); // module object or {id:null} for create
   const [form, setForm] = useState({
     title: "",
@@ -539,6 +582,72 @@ export function AdminModulesPage() {
           </div>
         </div>
       ) : null}
+
+      {/* ── Database Tools: Translate existing questions ─────────────────────── */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-800">🌐 Bilingual Migration</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Translate existing assessment questions to Spanish using AI.
+              Safe to run multiple times — skips already-translated questions.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={runMigration}
+            disabled={migrating}
+            className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all"
+            style={{ background: "#1E6FAE" }}
+          >
+            {migrating ? "🔄 Translating…" : "▶ Run Migration"}
+          </button>
+        </div>
+
+        {/* Progress bar */}
+        {migrating && migProgress && (
+          <div className="mt-4">
+            <div className="flex justify-between text-xs text-slate-500 mb-1">
+              <span>Translating questions…</span>
+              <span>{migProgress.done}/{migProgress.total}</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-2 rounded-full transition-all duration-300"
+                style={{
+                  background: "#1E6FAE",
+                  width: migProgress.total > 0
+                    ? `${Math.round((migProgress.done / migProgress.total) * 100)}%`
+                    : "0%",
+                }}
+              />
+            </div>
+            <div className="mt-1 text-[10px] text-slate-400">
+              ✅ {migProgress.translated} translated
+              {migProgress.failed > 0 && <span className="text-red-400"> · ❌ {migProgress.failed} failed</span>}
+            </div>
+          </div>
+        )}
+
+        {/* Done result */}
+        {migDone && !migrating && (
+          <div className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+            migDone.error
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-green-200 bg-green-50 text-green-700"
+          }`}>
+            {migDone.error ? (
+              <span>❌ {migDone.error}</span>
+            ) : (
+              <span>
+                ✅ Done — <strong>{migDone.translated}</strong> questions translated
+                {migDone.failed > 0 && <span className="text-red-600"> · {migDone.failed} failed</span>}
+                {" "}out of <strong>{migDone.total}</strong> total missing translations.
+              </span>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
