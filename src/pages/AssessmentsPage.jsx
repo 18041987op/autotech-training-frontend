@@ -113,80 +113,52 @@ export function AssessmentsPage() {
           <div className="mt-2 text-xs text-slate-500">{t("modules.empty.hint")}</div>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
           {modulesWithAssessments.map((m) => {
             const list = showInactive && isAdmin
               ? [...m.activeAssessments, ...m.inactiveAssessments]
               : m.activeAssessments;
 
-            // If still empty (all inactive and user is not showing inactive), hide module card
             if (!list.length) return null;
 
             return (
-              <div key={m.id} className="card p-6">
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                  <div className="min-w-0">
-                    <div className="text-lg font-extrabold truncate">{m.title}</div>
-                    <div className="mt-1 text-sm text-slate-600">{m.description || "—"}</div>
-
-                    {isAdmin && m.inactiveAssessments.length > 0 ? (
-                      <div className="mt-2 text-xs text-slate-500">
-                        Inactive in this module: {m.inactiveAssessments.length}
-                      </div>
-                    ) : null}
+              <div
+                key={m.id}
+                className="card p-3.5 flex flex-col gap-2 cursor-pointer hover:-translate-y-[2px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft transition-all"
+                onClick={() => nav(`/modules/${m.id}`)}
+              >
+                {/* Module title + description — same 2-line pattern as other pages */}
+                <div>
+                  <div className="text-sm font-extrabold leading-snug line-clamp-2">
+                    {m.title}
                   </div>
-
-                  <button className="btn-outline-sm" type="button" onClick={() => nav(`/modules/${m.id}`)}>
-                    {t("actions.open")}
-                  </button>
+                  <div className="mt-1 text-xs text-slate-600 line-clamp-2">
+                    {m.description || "—"}
+                  </div>
                 </div>
 
-                <div className="mt-4 grid gap-2">
+                {/* Assessment chips — compact, one per assessment */}
+                <div className="flex flex-col gap-1.5 mt-auto pt-2 border-t border-slate-100">
                   {list.map((a) => {
                     const active = a.isActive !== false;
+                    const scored = a.lastAttempt?.score != null;
+                    const passed = scored && a.lastAttempt.score >= (a.passingScore ?? 70);
                     return (
                       <div
                         key={a.id}
-                        className={
-                          active
-                            ? "rounded-2xl border border-slate-200 bg-white p-4 flex items-center justify-between gap-4"
-                            : "rounded-2xl border border-slate-200 bg-slate-50 p-4 flex items-center justify-between gap-4 opacity-70"
-                        }
+                        className={`flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5 text-xs
+                          ${active ? "bg-slate-50 border border-slate-200" : "opacity-50 bg-slate-50 border border-slate-200"}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (active || isAdmin) nav(`/modules/${m.id}/assessments/${a.id}`);
+                        }}
                       >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
-                            {!active ? (
-                              <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold">
-                                Inactive
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <div className="mt-1 text-xs text-slate-500">
-                            {t("moduleDetail.passingScore")}: {a.passingScore ?? 70}%
-                            {a.lastAttempt ? (
-                              <>
-                                <span className="mx-2">•</span>
-                                {t("assessmentRunner.score")}:{" "}
-                                <span className="font-semibold">{a.lastAttempt.score ?? "—"}%</span>
-                                <span className="mx-2">•</span>
-                                {a.lastAttempt.createdAt ? new Date(a.lastAttempt.createdAt).toLocaleString() : "—"}
-                              </>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        {/* Recommendation: allow Start even if inactive for admin only */}
-                        <button
-                          className="btn-accent btn-sm px-4"
-                          type="button"
-                          onClick={() => nav(`/modules/${m.id}/assessments/${a.id}`)}
-                          disabled={!active && !isAdmin}
-                          title={!active && !isAdmin ? "Inactive assessment" : ""}
-                        >
-                          {t("moduleDetail.startAssessment")}
-                        </button>
+                        <span className="font-semibold truncate">{a.title || "Assessment"}</span>
+                        <span className={`shrink-0 font-extrabold ${
+                          !scored ? "text-slate-400" : passed ? "text-green-600" : "text-red-500"
+                        }`}>
+                          {!scored ? "—" : `${a.lastAttempt.score}%`}
+                        </span>
                       </div>
                     );
                   })}

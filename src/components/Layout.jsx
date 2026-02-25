@@ -10,8 +10,6 @@ import {
   MessageSquare,
   Settings as SettingsIcon,
   Shield,
-  Users,
-  FolderKanban,
   LogOut,
   Menu,
   Wrench,
@@ -53,13 +51,14 @@ export function Layout({ user, onSignOut }) {
     { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
     { to: "/progress",    label: t("nav.myProgress"),  icon: LineChart },
     { to: "/culture",     label: t("nav.culture"),     icon: Shield },
-    { to: "/settings",    label: t("nav.settings"),    icon: SettingsIcon },
+    // Non-admin users see Settings in the main nav
+    ...(!isAdmin ? [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] : []),
   ];
 
+  // Admin section: Settings only — Users & Content live inside Settings page
   const adminExtra = isAdmin
     ? [
-        { to: "/admin/users",   label: t("nav.users"),   icon: Users },
-        { to: "/admin/content", label: t("nav.content"), icon: FolderKanban },
+        { to: "/settings", label: t("nav.settings"), icon: SettingsIcon },
       ]
     : [];
 

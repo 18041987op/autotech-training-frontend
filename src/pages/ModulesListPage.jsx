@@ -509,12 +509,12 @@ export function ModulesListPage({ pageType }) {
               {pageType === "training" && <SubcategoryHeader name={subcat} />}
 
               {/* Module cards */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
                 {groups[subcat].map((m) => (
                   <div
                     key={m.id}
                     onClick={() => navigate(`/modules/${m.id}`)}
-                    className="group relative rounded-3xl border bg-white p-5 shadow-sm transition cursor-pointer hover:-translate-y-[2px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+                    className="group relative rounded-2xl border bg-white p-3.5 shadow-sm transition cursor-pointer hover:-translate-y-[2px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
                   >
                     {/* Admin Edit button — top-right, stops card click propagation */}
                     {isAdmin && (
@@ -538,15 +538,9 @@ export function ModulesListPage({ pageType }) {
                       </div>
                     )}
 
-                    <div className="font-extrabold leading-snug pr-7">{m.translatedTitle}</div>
+                    <div className="text-sm font-extrabold leading-snug pr-6 line-clamp-2">{m.translatedTitle}</div>
                     <div
-                      className="mt-2 text-sm text-slate-600 leading-relaxed"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
+                      className="mt-1.5 text-xs text-slate-600 leading-relaxed line-clamp-2"
                       title={m.translatedDescription || ""}
                     >
                       {m.translatedDescription || "—"}
