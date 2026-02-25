@@ -207,16 +207,28 @@ function BrandInline() {
 }
 
 // ─── UserCard ────────────────────────────────────────────────────────────────
+// Role key map → i18n key under "roles.*"
+const ROLE_KEY = {
+  technician:    "technician",
+  administrative: "administrative",
+  serviceadvisor: "serviceAdvisor",
+  admin:         "admin",
+};
+
 function UserCard({ user }) {
+  const { t } = useTranslation();
+  const roleKey = ROLE_KEY[(user?.role || "").toLowerCase().replace(/\s/g, "")] || null;
+  const roleLabel = roleKey ? t(`roles.${roleKey}`) : user?.role;
+
   return (
     <div className="card p-3">
       <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{user?.name}</p>
           <p className="truncate text-xs text-slate-500">{user?.email}</p>
         </div>
-        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium capitalize">
-          {user?.role}
+        <span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium max-w-[90px] truncate text-center">
+          {roleLabel}
         </span>
       </div>
     </div>
@@ -320,34 +332,36 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
             </button>
           </div>
 
-          {/* Mobile: collapsed into ⋯ dropdown */}
-          <div className="md:hidden relative" ref={moreRef}>
-            <button
-              type="button"
-              onClick={() => setMoreOpen((o) => !o)}
-              className="btn-outline-sm px-2"
-              aria-label="More options"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
+          {/* Mobile: notifications always visible, ⋯ for the rest */}
+          <div className="md:hidden flex items-center gap-1">
+            <NotificationCenter />
+            <div className="relative" ref={moreRef}>
+              <button
+                type="button"
+                onClick={() => setMoreOpen((o) => !o)}
+                className="btn-outline-sm px-2"
+                aria-label="More options"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
 
-            {moreOpen && (
-              <div className="absolute right-0 top-full mt-2 rounded-2xl border border-slate-200 bg-white shadow-lg overflow-hidden z-30">
-                <div className="flex items-center gap-1 px-2 py-2">
-                  <NotificationCenter />
-                  <DarkModeToggle />
-                  <button
-                    onClick={() => { setMoreOpen(false); onSignOut(); }}
-                    className="btn-outline-sm text-red-500 hover:bg-red-50 hover:border-red-200"
-                    title={t("auth.signOut")}
-                    aria-label={t("auth.signOut")}
-                    type="button"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </button>
+              {moreOpen && (
+                <div className="absolute right-0 top-full mt-2 rounded-xl border border-slate-200 bg-white shadow-lg z-30">
+                  <div className="flex items-center gap-1 px-2 py-2">
+                    <DarkModeToggle />
+                    <button
+                      onClick={() => { setMoreOpen(false); onSignOut(); }}
+                      className="btn-outline-sm text-red-500 hover:bg-red-50 hover:border-red-200"
+                      title={t("auth.signOut")}
+                      aria-label={t("auth.signOut")}
+                      type="button"
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
