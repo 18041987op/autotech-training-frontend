@@ -52,7 +52,8 @@ function AssessmentFooter({ t }) {
 export function AssessmentRunnerPage() {
   const { id: moduleId, aid } = useParams();
   const nav = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language?.startsWith("es") ? "es" : "en";
 
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -137,7 +138,7 @@ export function AssessmentRunnerPage() {
     setLoading(true);
 
     try {
-      const out = await apiFetch(`/api/assessments/${aid}`);
+      const out = await apiFetch(`/api/assessments/${aid}?lang=${lang}`);
       setAssessment(out.assessment || null);
 
       setQuestionLimit(typeof out.questionLimit === "number" ? out.questionLimit : null);
