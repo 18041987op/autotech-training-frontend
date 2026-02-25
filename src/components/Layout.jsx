@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -15,7 +15,6 @@ import {
   LogOut,
   Menu,
   Wrench,
-  MoreHorizontal,
   X,
   ExternalLink
 } from "lucide-react";
@@ -273,28 +272,13 @@ function SideItem({ to, label, icon: Icon, end }) {
 // ─── TopBar ──────────────────────────────────────────────────────────────────
 function TopBar({ onSignOut, onOpenMobileMenu }) {
   const { t } = useTranslation();
-  const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef(null);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!moreOpen) return;
-    const handler = (e) => {
-      if (moreRef.current && !moreRef.current.contains(e.target)) {
-        setMoreOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [moreOpen]);
 
   return (
     <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
 
-        {/* Left: mobile hamburger + brand OR desktop search */}
+        {/* Left: hamburger + brand (mobile) | search (desktop) */}
         <div className="flex items-center gap-3 min-w-0">
-          {/* Hamburger (mobile only) */}
           <button
             type="button"
             onClick={onOpenMobileMenu}
@@ -304,66 +288,30 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
             <Menu className="h-4 w-4" />
           </button>
 
-          {/* Brand logo (mobile only — desktop has sidebar) */}
           <div className="md:hidden">
             <BrandInline />
           </div>
 
-          {/* Search (desktop only) */}
           <div className="hidden md:block w-[420px]">
             <GlobalSearch />
           </div>
         </div>
 
-        {/* Right: desktop shows all icons, mobile shows "⋯" dropdown */}
-        <div className="flex items-center gap-2">
-          {/* Desktop: all icons visible */}
-          <div className="hidden md:flex items-center gap-2">
-            <NotificationCenter />
-            <DarkModeToggle />
-            <button
-              onClick={onSignOut}
-              className="btn-outline-sm"
-              title={t("auth.signOut")}
-              aria-label={t("auth.signOut")}
-              type="button"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-
-          {/* Mobile: notifications always visible, ⋯ for the rest */}
-          <div className="md:hidden flex items-center gap-1">
-            <NotificationCenter />
-            <div className="relative" ref={moreRef}>
-              <button
-                type="button"
-                onClick={() => setMoreOpen((o) => !o)}
-                className="btn-outline-sm px-2"
-                aria-label="More options"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-              </button>
-
-              {moreOpen && (
-                <div className="absolute right-0 top-full mt-2 rounded-xl border border-slate-200 bg-white shadow-lg z-30">
-                  <div className="flex items-center gap-1 px-2 py-2">
-                    <DarkModeToggle />
-                    <button
-                      onClick={() => { setMoreOpen(false); onSignOut(); }}
-                      className="btn-outline-sm text-red-500 hover:bg-red-50 hover:border-red-200"
-                      title={t("auth.signOut")}
-                      aria-label={t("auth.signOut")}
-                      type="button"
-                    >
-                      <LogOut className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+        {/* Right: same icons on both desktop and mobile */}
+        <div className="flex items-center gap-1.5">
+          <NotificationCenter />
+          <DarkModeToggle />
+          <button
+            onClick={onSignOut}
+            className="btn-outline-sm"
+            title={t("auth.signOut")}
+            aria-label={t("auth.signOut")}
+            type="button"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
         </div>
+
       </div>
     </div>
   );
