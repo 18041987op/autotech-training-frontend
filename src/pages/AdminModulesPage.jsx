@@ -381,28 +381,37 @@ export function AdminModulesPage() {
         ))}
       </div>
 
-      {/* Modal */}
+      {/* Modal — full-height scrollable sheet */}
       {editing ? (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/40" onClick={close} />
 
-          <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[760px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
+          {/* Sheet */}
+          <div className="relative w-full sm:w-[92%] sm:max-w-[760px] max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl border bg-white shadow-xl overflow-hidden">
+
+            {/* ── Fixed header ── */}
+            <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-slate-100 shrink-0">
               <div>
-                <div className="text-sm text-slate-500">
+                <div className="text-xs text-slate-400 uppercase tracking-wide font-semibold">
                   {editing.id ? t("adminModules.editing") : t("adminModules.creating")}
                 </div>
-                <div className="text-xl font-extrabold">
+                <div className="text-base font-extrabold leading-tight">
                   {editing.id ? t("adminModules.edit") : t("adminModules.create")}
                 </div>
               </div>
-
-              <button className="btn-outline-sm" onClick={close} type="button">
-                {t("actions.close")}
+              <button
+                className="shrink-0 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={close}
+                type="button"
+              >
+                ✕ {t("actions.close")}
               </button>
             </div>
 
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {/* ── Scrollable body ── */}
+            <div className="overflow-y-auto flex-1 px-5 py-4">
+            <div className="grid gap-3 md:grid-cols-2">
               <div className="md:col-span-2">
                 <label className="text-xs font-semibold text-slate-600">
                   {t("adminModules.fields.title")}
@@ -606,15 +615,28 @@ export function AdminModulesPage() {
               </div>
             ) : null}
 
-            <div className="mt-5 flex justify-end gap-2">
-              <button className="btn-outline-sm" onClick={close} type="button">
+            </div>{/* end scrollable body */}
+
+            {/* ── Fixed footer ── */}
+            <div className="flex justify-end gap-2 px-5 py-3 border-t border-slate-100 bg-white shrink-0">
+              <button
+                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                onClick={close}
+                type="button"
+              >
                 {t("actions.cancel")}
               </button>
-              <button className="btn-primary btn-sm px-4" onClick={save} type="button">
+              <button
+                className="rounded-xl px-5 py-2 text-xs font-extrabold text-white transition-all"
+                style={{ background: "#1E6FAE" }}
+                onClick={save}
+                type="button"
+              >
                 {t("actions.save")}
               </button>
             </div>
-          </div>
+
+          </div>{/* end sheet */}
         </div>
       ) : null}
 
