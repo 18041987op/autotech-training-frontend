@@ -464,10 +464,7 @@ export function ModuleDetailPage() {
   return (
     <div className="space-y-5">
       {/* ── Header card ──────────────────────────────────────────────────────── */}
-      <div
-        className="card overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #ffffff 0%, #eef6ff 100%)" }}
-      >
+      <div className="card module-header-gradient overflow-hidden">
         {/* Zone 1 — Title + description */}
         <div className="px-6 pt-6 pb-4">
           <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{moduleTitle}</h1>
@@ -487,10 +484,7 @@ export function ModuleDetailPage() {
 
         {/* Zone 2 — AI Coach inline search bar */}
         <div className="px-6 pb-5">
-          <div
-            className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm"
-            style={{ boxShadow: "0 1px 6px rgba(30,111,174,0.08), inset 0 1px 2px rgba(0,0,0,0.03)" }}
-          >
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
             {/* Bot icon */}
             <span className="text-xl shrink-0" role="img" aria-label="AI Coach">🤖</span>
 
@@ -509,7 +503,7 @@ export function ModuleDetailPage() {
               <button
                 type="button"
                 onClick={() => { setAiQuery(""); setAiInlineResult(null); }}
-                className="shrink-0 text-slate-300 hover:text-slate-500 transition-colors text-lg leading-none"
+                className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors text-lg leading-none"
                 aria-label="Clear"
               >
                 ×
@@ -521,8 +515,7 @@ export function ModuleDetailPage() {
               type="button"
               onClick={askAiInline}
               disabled={aiInlineLoading || !aiQuery.trim()}
-              className="shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold text-white disabled:opacity-40 transition-all"
-              style={{ background: "#1E6FAE" }}
+              className="shrink-0 btn-primary btn-sm disabled:opacity-40"
             >
               {aiInlineLoading ? (
                 <span className="animate-pulse">…</span>
@@ -535,7 +528,7 @@ export function ModuleDetailPage() {
             <button
               type="button"
               onClick={() => setAiOpen(true)}
-              className="shrink-0 text-xs text-slate-400 hover:text-blue-600 transition-colors whitespace-nowrap hidden sm:block"
+              className="shrink-0 text-xs text-slate-400 hover:text-brand-primary transition-colors whitespace-nowrap hidden sm:block"
               title="Open full AI Coach"
             >
               Full chat ↗
@@ -545,7 +538,7 @@ export function ModuleDetailPage() {
           {/* Inline AI result (fade-in card) */}
           {(aiInlineLoading || aiInlineResult) && (
             <div
-              className="mt-3 rounded-2xl border border-blue-100 bg-white p-4 text-sm shadow-sm"
+              className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm"
               style={{ animation: "fadeSlideIn 0.25s ease" }}
             >
               <style>{`@keyframes fadeSlideIn { from { opacity:0; transform:translateY(-6px);} to { opacity:1; transform:translateY(0);} }`}</style>
@@ -561,7 +554,7 @@ export function ModuleDetailPage() {
                     <ul className="mt-2 space-y-1">
                       {aiInlineResult.takeaways.map((tk, i) => (
                         <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
-                          <span className="mt-0.5 text-blue-500">✦</span> {tk}
+                          <span className="mt-0.5 text-brand-primary">✦</span> {tk}
                         </li>
                       ))}
                     </ul>
@@ -575,7 +568,7 @@ export function ModuleDetailPage() {
                     <button
                       type="button"
                       onClick={() => setAiOpen(true)}
-                      className="text-xs text-blue-500 hover:underline"
+                      className="text-xs text-brand-primary hover:underline"
                     >
                       Open full AI Coach chat ↗
                     </button>
@@ -588,11 +581,11 @@ export function ModuleDetailPage() {
 
         {/* Zone 3 — Admin toolbar (only if isAdmin) */}
         {isAdmin && (
-          <div className="border-t border-slate-100 bg-slate-50 px-6 py-3">
+          <div className="border-t border-slate-200 bg-slate-50 px-6 py-3">
             <div className="flex items-center justify-between gap-3">
               {/* LEFT: Edit */}
               <button
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 transition-all"
+                className="btn-outline-sm"
                 onClick={() => setEditOpen(true)}
                 type="button"
               >
@@ -602,8 +595,7 @@ export function ModuleDetailPage() {
 
               {/* CENTER: Generate / Append assessment */}
               <button
-                className="flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all"
-                style={{ background: appendStop ? "#94a3b8" : "#1E6FAE" }}
+                className={`flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all ${appendStop ? "bg-slate-400" : "bg-brand-primary hover:bg-brand-primaryHover"}`}
                 onClick={runAdaptiveAssessmentAction}
                 disabled={adaptiveButtonDisabled}
                 type="button"
@@ -617,7 +609,7 @@ export function ModuleDetailPage() {
 
               {/* RIGHT: Sync */}
               <button
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-extrabold text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 disabled:opacity-50 transition-all"
+                className="btn-outline-sm disabled:opacity-50"
                 onClick={runSync}
                 disabled={syncing}
                 type="button"
@@ -631,36 +623,36 @@ export function ModuleDetailPage() {
       </div>
 
       {/* ── Tab navigation ───────────────────────────────────────────────── */}
-      <div className="flex gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm overflow-x-auto">
+      <div className="tab-nav-container flex gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm overflow-x-auto">
         {lessons.length > 0 && (
           <button
             onClick={() => { setActiveTab("lessons"); setActiveLessonId(null); }}
-            className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
-            style={{
-              background: activeTab === "lessons" ? "#1E6FAE" : "transparent",
-              color:      activeTab === "lessons" ? "white"   : "#64748b",
-            }}
+            className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all ${
+              activeTab === "lessons"
+                ? "bg-brand-primary text-white"
+                : "tab-inactive text-slate-500 hover:text-slate-700"
+            }`}
           >
             📖 {t("lessons.tabLabel")}
           </button>
         )}
         <button
           onClick={() => setActiveTab("overview")}
-          className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
-          style={{
-            background: activeTab === "overview" ? "#1E6FAE" : "transparent",
-            color:      activeTab === "overview" ? "white"   : "#64748b",
-          }}
+          className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all ${
+            activeTab === "overview"
+              ? "bg-brand-primary text-white"
+              : "tab-inactive text-slate-500 hover:text-slate-700"
+          }`}
         >
           📋 {t("moduleDetail.user.contentTitle", "Content")}
         </button>
         <button
           onClick={() => setActiveTab("assessments")}
-          className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all"
-          style={{
-            background: activeTab === "assessments" ? "#1E6FAE" : "transparent",
-            color:      activeTab === "assessments" ? "white"   : "#64748b",
-          }}
+          className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm font-extrabold transition-all ${
+            activeTab === "assessments"
+              ? "bg-brand-primary text-white"
+              : "tab-inactive text-slate-500 hover:text-slate-700"
+          }`}
         >
           🎯 {t("moduleDetail.assessmentsTitle")}
         </button>
@@ -674,7 +666,7 @@ export function ModuleDetailPage() {
             <>
               <button
                 onClick={() => setActiveLessonId(null)}
-                className="flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-extrabold border-2 border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                className="btn-outline-sm"
                 type="button"
               >
                 {t("lessons.backToLessons")}
@@ -689,7 +681,7 @@ export function ModuleDetailPage() {
                   <button
                     key={lesson.id}
                     onClick={() => setActiveLessonId(lesson.id)}
-                    className="text-left rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-sm hover:border-blue-400 hover:shadow-md transition-all"
+                    className="lesson-card text-left rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-sm hover:border-brand-primary hover:shadow-md transition-all"
                     type="button"
                   >
                     <div className="text-2xl mb-2">{lesson.icon}</div>
@@ -699,10 +691,7 @@ export function ModuleDetailPage() {
                     <div className="text-xs text-slate-500 mb-3 line-clamp-2">
                       {t(lesson.descriptionKey)}
                     </div>
-                    <div
-                      className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-extrabold text-white"
-                      style={{ background: "#1E6FAE" }}
-                    >
+                    <div className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-extrabold text-white bg-brand-primary">
                       {t("moduleDetail.user.read", "Open")} →
                     </div>
                   </button>

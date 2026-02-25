@@ -16,66 +16,163 @@
    The DarkModeToggle adds/removes class="dark"
    on <html>. These rules cascade automatically.
 ────────────────────────────────────────────── */
-.dark body,
-.dark #root {
-  background-color: #0f172a; /* slate-900 */
-  color: #f1f5f9;            /* slate-100 */
+
+/* ── CSS variables that flip with dark mode ── */
+:root {
+  --surface:      #ffffff;
+  --surface-sub:  #f8fafc;
+  --surface-raised: #ffffff;
+  --border:       #e2e8f0;
+  --border-sub:   #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted:   #94a3b8;
+  --input-bg:     #ffffff;
+}
+.dark {
+  --surface:      #1e293b;
+  --surface-sub:  #0f172a;
+  --surface-raised: #293548;
+  --border:       #334155;
+  --border-sub:   #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted:   #64748b;
+  --input-bg:     #1e293b;
 }
 
-/* Cards & surfaces */
-.dark .card,
-.dark .rounded-3xl.border.bg-white,
-.dark .rounded-2xl.border.bg-white,
-.dark .rounded-2xl.border.border-slate-200.bg-white {
-  background-color: #1e293b !important; /* slate-800 */
-  border-color: #334155 !important;     /* slate-700 */
+.dark body,
+.dark #root {
+  background-color: #0f172a;
   color: #f1f5f9;
 }
 
-/* Sidebar & TopBar */
+/* ── Surfaces & cards ── */
+.dark .card,
+.dark .rounded-3xl.border.bg-white,
+.dark .rounded-2xl.border.bg-white,
+.dark .rounded-2xl.border.border-slate-200.bg-white,
+.dark .rounded-3xl.border.border-slate-200.bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9;
+}
+
+/* ── All bg-white surfaces ── */
+.dark .bg-white    { background-color: #1e293b !important; }
+.dark .bg-slate-50 { background-color: #0f172a !important; }
+.dark .bg-slate-100 { background-color: #1e293b !important; }
+
+/* ── Sidebar & TopBar ── */
 .dark aside {
   background-color: #1e293b !important;
   border-color: #334155 !important;
 }
-
 .dark .sticky.top-0 {
-  background-color: rgba(15, 23, 42, 0.85) !important;
+  background-color: rgba(15, 23, 42, 0.9) !important;
   border-color: #334155 !important;
 }
 
-/* Text colours */
+/* ── Text colours ── */
 .dark .text-slate-900 { color: #f1f5f9 !important; }
 .dark .text-slate-800 { color: #e2e8f0 !important; }
 .dark .text-slate-700 { color: #cbd5e1 !important; }
 .dark .text-slate-600 { color: #94a3b8 !important; }
 .dark .text-slate-500 { color: #64748b !important; }
+.dark .text-slate-400 { color: #475569 !important; }
+.dark .text-slate-300 { color: #334155 !important; }
 
-/* Backgrounds */
-.dark .bg-white    { background-color: #1e293b !important; }
-.dark .bg-slate-50 { background-color: #0f172a !important; }
-.dark .min-h-screen.bg-slate-50 { background-color: #0f172a !important; }
+/* ── Borders ── */
+.dark .border-slate-200 { border-color: #334155 !important; }
+.dark .border-slate-300 { border-color: #475569 !important; }
+.dark .border-slate-100 { border-color: #1e293b !important; }
 
-/* Inputs */
-.dark .input {
+/* ── Inputs (both .input class and raw inputs inside dark surfaces) ── */
+.dark .input,
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="search"],
+.dark textarea,
+.dark select {
   background-color: #1e293b !important;
   border-color: #334155 !important;
   color: #f1f5f9 !important;
 }
+.dark input::placeholder,
+.dark textarea::placeholder { color: #475569 !important; }
 
-/* Nav items */
-.dark .nav-item-idle {
-  color: #cbd5e1 !important;
-}
+/* ── Inline AI search bar (bg-transparent inside a white container) ── */
+.dark .bg-transparent { background-color: transparent !important; }
+.dark input.bg-transparent { background-color: transparent !important; color: #f1f5f9 !important; }
 
-/* Subtle bordered elements */
-.dark .border-slate-200 { border-color: #334155 !important; }
-.dark .border-slate-300 { border-color: #475569 !important; }
+/* ── Nav items ── */
+.dark .nav-item-idle { color: #cbd5e1 !important; }
 
-/* Badges */
-.dark .bg-slate-100 { background-color: #334155 !important; }
-.dark .rounded-lg.border.border-slate-200.bg-slate-50 {
+/* ── btn-outline in dark: flip text to light ── */
+.dark .btn-outline,
+.dark .btn-outline-sm { color: #e2e8f0 !important; }
+
+/* ── Badges & pills ── */
+.dark .bg-slate-50.rounded-full,
+.dark .rounded-full.border.border-slate-200.bg-slate-50 {
   background-color: #334155 !important;
   border-color: #475569 !important;
+  color: #e2e8f0 !important;
+}
+
+/* ── Module header gradient ── */
+.module-header-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #eef6ff 100%);
+}
+.dark .module-header-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #1a2d45 100%) !important;
+}
+
+/* ── AI result card ── */
+.dark .border-blue-100 {
+  border-color: #1e3a5f !important;
+}
+
+/* ── Admin toolbar stripe ── */
+.dark .border-t.border-slate-100.bg-slate-50 {
+  background-color: #0f172a !important;
+  border-color: #1e293b !important;
+}
+
+/* ── Tab nav container ── */
+.dark .tab-nav-container {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ── Tab inactive text ── */
+.dark .tab-inactive { color: #94a3b8 !important; }
+
+/* ── Lesson & assessment cards ── */
+.dark .lesson-card {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ── Breadcrumbs ── */
+.dark .breadcrumb-link { color: #64748b !important; }
+.dark .breadcrumb-link:hover { color: #93c5fd !important; }
+.dark .breadcrumb-current { color: #cbd5e1 !important; }
+.dark .breadcrumb-sep { color: #334155 !important; }
+
+/* ── Misc bordered containers ── */
+.dark .rounded-lg.border.border-slate-200.bg-slate-50,
+.dark .rounded-2xl.border.bg-slate-50 {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* ── pre / code blocks ── */
+.dark pre {
+  background-color: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
 }
 
 body {

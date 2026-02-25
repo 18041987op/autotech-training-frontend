@@ -128,7 +128,7 @@ export function Breadcrumbs() {
     <nav className="flex items-center gap-1.5 text-sm mb-4 flex-wrap">
       <Link
         to="/"
-        className="text-slate-400 hover:text-brand-primary transition-colors"
+        className="breadcrumb-link text-slate-400 hover:text-brand-primary transition-colors"
         aria-label="Home"
       >
         <Home className="h-3.5 w-3.5" />
@@ -143,15 +143,15 @@ export function Breadcrumbs() {
 
         return (
           <React.Fragment key={to}>
-            <ChevronRight className="h-3.5 w-3.5 text-slate-300 flex-shrink-0" />
+            <ChevronRight className="breadcrumb-sep h-3.5 w-3.5 text-slate-300 flex-shrink-0" />
             {isLast ? (
-              <span className="text-slate-700 font-semibold truncate max-w-[180px]" title={label}>
+              <span className="breadcrumb-current text-slate-700 font-semibold truncate max-w-[180px]" title={label}>
                 {label}
               </span>
             ) : (
               <Link
                 to={to}
-                className="text-slate-400 hover:text-brand-primary transition-colors truncate max-w-[140px]"
+                className="breadcrumb-link text-slate-400 hover:text-brand-primary transition-colors truncate max-w-[140px]"
                 title={label}
               >
                 {label}
