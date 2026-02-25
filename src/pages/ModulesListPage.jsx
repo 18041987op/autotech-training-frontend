@@ -539,12 +539,17 @@ export function ModulesListPage({ pageType }) {
                     )}
 
                     <div className="font-extrabold leading-snug pr-7">{m.translatedTitle}</div>
-                    <div className="mt-2 text-sm text-slate-600 leading-relaxed">
+                    <div
+                      className="mt-2 text-sm text-slate-600 leading-relaxed"
+                      style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                      title={m.translatedDescription || ""}
+                    >
                       {m.translatedDescription || "—"}
-                    </div>
-
-                    <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-brand-primary">
-                      {t("common.view")} →
                     </div>
                   </div>
                 ))}

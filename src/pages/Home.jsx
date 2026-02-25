@@ -173,18 +173,32 @@ export function Home({ user }) {
       {/* Quick Action Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {cardData.map((card, i) => (
-          <AnimatedCard key={card.to} delay={0.1 * (i + 2)} className="card-interactive p-5">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-soft text-brand-primary">
-              <card.icon className="h-5 w-5" />
+          <AnimatedCard
+            key={card.to}
+            delay={0.1 * (i + 2)}
+            className="card-interactive p-5 cursor-pointer"
+            onClick={() => navigate(card.to)}
+          >
+            {/* Icon row: icon left, arrow right */}
+            <div className="flex items-center justify-between">
+              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-soft text-brand-primary">
+                <card.icon className="h-5 w-5" />
+              </div>
+              <span className="text-slate-300 group-hover:text-brand-primary text-lg transition-colors">→</span>
             </div>
+
             <h3 className="mt-4 font-extrabold">{t(card.titleKey)}</h3>
-            <p className="mt-2 text-sm text-slate-600">{t(card.blurbKey)}</p>
-            <button
-              onClick={() => navigate(card.to)}
-              className="mt-4 rounded-xl border px-3 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors"
+            <p
+              className="mt-2 text-sm text-slate-600 leading-relaxed"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
             >
-              {t("common.view")} →
-            </button>
+              {t(card.blurbKey)}
+            </p>
           </AnimatedCard>
         ))}
       </div>
