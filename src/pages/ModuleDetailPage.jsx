@@ -616,8 +616,8 @@ export function ModuleDetailPage() {
                 >
                   <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
                   {hasActiveAssessment
-                    ? (appendLoading ? "Appending…" : t("moduleDetail.admin.appendQuestions10"))
-                    : (genLoading ? t("assessmentsUi.generating") : t("moduleDetail.admin.generateAssessment"))}
+                    ? (appendLoading ? "+10…" : "+10 Questions")
+                    : (genLoading ? "Generating…" : "Generate")}
                 </button>
                 {adaptiveButtonSubMsg && (
                   <span className="text-[10px] text-slate-400 text-center">{adaptiveButtonSubMsg}</span>
@@ -633,7 +633,7 @@ export function ModuleDetailPage() {
                   type="button"
                 >
                   <span>{syncing ? "⏳" : "↻"}</span>
-                  {syncing ? "Syncing…" : t("actions.sync")}
+                  {syncing ? "Syncing…" : "Sync Drive"}
                 </button>
                 {syncMsg && (
                   <span className="text-[10px] text-slate-400">{syncMsg}</span>
