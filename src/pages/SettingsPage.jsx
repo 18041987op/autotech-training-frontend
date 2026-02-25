@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Link, useOutletContext } from "react-router-dom";
 
 const LANGUAGES = [
-  { code: "en", flag: "🇺🇸", label: "English",  sublabel: "English" },
-  { code: "es", flag: "🇲🇽", label: "Español",  sublabel: "Spanish" },
+  { code: "en", flag: "🇺🇸", label: "English", sublabel: "English" },
+  { code: "es", flag: "🇪🇸", label: "Español", sublabel: "Spanish" },
 ];
 
 function LanguageSelector() {
@@ -17,7 +17,7 @@ function LanguageSelector() {
   };
 
   return (
-    <div className="flex gap-3 mt-5">
+    <div className="flex gap-2 mt-4">
       {LANGUAGES.map((lang) => {
         const active = current === lang.code;
         return (
@@ -25,29 +25,21 @@ function LanguageSelector() {
             key={lang.code}
             type="button"
             onClick={() => setLang(lang.code)}
-            className="flex-1 flex flex-col items-center gap-2 rounded-2xl border-2 px-4 py-5 transition-all"
+            className="flex items-center gap-2.5 rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all"
             style={{
-              borderColor:    active ? "#1E6FAE" : "#e2e8f0",
-              background:     active ? "#eef6ff" : "#fff",
-              boxShadow:      active ? "0 0 0 3px rgba(30,111,174,0.12)" : "none",
+              borderColor: active ? "#1E6FAE" : "#e2e8f0",
+              background:  active ? "#eef6ff" : "#fff",
+              color:       active ? "#1E6FAE" : "#475569",
             }}
           >
-            <span className="text-4xl leading-none">{lang.flag}</span>
-            <div className="text-center">
-              <div
-                className="text-sm font-extrabold"
-                style={{ color: active ? "#1E6FAE" : "#475569" }}
-              >
-                {lang.label}
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">{lang.sublabel}</div>
-            </div>
+            <span className="text-xl leading-none">{lang.flag}</span>
+            <span>{lang.label}</span>
             {active && (
               <span
-                className="text-[10px] font-extrabold px-2 py-0.5 rounded-full"
+                className="ml-1 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full"
                 style={{ background: "#1E6FAE", color: "#fff" }}
               >
-                ✓ Active
+                ✓
               </span>
             )}
           </button>

@@ -338,7 +338,7 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
                   <DarkModeToggle />
                   <button
                     onClick={() => { setMoreOpen(false); onSignOut(); }}
-                    className="flex items-center justify-center rounded-xl border border-slate-200 p-2 text-red-500 hover:bg-red-50 transition-colors"
+                    className="btn-outline-sm text-red-500 hover:bg-red-50 hover:border-red-200"
                     title={t("auth.signOut")}
                     aria-label={t("auth.signOut")}
                     type="button"
