@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router-dom";
 import { Pencil } from "lucide-react";
+import { motion } from "framer-motion";
 import { apiFetch } from "../lib/api";
 import { translateModuleList } from "../hooks/useModuleTranslation";
 
@@ -452,6 +453,15 @@ export function ModulesListPage({ pageType }) {
 
   const showTabs = pageType === "training" && visibleTabs.length > 1;
 
+  // ── Page hero config by type ──
+  const PAGE_HERO = {
+    training:    { emoji: "🎓", pill: "Role Training" },
+    onboarding:  { emoji: "👋", pill: "Onboarding" },
+    culture:     { emoji: "🛡️", pill: "Culture" },
+    assessments: { emoji: "📋", pill: "Knowledge Checks" },
+  };
+  const heroConfig = PAGE_HERO[pageType] || PAGE_HERO.training;
+
   // ─── render ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -470,11 +480,53 @@ export function ModulesListPage({ pageType }) {
 
   return (
     <div className="space-y-5">
-      {/* Page header */}
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{safeT(titleKey, "Training")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{safeT(subtitleKey, "")}</p>
-      </div>
+      {/* Page hero banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative overflow-hidden rounded-3xl"
+        style={{ background: "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)" }}
+      >
+        {/* Dot-grid texture */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+
+        {/* Content */}
+        <div className="relative z-10 px-6 pt-7 pb-14 sm:px-8">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              {/* Brand pill */}
+              <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">{heroConfig.pill}</span>
+              </div>
+              {/* Title */}
+              <h1 className="text-2xl font-extrabold text-white sm:text-3xl">{safeT(titleKey, "Training")}</h1>
+              {/* Subtitle */}
+              <p className="mt-1 text-sm text-white/70">{safeT(subtitleKey, "")}</p>
+              {/* Module count chip */}
+              {!loading && translated.length > 0 && (
+                <div className="mt-4 inline-flex items-center rounded-xl bg-white/15 backdrop-blur-sm px-3 py-1.5 text-sm font-bold text-white">
+                  {translated.length} {translated.length === 1 ? "module" : "modules"}
+                </div>
+              )}
+            </div>
+            {/* Emoji bubble */}
+            <div className="shrink-0 h-14 w-14 rounded-2xl grid place-items-center text-2xl shadow-lg select-none"
+              style={{ background: "rgba(247,148,29,0.85)" }}>
+              {heroConfig.emoji}
+            </div>
+          </div>
+        </div>
+
+        {/* Wave */}
+        <div className="absolute bottom-0 left-0 right-0 leading-none">
+          <svg viewBox="0 0 1200 48" preserveAspectRatio="none" className="w-full h-8" aria-hidden="true">
+            <path d="M0,24 C150,48 350,0 600,24 C850,48 1050,0 1200,24 L1200,48 L0,48 Z"
+              style={{ fill: "var(--surface, #ffffff)" }} />
+          </svg>
+        </div>
+      </motion.div>
 
       {/* Role filter tabs — Training page only */}
       {showTabs && (

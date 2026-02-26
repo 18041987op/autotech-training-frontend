@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { apiFetch, getToken } from "../lib/api";
 
 function isJwtAdmin() {
@@ -81,31 +82,75 @@ export function AssessmentsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-2xl font-extrabold">{t("modules.assessments.title")}</h1>
-            <p className="mt-2 text-sm text-slate-600">{t("modules.assessments.subtitle")}</p>
+      {/* Page hero banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative overflow-hidden rounded-3xl"
+        style={{ background: "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)" }}
+      >
+        {/* Dot-grid texture */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
 
-            {isAdmin && totalInactive > 0 ? (
-              <div className="mt-3">
-                <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={showInactive}
-                    onChange={(e) => setShowInactive(e.target.checked)}
-                  />
-                  Show inactive ({totalInactive})
-                </label>
+        {/* Content */}
+        <div className="relative z-10 px-6 pt-7 pb-14 sm:px-8">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              {/* Brand pill */}
+              <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Knowledge Checks</span>
               </div>
-            ) : null}
+              {/* Title */}
+              <h1 className="text-2xl font-extrabold text-white sm:text-3xl">{t("modules.assessments.title")}</h1>
+              {/* Subtitle */}
+              <p className="mt-1 text-sm text-white/70">{t("modules.assessments.subtitle")}</p>
+              {/* Stat + admin toggle row */}
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                {!loading && (
+                  <div className="inline-flex items-center rounded-xl bg-white/15 backdrop-blur-sm px-3 py-1.5 text-sm font-bold text-white">
+                    📋 {modulesWithAssessments.length} {modulesWithAssessments.length === 1 ? "module" : "modules"}
+                  </div>
+                )}
+                {isAdmin && totalInactive > 0 && (
+                  <label className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showInactive}
+                      onChange={(e) => setShowInactive(e.target.checked)}
+                      className="rounded"
+                    />
+                    Show inactive ({totalInactive})
+                  </label>
+                )}
+              </div>
+            </div>
+            {/* Right: emoji bubble + refresh */}
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <div className="h-14 w-14 rounded-2xl grid place-items-center text-2xl shadow-lg select-none"
+                style={{ background: "rgba(247,148,29,0.85)" }}>
+                📋
+              </div>
+              <button
+                onClick={load}
+                type="button"
+                className="rounded-xl bg-white/15 backdrop-blur-sm px-3 py-1 text-xs font-bold text-white hover:bg-white/25 transition-colors"
+              >
+                {t("actions.refresh")}
+              </button>
+            </div>
           </div>
-
-          <button className="btn-outline-sm" onClick={load} type="button">
-            {t("actions.refresh")}
-          </button>
         </div>
-      </div>
+
+        {/* Wave */}
+        <div className="absolute bottom-0 left-0 right-0 leading-none">
+          <svg viewBox="0 0 1200 48" preserveAspectRatio="none" className="w-full h-8" aria-hidden="true">
+            <path d="M0,24 C150,48 350,0 600,24 C850,48 1050,0 1200,24 L1200,48 L0,48 Z"
+              style={{ fill: "var(--surface, #ffffff)" }} />
+          </svg>
+        </div>
+      </motion.div>
 
       {modulesWithAssessments.length === 0 ? (
         <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
