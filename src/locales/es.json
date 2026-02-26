@@ -87,7 +87,20 @@
     "blurbOnboarding": "Todo lo que un nuevo empleado necesita en los primeros días y semanas.",
     "blurbTraining": "Rutas de aprendizaje por rol con recursos prácticos.",
     "blurbCulture": "Cómo trabajamos: comunicación, calidad, seguridad y experiencia del cliente.",
-    "blurbEvaluations": "Evaluaciones ligeras para confirmar comprensión."
+    "blurbEvaluations": "Evaluaciones ligeras para confirmar comprensión.",
+    "greeting":          "¡Buenos días, {{firstName}}!",
+    "greetingAfternoon": "¡Buenas tardes, {{firstName}}!",
+    "greetingEvening":   "¡Buenas noches, {{firstName}}!",
+    "greetingAdmin":     "Bienvenido/a de vuelta, {{firstName}}",
+    "roleSubtitleTech":  "Técnico — mantén tu racha",
+    "roleSubtitleAdmin": "Panel de Administrador",
+    "roleSubtitleSA":    "Asesor de Servicio — mantente listo",
+    "continueLearning":  "Continuar aprendiendo",
+    "viewAllProgress":   "Ver todo el progreso →",
+    "statsCompletion":   "Compl. Promedio",
+    "statsPassed":       "Evaluaciones Aprobadas",
+    "statsFirstTry":     "Precisión al 1er Intento",
+    "statsBadges":       "Insignias Ganadas"
   },
   "pages": {
     "onboardingTitle": "Inducción",

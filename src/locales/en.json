@@ -87,7 +87,20 @@
     "blurbOnboarding": "Everything a new hire needs in the first days and weeks.",
     "blurbTraining": "Role-specific learning paths with job-ready resources.",
     "blurbCulture": "How we work: communication, quality, safety, and customer experience.",
-    "blurbEvaluations": "Low-pressure assessments to confirm understanding."
+    "blurbEvaluations": "Low-pressure assessments to confirm understanding.",
+    "greeting":          "Good morning, {{firstName}}!",
+    "greetingAfternoon": "Good afternoon, {{firstName}}!",
+    "greetingEvening":   "Good evening, {{firstName}}!",
+    "greetingAdmin":     "Welcome back, {{firstName}}",
+    "roleSubtitleTech":  "Technician — keep your streak going",
+    "roleSubtitleAdmin": "Admin Dashboard",
+    "roleSubtitleSA":    "Service Advisor — stay sharp",
+    "continueLearning":  "Continue Learning",
+    "viewAllProgress":   "View all progress →",
+    "statsCompletion":   "Avg Completion",
+    "statsPassed":       "Passed Checks",
+    "statsFirstTry":     "First-Try Accuracy",
+    "statsBadges":       "Badges Earned"
   },
   "pages": {
     "onboardingTitle": "Onboarding",

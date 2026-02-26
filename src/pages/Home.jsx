@@ -1,146 +1,408 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, GraduationCap, Layers, Shield, Sparkles } from "lucide-react";
-import { AnimatedCard } from "../components/AnimatedCard";
+import { motion } from "framer-motion";
+import {
+  BookOpen,
+  GraduationCap,
+  Layers,
+  Shield,
+  TrendingUp,
+  CheckCircle2,
+  Target,
+  Award,
+  ArrowRight,
+} from "lucide-react";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { useProgress, useProgressBadges } from "../hooks/useProgress";
-import { BADGE_ANIMATIONS, ALL_BADGE_IDS, AnimatedBadge, LockedBadge } from "../components/BadgeSystem";
+import {
+  BADGE_ANIMATIONS,
+  ALL_BADGE_IDS,
+  AnimatedBadge,
+} from "../components/BadgeSystem";
 
-const cardData = [
-  { icon: Layers,        titleKey: "home.cards.requiredThisWeek", blurbKey: "home.blurbRequired",    to: "/assessments" },
-  { icon: BookOpen,      titleKey: "home.cards.onboarding",       blurbKey: "home.blurbOnboarding",  to: "/onboarding" },
-  { icon: GraduationCap, titleKey: "home.cards.training",         blurbKey: "home.blurbTraining",    to: "/training" },
-  { icon: Shield,        titleKey: "home.cards.culture",          blurbKey: "home.blurbCulture",     to: "/culture" },
-  { icon: Sparkles,      titleKey: "home.cards.evaluations",      blurbKey: "home.blurbEvaluations", to: "/assessments" },
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function getGreetingKey() {
+  const h = new Date().getHours();
+  if (h < 12) return "home.greeting";
+  if (h < 17) return "home.greetingAfternoon";
+  return "home.greetingEvening";
+}
+
+function getFirstName(name) {
+  if (!name) return "";
+  return name.split(" ")[0];
+}
+
+// ── Card data (4 action cards) ────────────────────────────────────────────────
+const CARD_DATA = [
+  {
+    icon: GraduationCap,
+    titleKey: "home.cards.training",
+    blurbKey: "home.blurbTraining",
+    to: "/training",
+    iconBg: "#EFF6FF",
+    iconColor: "#1E6FAE",
+    borderAccent: "#1E6FAE",
+  },
+  {
+    icon: Layers,
+    titleKey: "home.cards.requiredThisWeek",
+    blurbKey: "home.blurbRequired",
+    to: "/assessments",
+    iconBg: "#FFFBEB",
+    iconColor: "#F7941D",
+    borderAccent: "#F7941D",
+  },
+  {
+    icon: BookOpen,
+    titleKey: "home.cards.onboarding",
+    blurbKey: "home.blurbOnboarding",
+    to: "/onboarding",
+    iconBg: "#F0FDF4",
+    iconColor: "#22C55E",
+    borderAccent: "#22C55E",
+  },
+  {
+    icon: Shield,
+    titleKey: "home.cards.culture",
+    blurbKey: "home.blurbCulture",
+    to: "/culture",
+    iconBg: "#F5F3FF",
+    iconColor: "#7C3AED",
+    borderAccent: "#7C3AED",
+  },
 ];
 
-// ── Tiny stat pill ─────────────────────────────────────────────────────────────
-function StatPill({ label, value, accent }) {
+// ── Stat data builder ─────────────────────────────────────────────────────────
+function buildStats(progressData, badgesData, t) {
+  const rows = progressData?.progress || [];
+  const started = rows.length;
+  const avgCompletion =
+    started === 0
+      ? 0
+      : Math.round(
+          rows.reduce((s, p) => s + (p.completion_rate || 0), 0) / started
+        );
+  const passed = rows.filter((p) => (p.quiz_score || 0) >= 70).length;
+  const firstTryRows = rows.filter(
+    (p) => typeof p.first_attempt_score === "number"
+  );
+  const avgFirstTry =
+    firstTryRows.length === 0
+      ? null
+      : Math.round(
+          firstTryRows.reduce((s, p) => s + p.first_attempt_score, 0) /
+            firstTryRows.length
+        );
+  const badges = badgesData?.badges || [];
+  const earnedCount = badges.length;
+
+  return [
+    {
+      icon: TrendingUp,
+      value: `${avgCompletion}%`,
+      label: t("home.statsCompletion"),
+      iconBg: "#EFF6FF",
+      iconColor: "#1E6FAE",
+      numberColor: "#1E6FAE",
+    },
+    {
+      icon: CheckCircle2,
+      value: passed,
+      label: t("home.statsPassed"),
+      iconBg: "#F0FDF4",
+      iconColor: "#22C55E",
+      numberColor: "#22C55E",
+    },
+    {
+      icon: Target,
+      value: avgFirstTry !== null ? `${avgFirstTry}%` : "\u2014",
+      label: t("home.statsFirstTry"),
+      iconBg: "#FFFBEB",
+      iconColor: "#F59E0B",
+      numberColor: "#F59E0B",
+    },
+    {
+      icon: Award,
+      value: `${earnedCount}/${ALL_BADGE_IDS.length}`,
+      label: t("home.statsBadges"),
+      iconBg: "#F5F3FF",
+      iconColor: "#7C3AED",
+      numberColor: "#7C3AED",
+    },
+  ];
+}
+
+// ── Framer-motion variants for staggered stats ────────────────────────────────
+const statsContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.07 } },
+};
+const statsItem = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+};
+
+// ── HeroBanner ────────────────────────────────────────────────────────────────
+function HeroBanner({ user, t, navigate }) {
+  const firstName = getFirstName(user?.name);
+  const greetingKey = getGreetingKey();
+  const isAdmin = user?.role === "admin";
+  const isSA =
+    user?.role === "serviceadvisor" || user?.role === "serviceAdvisor";
+
+  const roleSubtitleKey = isAdmin
+    ? "home.roleSubtitleAdmin"
+    : isSA
+    ? "home.roleSubtitleSA"
+    : "home.roleSubtitleTech";
+
+  const initials = firstName
+    ? firstName[0].toUpperCase()
+    : (user?.name || "U")[0].toUpperCase();
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-center">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="relative overflow-hidden rounded-3xl"
+      style={{
+        background:
+          "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)",
+      }}
+    >
+      {/* Dot-grid texture overlay */}
       <div
-        className="text-lg font-extrabold"
-        style={accent ? { color: accent } : undefined}
-      >
-        {value}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 px-6 pt-7 pb-14 sm:px-8 sm:pt-8 sm:pb-16">
+        <div className="flex items-start justify-between gap-4">
+          {/* Left: brand pill + greeting + CTA */}
+          <div className="min-w-0 flex-1">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
+                AutoRx Academy
+              </span>
+            </div>
+
+            <h1 className="text-2xl font-extrabold text-white leading-tight sm:text-3xl">
+              {firstName
+                ? t(greetingKey, { firstName })
+                : t("home.greetingAdmin", {
+                    firstName: user?.name || "there",
+                  })}
+            </h1>
+
+            <p className="mt-1 text-sm font-medium text-white/70">
+              {t(roleSubtitleKey)}
+            </p>
+
+            <button
+              onClick={() => navigate("/training")}
+              className="mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5
+                         text-sm font-bold text-white shadow-md
+                         transition-all duration-200 active:scale-95"
+              style={{ background: "#F7941D" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = "#e07d0e")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = "#F7941D")
+              }
+            >
+              {t("home.continueLearning")}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Right: avatar initials */}
+          <div
+            className="shrink-0 h-14 w-14 rounded-full flex items-center justify-center
+                       text-xl font-black text-white shadow-lg select-none"
+            style={{ background: "rgba(247,148,29,0.85)" }}
+            aria-label={user?.name}
+          >
+            {initials}
+          </div>
+        </div>
       </div>
-      <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-        {label}
+
+      {/* Wave — fill uses CSS var so it matches the page surface in light + dark */}
+      <div className="absolute bottom-0 left-0 right-0 leading-none">
+        <svg
+          viewBox="0 0 1200 48"
+          preserveAspectRatio="none"
+          className="w-full h-8"
+          aria-hidden="true"
+        >
+          <path
+            d="M0,24 C150,48 350,0 600,24 C850,48 1050,0 1200,24 L1200,48 L0,48 Z"
+            style={{ fill: "var(--surface, #ffffff)" }}
+          />
+        </svg>
       </div>
+    </motion.div>
+  );
+}
+
+// ── StatsGrid ─────────────────────────────────────────────────────────────────
+function StatsGrid({ stats, isLoading }) {
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <LoadingSkeleton key={i} height="h-24" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      variants={statsContainer}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4"
+    >
+      {stats.map((s) => (
+        <motion.div
+          key={s.label}
+          variants={statsItem}
+          className="card flex flex-col items-center justify-center gap-2 p-4 text-center"
+        >
+          <div
+            className="grid h-10 w-10 place-items-center rounded-xl"
+            style={{ background: s.iconBg }}
+          >
+            <s.icon className="h-5 w-5" style={{ color: s.iconColor }} />
+          </div>
+
+          <div
+            className="text-2xl font-extrabold leading-none"
+            style={{ color: s.numberColor }}
+          >
+            {s.value}
+          </div>
+
+          <div
+            className="text-[10px] font-semibold uppercase tracking-wide"
+            style={{ color: "var(--text-muted, #94a3b8)" }}
+          >
+            {s.label}
+          </div>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
+// ── QuickActionCards ──────────────────────────────────────────────────────────
+function QuickActionCards({ t, navigate }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {CARD_DATA.map((card, i) => (
+        <motion.div
+          key={card.to}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.08 * (i + 1) }}
+          whileHover={{ y: -4, transition: { duration: 0.2 } }}
+          onClick={() => navigate(card.to)}
+          className="card cursor-pointer p-5 group"
+          style={{ borderTop: `3px solid ${card.borderAccent}` }}
+        >
+          <div className="flex items-center justify-between">
+            <div
+              className="grid h-11 w-11 place-items-center rounded-2xl"
+              style={{ background: card.iconBg }}
+            >
+              <card.icon
+                className="h-5 w-5"
+                style={{ color: card.iconColor }}
+              />
+            </div>
+            <ArrowRight
+              className="h-4 w-4 opacity-30 group-hover:opacity-80 transition-all duration-200 group-hover:translate-x-1"
+              style={{ color: card.borderAccent }}
+            />
+          </div>
+
+          <h3
+            className="mt-4 font-extrabold text-sm"
+            style={{ color: "var(--text-primary, #0f172a)" }}
+          >
+            {t(card.titleKey)}
+          </h3>
+
+          <p
+            className="mt-1.5 text-xs leading-relaxed"
+            style={{
+              color: "var(--text-secondary, #475569)",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {t(card.blurbKey)}
+          </p>
+        </motion.div>
+      ))}
     </div>
   );
 }
 
-// ── Progress + Badges card ──────────────────────────────────────────────────────
-function ProgressBadgeCard({ progressData, badgesData, isLoading, t, navigate }) {
+// ── EarnedBadgesRow ───────────────────────────────────────────────────────────
+function EarnedBadgesRow({ badgesData, isLoading, t, navigate }) {
   const badges = badgesData?.badges || [];
-  const earnedIds = new Set(badges.map((b) => b.badge_id));
-  const lockedIds = ALL_BADGE_IDS.filter((id) => !earnedIds.has(id));
 
-  // Compute quick stats from progress
-  const stats = useMemo(() => {
-    const rows = progressData?.progress || [];
-    const started = rows.length;
-    const avgCompletion =
-      started === 0
-        ? 0
-        : Math.round(rows.reduce((s, p) => s + (p.completion_rate || 0), 0) / started);
-    const passed = rows.filter((p) => (p.quiz_score || 0) >= 70).length;
-    const firstTryRows = rows.filter((p) => typeof p.first_attempt_score === "number");
-    const avgFirstTry =
-      firstTryRows.length === 0
-        ? null
-        : Math.round(firstTryRows.reduce((s, p) => s + p.first_attempt_score, 0) / firstTryRows.length);
-    return { started, avgCompletion, passed, avgFirstTry };
-  }, [progressData]);
+  if (isLoading) return <LoadingSkeleton height="h-16" />;
+  if (badges.length === 0) return null;
 
   return (
-    <AnimatedCard delay={0.1} className="card p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.5 }}
+      className="card p-4"
+    >
       <style>{BADGE_ANIMATIONS}</style>
 
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-extrabold">{t("badges.homeTitle")}</h3>
-          <p className="mt-0.5 text-xs text-slate-500">{t("badges.homeSubtitle")}</p>
+      <div className="flex items-center justify-between mb-3">
+        <div
+          className="text-[10px] font-bold uppercase tracking-widest"
+          style={{ color: "var(--text-muted, #94a3b8)" }}
+        >
+          {t("badges.earnedSection")} 🎉
         </div>
         <button
           onClick={() => navigate("/progress")}
-          className="shrink-0 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+          className="text-xs font-semibold hover:underline transition-colors"
+          style={{ color: "var(--text-secondary, #475569)" }}
         >
-          {t("badges.viewAll")}
+          {t("home.viewAllProgress")}
         </button>
       </div>
 
-      {isLoading ? (
-        <LoadingSkeleton height="h-20" />
-      ) : (
-        <>
-          {/* Mini stats */}
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <StatPill
-              label={t("progress.avgCompletion")}
-              value={`${stats.avgCompletion}%`}
-              accent="#1E6FAE"
-            />
-            <StatPill
-              label={t("progress.passed")}
-              value={stats.passed}
-              accent="#22C55E"
-            />
-            <StatPill
-              label={t("progress.firstTryAccuracyAvg")}
-              value={stats.avgFirstTry !== null ? `${stats.avgFirstTry}%` : "—"}
-              accent="#F59E0B"
-            />
-            <StatPill
-              label={t("badges.earnedCount", { count: earnedIds.size, total: ALL_BADGE_IDS.length })}
-              value={`${earnedIds.size}/${ALL_BADGE_IDS.length}`}
-              accent="#7C3AED"
-            />
-          </div>
-
-          {/* Earned badges */}
-          {badges.length > 0 && (
-            <div className="mt-5">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                {t("badges.earnedSection")} 🎉
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {badges.map((b) => (
-                  <AnimatedBadge key={b.badge_id} badge={b} isNew={false} t={t} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Locked badges */}
-          {lockedIds.length > 0 && (
-            <div className="mt-4">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                {t("badges.lockedSection")} 🔒
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {lockedIds.map((id) => (
-                  <LockedBadge key={id} badgeId={id} t={t} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No progress yet */}
-          {stats.started === 0 && (
-            <div className="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-600">
-              {t("status.noneFound")}
-            </div>
-          )}
-        </>
-      )}
-    </AnimatedCard>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {badges.map((b) => (
+          <AnimatedBadge key={b.badge_id} badge={b} isNew={false} t={t} />
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
+// ── Main export ───────────────────────────────────────────────────────────────
 export function Home({ user }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -149,59 +411,29 @@ export function Home({ user }) {
 
   const isLoading = progressLoading || badgesLoading;
 
-  return (
-    <div className="space-y-6">
-      {/* Welcome Card */}
-      <AnimatedCard className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h2 className="text-2xl font-extrabold">{t("home.headline")}</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          {user?.role === "technician"
-            ? t("home.subtextTechnician")
-            : t("home.subtextAdmin")}
-        </p>
-      </AnimatedCard>
+  const stats = useMemo(
+    () => buildStats(progressData, badgesData, t),
+    [progressData, badgesData, t]
+  );
 
-      {/* Progress + Badge card */}
-      <ProgressBadgeCard
-        progressData={progressData}
+  return (
+    <div className="space-y-5">
+      {/* 1 — Hero banner */}
+      <HeroBanner user={user} t={t} navigate={navigate} />
+
+      {/* 2 — Stats grid */}
+      <StatsGrid stats={stats} isLoading={isLoading} />
+
+      {/* 3 — Quick action cards */}
+      <QuickActionCards t={t} navigate={navigate} />
+
+      {/* 4 — Earned badges (hidden when none) */}
+      <EarnedBadgesRow
         badgesData={badgesData}
-        isLoading={isLoading}
+        isLoading={badgesLoading}
         t={t}
         navigate={navigate}
       />
-
-      {/* Quick Action Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {cardData.map((card, i) => (
-          <AnimatedCard
-            key={card.to}
-            delay={0.1 * (i + 2)}
-            className="card-interactive p-5 cursor-pointer"
-            onClick={() => navigate(card.to)}
-          >
-            {/* Icon row: icon left, arrow right */}
-            <div className="flex items-center justify-between">
-              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-soft text-brand-primary">
-                <card.icon className="h-5 w-5" />
-              </div>
-              <span className="text-slate-300 group-hover:text-brand-primary text-lg transition-colors">→</span>
-            </div>
-
-            <h3 className="mt-4 font-extrabold">{t(card.titleKey)}</h3>
-            <p
-              className="mt-2 text-sm text-slate-600 leading-relaxed"
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              {t(card.blurbKey)}
-            </p>
-          </AnimatedCard>
-        ))}
-      </div>
     </div>
   );
 }
