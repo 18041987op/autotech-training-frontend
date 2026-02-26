@@ -5,6 +5,7 @@ import { useOutletContext } from "react-router-dom";
 import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { translateModuleList } from "../hooks/useModuleTranslation";
+import { PageHero } from "../components/PageHero";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -471,10 +472,26 @@ export function ModulesListPage({ pageType }) {
   return (
     <div className="space-y-5">
       {/* Page header */}
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{safeT(titleKey, "Training")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{safeT(subtitleKey, "")}</p>
-      </div>
+      <PageHero
+        eyebrow="AutoRx Academy"
+        title={safeT(titleKey, "Training")}
+        subtitle={safeT(subtitleKey, "")}
+        actions={
+          <button
+            onClick={loadModules}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-200 active:scale-95"
+            style={{ background: "#F7941D" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "#e07d0e")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "#F7941D")
+            }
+          >
+            {t("actions.refresh", "Refresh")}
+          </button>
+        }
+      />
 
       {/* Role filter tabs — Training page only */}
       {showTabs && (

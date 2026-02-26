@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch, getToken } from "../lib/api";
+import { PageHero } from "../components/PageHero";
 
 function isJwtAdmin() {
   try {
@@ -81,31 +82,40 @@ export function AssessmentsPage() {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-2xl font-extrabold">{t("modules.assessments.title")}</h1>
-            <p className="mt-2 text-sm text-slate-600">{t("modules.assessments.subtitle")}</p>
-
-            {isAdmin && totalInactive > 0 ? (
-              <div className="mt-3">
-                <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
-                  <input
-                    type="checkbox"
-                    checked={showInactive}
-                    onChange={(e) => setShowInactive(e.target.checked)}
-                  />
-                  Show inactive ({totalInactive})
-                </label>
-              </div>
-            ) : null}
-          </div>
-
-          <button className="btn-outline-sm" onClick={load} type="button">
+      <PageHero
+        eyebrow="AutoRx Academy"
+        title={t("modules.assessments.title")}
+        subtitle={t("modules.assessments.subtitle")}
+        actions={
+          <button
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-200 active:scale-95"
+            style={{ background: "#F7941D" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "#e07d0e")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "#F7941D")
+            }
+            onClick={load}
+            type="button"
+          >
             {t("actions.refresh")}
           </button>
+        }
+      />
+
+      {isAdmin && totalInactive > 0 ? (
+        <div className="card p-4">
+          <label className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={showInactive}
+              onChange={(e) => setShowInactive(e.target.checked)}
+            />
+            Show inactive ({totalInactive})
+          </label>
         </div>
-      </div>
+      ) : null}
 
       {modulesWithAssessments.length === 0 ? (
         <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">

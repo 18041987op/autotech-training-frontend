@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
+import { PageHero } from "../components/PageHero";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
 import { lessonRegistry, lessonRegistryByTitle } from "../lessons/registry";
 import { ToastContainer, useToast } from "../components/Toast";
@@ -463,122 +464,127 @@ export function ModuleDetailPage() {
 
   return (
     <div className="space-y-5">
-      {/* ── Header card ──────────────────────────────────────────────────────── */}
-      <div className="card module-header-gradient overflow-hidden">
-        {/* Zone 1 — Title + description */}
-        <div className="px-6 pt-6 pb-4">
-          <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{moduleTitle}</h1>
-          <p
-            className="mt-1.5 text-sm text-slate-500 leading-relaxed"
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
+      <PageHero
+        eyebrow="AutoRx Academy"
+        title={moduleTitle}
+        subtitle={
+          <span
+            className="block line-clamp-2"
             title={moduleDescription || ""}
           >
             {moduleDescription || "—"}
-          </p>
+          </span>
+        }
+        actions={
+          <button
+            type="button"
+            onClick={() => setAiOpen(true)}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-200 active:scale-95"
+            style={{ background: "#F7941D" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "#e07d0e")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "#F7941D")
+            }
+          >
+            AI Coach
+          </button>
+        }
+      />
+
+      <div className="card p-5">
+        <div className="mb-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          AI Coach
         </div>
 
-        {/* Zone 2 — AI Coach inline search bar */}
-        <div className="px-6 pb-5">
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
-            {/* Bot icon */}
-            <span className="text-xl shrink-0" role="img" aria-label="AI Coach">🤖</span>
+        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+          <span className="text-xl shrink-0" role="img" aria-label="AI Coach">🤖</span>
 
-            {/* Text input */}
-            <input
-              type="text"
-              className="flex-1 bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none min-w-0"
-              placeholder="Ask AI Coach anything about this module…"
-              value={aiQuery}
-              onChange={(e) => setAiQuery(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") askAiInline(); }}
-            />
+          <input
+            type="text"
+            className="flex-1 bg-transparent text-sm text-slate-700 placeholder-slate-400 outline-none min-w-0"
+            placeholder="Ask AI Coach anything about this module…"
+            value={aiQuery}
+            onChange={(e) => setAiQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") askAiInline(); }}
+          />
 
-            {/* Clear button when there's text */}
-            {aiQuery && (
-              <button
-                type="button"
-                onClick={() => { setAiQuery(""); setAiInlineResult(null); }}
-                className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors text-lg leading-none"
-                aria-label="Clear"
-              >
-                ×
-              </button>
-            )}
-
-            {/* Send button */}
+          {aiQuery && (
             <button
               type="button"
-              onClick={askAiInline}
-              disabled={aiInlineLoading || !aiQuery.trim()}
-              className="shrink-0 btn-primary btn-sm disabled:opacity-40"
+              onClick={() => { setAiQuery(""); setAiInlineResult(null); }}
+              className="shrink-0 text-slate-400 hover:text-slate-600 transition-colors text-lg leading-none"
+              aria-label="Clear"
             >
-              {aiInlineLoading ? (
-                <span className="animate-pulse">…</span>
-              ) : (
-                <>Ask <span>→</span></>
-              )}
+              ×
             </button>
-
-            {/* Full modal link */}
-            <button
-              type="button"
-              onClick={() => setAiOpen(true)}
-              className="shrink-0 text-xs text-slate-400 hover:text-brand-primary transition-colors whitespace-nowrap hidden sm:block"
-              title="Open full AI Coach"
-            >
-              Full chat ↗
-            </button>
-          </div>
-
-          {/* Inline AI result (fade-in card) */}
-          {(aiInlineLoading || aiInlineResult) && (
-            <div
-              className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm"
-              style={{ animation: "fadeSlideIn 0.25s ease" }}
-            >
-              <style>{`@keyframes fadeSlideIn { from { opacity:0; transform:translateY(-6px);} to { opacity:1; transform:translateY(0);} }`}</style>
-              {aiInlineLoading ? (
-                <div className="flex items-center gap-2 text-slate-400">
-                  <span className="animate-pulse text-lg">🤖</span>
-                  <span>Thinking…</span>
-                </div>
-              ) : (
-                <>
-                  <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{aiInlineResult.answer}</p>
-                  {aiInlineResult.takeaways?.length > 0 && (
-                    <ul className="mt-2 space-y-1">
-                      {aiInlineResult.takeaways.map((tk, i) => (
-                        <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
-                          <span className="mt-0.5 text-brand-primary">✦</span> {tk}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {aiInlineResult.nextStep && (
-                    <p className="mt-2 text-xs text-slate-500">
-                      <span className="font-semibold">Next step:</span> {aiInlineResult.nextStep}
-                    </p>
-                  )}
-                  <div className="mt-3 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => setAiOpen(true)}
-                      className="text-xs text-brand-primary hover:underline"
-                    >
-                      Open full AI Coach chat ↗
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
           )}
+
+          <button
+            type="button"
+            onClick={askAiInline}
+            disabled={aiInlineLoading || !aiQuery.trim()}
+            className="shrink-0 btn-primary btn-sm disabled:opacity-40"
+          >
+            {aiInlineLoading ? (
+              <span className="animate-pulse">…</span>
+            ) : (
+              <>Ask <span>→</span></>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAiOpen(true)}
+            className="shrink-0 text-xs text-slate-400 hover:text-brand-primary transition-colors whitespace-nowrap hidden sm:block"
+            title="Open full AI Coach"
+          >
+            Full chat ↗
+          </button>
         </div>
 
+        {(aiInlineLoading || aiInlineResult) && (
+          <div
+            className="mt-3 rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm"
+            style={{ animation: "fadeSlideIn 0.25s ease" }}
+          >
+            <style>{`@keyframes fadeSlideIn { from { opacity:0; transform:translateY(-6px);} to { opacity:1; transform:translateY(0);} }`}</style>
+            {aiInlineLoading ? (
+              <div className="flex items-center gap-2 text-slate-400">
+                <span className="animate-pulse text-lg">🤖</span>
+                <span>Thinking…</span>
+              </div>
+            ) : (
+              <>
+                <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">{aiInlineResult.answer}</p>
+                {aiInlineResult.takeaways?.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {aiInlineResult.takeaways.map((tk, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
+                        <span className="mt-0.5 text-brand-primary">✦</span> {tk}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {aiInlineResult.nextStep && (
+                  <p className="mt-2 text-xs text-slate-500">
+                    <span className="font-semibold">Next step:</span> {aiInlineResult.nextStep}
+                  </p>
+                )}
+                <div className="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setAiOpen(true)}
+                    className="text-xs text-brand-primary hover:underline"
+                  >
+                    Open full AI Coach chat ↗
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Tab navigation ───────────────────────────────────────────────── */}
