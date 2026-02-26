@@ -647,7 +647,7 @@ export function ModuleDetailPage() {
                   <button
                     key={lesson.id}
                     onClick={() => setActiveLessonId(lesson.id)}
-                    className="lesson-card text-left rounded-2xl border-2 border-slate-200 bg-white p-3.5 shadow-sm hover:border-brand-primary hover:shadow-md transition-all"
+                    className="lesson-card card text-left p-3.5 hover:border-brand-primary hover:shadow-md transition-all"
                     type="button"
                   >
                     <div className="text-2xl mb-2">{lesson.icon}</div>
@@ -740,8 +740,8 @@ export function ModuleDetailPage() {
                   key={a.id}
                   className={
                     isActive
-                      ? "rounded-2xl border border-slate-200 bg-white p-4"
-                      : "rounded-2xl border border-slate-200 bg-slate-50 p-4 opacity-70"
+                      ? "card p-4"
+                      : "card p-4 bg-slate-50 opacity-70"
                   }
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -825,7 +825,7 @@ export function ModuleDetailPage() {
             ) : (
               <div className="mt-4 grid gap-3">
                 {resources.map((r) => (
-                  <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div key={r.id} className="card p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <div className="min-w-0">
                     <div className="font-extrabold truncate">{normalizeAllCaps(r.name)}</div>

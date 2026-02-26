@@ -532,7 +532,7 @@ export function ModulesListPage({ pageType }) {
                   <div
                     key={m.id}
                     onClick={() => navigate(`/modules/${m.id}`)}
-                    className="group relative rounded-2xl border bg-white p-3.5 shadow-sm transition cursor-pointer hover:-translate-y-[2px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+                    className="card group relative p-3.5 transition cursor-pointer hover:-translate-y-[2px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
                   >
                     {/* Admin Edit button — top-right, stops card click propagation */}
                     {isAdmin && (
