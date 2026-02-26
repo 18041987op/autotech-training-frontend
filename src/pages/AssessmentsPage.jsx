@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch, getToken } from "../lib/api";
 import { PageHero } from "../components/PageHero";
+import { normalizeAllCaps } from "../lib/text";
 
 function isJwtAdmin() {
   try {
@@ -118,7 +119,7 @@ export function AssessmentsPage() {
       ) : null}
 
       {modulesWithAssessments.length === 0 ? (
-        <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+        <div className="card p-6 text-sm text-slate-600">
           <div className="font-extrabold">{t("assessmentRunner.historyNone")}</div>
           <div className="mt-2 text-xs text-slate-500">{t("modules.empty.hint")}</div>
         </div>
@@ -140,10 +141,10 @@ export function AssessmentsPage() {
                 {/* Module title + description — same 2-line pattern as other pages */}
                 <div>
                   <div className="text-sm font-extrabold leading-snug line-clamp-2">
-                    {m.title}
+                    {normalizeAllCaps(m.title)}
                   </div>
                   <div className="mt-1 text-xs text-slate-600 line-clamp-2">
-                    {m.description || "—"}
+                    {normalizeAllCaps(m.description) || "—"}
                   </div>
                 </div>
 
@@ -163,7 +164,9 @@ export function AssessmentsPage() {
                           if (active || isAdmin) nav(`/modules/${m.id}/assessments/${a.id}`);
                         }}
                       >
-                        <span className="font-semibold truncate">{a.title || "Assessment"}</span>
+                        <span className="font-semibold truncate">
+                          {normalizeAllCaps(a.title || "Assessment")}
+                        </span>
                         <span className={`shrink-0 font-extrabold ${
                           !scored ? "text-slate-400" : passed ? "text-green-600" : "text-red-500"
                         }`}>

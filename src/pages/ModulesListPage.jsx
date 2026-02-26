@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { translateModuleList } from "../hooks/useModuleTranslation";
 import { PageHero } from "../components/PageHero";
+import { normalizeAllCaps } from "../lib/text";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -456,7 +457,7 @@ export function ModulesListPage({ pageType }) {
   // ─── render ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+      <div className="card p-6 text-sm text-slate-600">
         {t("status.loading")}
       </div>
     );
@@ -514,7 +515,7 @@ export function ModulesListPage({ pageType }) {
 
       {/* Empty state */}
       {translated.length === 0 ? (
-        <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+        <div className="card p-6 text-sm text-slate-600">
           <div className="font-extrabold">{t("modules.empty.title")}</div>
           <div className="mt-2 text-xs text-slate-500">{t("modules.empty.hint")}</div>
         </div>
@@ -555,12 +556,14 @@ export function ModulesListPage({ pageType }) {
                       </div>
                     )}
 
-                    <div className="text-sm font-extrabold leading-snug pr-6 line-clamp-2">{m.translatedTitle}</div>
+                    <div className="text-sm font-extrabold leading-snug pr-6 line-clamp-2">
+                      {normalizeAllCaps(m.translatedTitle)}
+                    </div>
                     <div
                       className="mt-1.5 text-xs text-slate-600 leading-relaxed line-clamp-2"
-                      title={m.translatedDescription || ""}
+                      title={normalizeAllCaps(m.translatedDescription || "")}
                     >
-                      {m.translatedDescription || "—"}
+                      {normalizeAllCaps(m.translatedDescription) || "—"}
                     </div>
                   </div>
                 ))}

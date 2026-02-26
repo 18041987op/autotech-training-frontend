@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
 import { BADGE_ANIMATIONS, BadgeShelf } from "../components/BadgeSystem";
+import { PageHero } from "../components/PageHero";
+import { normalizeAllCaps } from "../lib/text";
 
 function clampPct(n) {
   const v = Number(n || 0);
@@ -339,7 +341,7 @@ function TrackCar({ percent, momentum }) {
 
 function TinyStat({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2">
+    <div className="card px-3 py-2">
       <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-1 text-lg font-extrabold">{value}</div>
     </div>
@@ -449,8 +451,8 @@ export function MyProgressPage() {
       const firstAttemptScore = typeof p.first_attempt_score === "number" ? p.first_attempt_score : null;
       return {
         id: p.id,
-        title: p.modules?.title || "Module",
-        category: p.modules?.category || "",
+        title: normalizeAllCaps(p.modules?.title || "Module"),
+        category: normalizeAllCaps(p.modules?.category || ""),
         completion,
         score,
         firstAttemptScore,
@@ -460,7 +462,7 @@ export function MyProgressPage() {
 
   if (loading) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+      <div className="card p-6 text-sm text-slate-600">
         {t("status.loading")}
       </div>
     );
@@ -478,13 +480,16 @@ export function MyProgressPage() {
     <div className="space-y-5 overflow-x-hidden">
       <style>{BADGE_ANIMATIONS}</style>
 
-      {/* Summary (compact on mobile) */}
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-extrabold">{t("progress.title")}</h1>
-        <p className="mt-2 text-sm text-slate-600">{t("progress.subtitle")}</p>
+      <PageHero
+        eyebrow="AutoRx Academy"
+        title={t("progress.title")}
+        subtitle={t("progress.subtitle")}
+      />
 
+      {/* Summary (compact on mobile) */}
+      <div className="card p-6">
         {/* Compact stats row */}
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <TinyStat label={t("progress.summary.assignedModules")} value={summary.assigned} />
           <TinyStat label={t("progress.avgCompletion")} value={`${summary.avgCompletion}%`} />
           <TinyStat label={t("progress.passed")} value={summary.passed} />
@@ -511,7 +516,7 @@ export function MyProgressPage() {
       </div>
 
       {/* Achievements / Badge shelf */}
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      <div className="card p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h2 className="text-lg font-extrabold">{t("badges.title")}</h2>
@@ -525,7 +530,7 @@ export function MyProgressPage() {
       </div>
 
       {/* Detail (no per-module car) */}
-      <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      <div className="card p-6">
         <h2 className="text-lg font-extrabold">{t("progress.detail")}</h2>
 
         {detailRows.length === 0 ? (
@@ -533,7 +538,7 @@ export function MyProgressPage() {
         ) : (
           <div className="mt-4 space-y-3">
             {detailRows.map((r) => (
-              <div key={r.id} className="rounded-2xl border border-slate-200 px-4 py-4">
+              <div key={r.id} className="card p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <p className="font-extrabold truncate">{r.title}</p>

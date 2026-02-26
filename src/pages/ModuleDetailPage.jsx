@@ -5,6 +5,7 @@ import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { PageHero } from "../components/PageHero";
+import { normalizeAllCaps } from "../lib/text";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
 import { lessonRegistry, lessonRegistryByTitle } from "../lessons/registry";
 import { ToastContainer, useToast } from "../components/Toast";
@@ -430,7 +431,7 @@ export function ModuleDetailPage() {
 
   if (loading) {
     return (
-      <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
+      <div className="card p-6 text-sm text-slate-600">
         {t("status.loading")}
       </div>
     );
@@ -466,13 +467,13 @@ export function ModuleDetailPage() {
     <div className="space-y-5">
       <PageHero
         eyebrow="AutoRx Academy"
-        title={moduleTitle}
+        title={normalizeAllCaps(moduleTitle)}
         subtitle={
           <span
             className="block line-clamp-2"
-            title={moduleDescription || ""}
+            title={normalizeAllCaps(moduleDescription || "")}
           >
-            {moduleDescription || "—"}
+            {normalizeAllCaps(moduleDescription) || "—"}
           </span>
         }
         actions={
@@ -746,7 +747,9 @@ export function ModuleDetailPage() {
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <div className="font-extrabold truncate">{a.title || "Assessment"}</div>
+                        <div className="font-extrabold truncate">
+                          {normalizeAllCaps(a.title || "Assessment")}
+                        </div>
                         {!isActive ? (
                           <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold">
                             Inactive
@@ -825,7 +828,7 @@ export function ModuleDetailPage() {
                   <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <div className="min-w-0">
-                        <div className="font-extrabold truncate">{r.name}</div>
+                        <div className="font-extrabold truncate">{normalizeAllCaps(r.name)}</div>
                         {isAdmin ? <div className="text-xs text-slate-500">{r.mimeType}</div> : null}
                       </div>
 
@@ -871,7 +874,7 @@ export function ModuleDetailPage() {
             <div ref={fullTextRef} className="card p-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-extrabold">{active.name}</h3>
+                  <h3 className="text-lg font-extrabold">{normalizeAllCaps(active.name)}</h3>
                   {isAdmin ? <p className="text-xs text-slate-500">{active.mimeType}</p> : null}
                 </div>
 
