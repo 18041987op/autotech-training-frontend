@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
-import { Pencil, ArrowLeft } from "lucide-react";
+import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
@@ -464,60 +463,27 @@ export function ModuleDetailPage() {
 
   return (
     <div className="space-y-5">
-      {/* ── Back button (above hero) ─────────────────────────────────────────── */}
-      <button
-        type="button"
-        onClick={() => nav(-1)}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-brand-primary transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
-
-      {/* ── Header hero ──────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl"
-        style={{ background: "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)" }}
-      >
-        {/* Dot-grid texture */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-
+      {/* ── Header card ──────────────────────────────────────────────────────── */}
+      <div className="card module-header-gradient overflow-hidden">
         {/* Zone 1 — Title + description */}
-        <div className="relative z-10 px-6 pt-7 pb-4 sm:px-8">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* Brand pill */}
-              <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Module</span>
-              </div>
-              <h1 className="text-2xl font-extrabold text-white leading-tight sm:text-3xl">{moduleTitle}</h1>
-              <p
-                className="mt-1.5 text-sm text-white/70 leading-relaxed"
-                style={{
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-                title={moduleDescription || ""}
-              >
-                {moduleDescription || ""}
-              </p>
-            </div>
-            {/* Icon bubble */}
-            <div className="shrink-0 h-14 w-14 rounded-2xl grid place-items-center text-2xl shadow-lg select-none"
-              style={{ background: "rgba(247,148,29,0.85)" }}>
-              {module?.icon ? module.icon : "📖"}
-            </div>
-          </div>
+        <div className="px-6 pt-6 pb-4">
+          <h1 className="text-2xl font-extrabold text-slate-900 leading-tight">{moduleTitle}</h1>
+          <p
+            className="mt-1.5 text-sm text-slate-500 leading-relaxed"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+            title={moduleDescription || ""}
+          >
+            {moduleDescription || "—"}
+          </p>
         </div>
 
         {/* Zone 2 — AI Coach inline search bar */}
-        <div className="relative z-10 px-6 pb-10 sm:px-8">
+        <div className="px-6 pb-5">
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
             {/* Bot icon */}
             <span className="text-xl shrink-0" role="img" aria-label="AI Coach">🤖</span>
@@ -613,14 +579,7 @@ export function ModuleDetailPage() {
           )}
         </div>
 
-        {/* Wave */}
-        <div className="absolute bottom-0 left-0 right-0 leading-none">
-          <svg viewBox="0 0 1200 48" preserveAspectRatio="none" className="w-full h-8" aria-hidden="true">
-            <path d="M0,24 C150,48 350,0 600,24 C850,48 1050,0 1200,24 L1200,48 L0,48 Z"
-              style={{ fill: "var(--surface, #ffffff)" }} />
-          </svg>
-        </div>
-      </motion.div>
+      </div>
 
       {/* ── Tab navigation ───────────────────────────────────────────────── */}
       <div className="tab-nav-container flex gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm overflow-x-auto">

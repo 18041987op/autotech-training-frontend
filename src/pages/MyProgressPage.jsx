@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import { apiFetch } from "../lib/api";
 import { BADGE_ANIMATIONS, BadgeShelf } from "../components/BadgeSystem";
 
@@ -479,61 +478,13 @@ export function MyProgressPage() {
     <div className="space-y-5 overflow-x-hidden">
       <style>{BADGE_ANIMATIONS}</style>
 
-      {/* Page hero banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl"
-        style={{ background: "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)" }}
-      >
-        {/* Dot-grid texture */}
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-
-        <div className="relative z-10 px-6 pt-7 pb-14 sm:px-8">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* Brand pill */}
-              <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">My Progress</span>
-              </div>
-              {/* Title */}
-              <h1 className="text-2xl font-extrabold text-white sm:text-3xl">{t("progress.title")}</h1>
-              {/* Subtitle */}
-              <p className="mt-1 text-sm text-white/70">{t("progress.subtitle")}</p>
-              {/* Stat chips */}
-              <div className="mt-4 flex flex-wrap gap-2">
-                <div className="inline-flex items-center rounded-xl bg-white/15 backdrop-blur-sm px-3 py-1.5 text-sm font-bold text-white">
-                  📊 {summary.avgCompletion}% avg completion
-                </div>
-                <div className="inline-flex items-center rounded-xl bg-white/15 backdrop-blur-sm px-3 py-1.5 text-sm font-bold text-white">
-                  🏅 {badges.length} / 5 badges
-                </div>
-              </div>
-            </div>
-            {/* Emoji bubble */}
-            <div className="shrink-0 h-14 w-14 rounded-2xl grid place-items-center text-2xl shadow-lg select-none"
-              style={{ background: "rgba(247,148,29,0.85)" }}>
-              📈
-            </div>
-          </div>
-        </div>
-
-        {/* Wave */}
-        <div className="absolute bottom-0 left-0 right-0 leading-none">
-          <svg viewBox="0 0 1200 48" preserveAspectRatio="none" className="w-full h-8" aria-hidden="true">
-            <path d="M0,24 C150,48 350,0 600,24 C850,48 1050,0 1200,24 L1200,48 L0,48 Z"
-              style={{ fill: "var(--surface, #ffffff)" }} />
-          </svg>
-        </div>
-      </motion.div>
-
       {/* Summary (compact on mobile) */}
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
+        <h1 className="text-2xl font-extrabold">{t("progress.title")}</h1>
+        <p className="mt-2 text-sm text-slate-600">{t("progress.subtitle")}</p>
 
         {/* Compact stats row */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <TinyStat label={t("progress.summary.assignedModules")} value={summary.assigned} />
           <TinyStat label={t("progress.avgCompletion")} value={`${summary.avgCompletion}%`} />
           <TinyStat label={t("progress.passed")} value={summary.passed} />
