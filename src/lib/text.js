@@ -12,3 +12,15 @@ export function normalizeAllCaps(input) {
   const rest = trimmed.slice(1).toLowerCase();
   return `${first}${rest}`;
 }
+
+export function normalizeAllCapsText(input) {
+  if (input == null) return input;
+  const str = String(input);
+  const hasLetters = /[A-Za-z]/.test(str);
+  if (!hasLetters) return str;
+  if (str !== str.toUpperCase()) return str;
+
+  const lower = str.toLowerCase();
+  // Capitalize first letter of each sentence for readability.
+  return lower.replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => `${p1}${p2.toUpperCase()}`);
+}

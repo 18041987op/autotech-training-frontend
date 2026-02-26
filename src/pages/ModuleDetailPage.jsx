@@ -5,7 +5,7 @@ import { Pencil } from "lucide-react";
 import { apiFetch } from "../lib/api";
 import { AICoachWidget } from "../components/AICoachWidget";
 import { PageHero } from "../components/PageHero";
-import { normalizeAllCaps } from "../lib/text";
+import { normalizeAllCaps, normalizeAllCapsText } from "../lib/text";
 import { useModuleTranslation } from "../hooks/useModuleTranslation";
 import { lessonRegistry, lessonRegistryByTitle } from "../lessons/registry";
 import { ToastContainer, useToast } from "../components/Toast";
@@ -828,7 +828,7 @@ export function ModuleDetailPage() {
                   <div key={r.id} className="rounded-2xl border border-slate-200 bg-white p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <div className="min-w-0">
-                        <div className="font-extrabold truncate">{normalizeAllCaps(r.name)}</div>
+                    <div className="font-extrabold truncate">{normalizeAllCaps(r.name)}</div>
                         {isAdmin ? <div className="text-xs text-slate-500">{r.mimeType}</div> : null}
                       </div>
 
@@ -858,7 +858,7 @@ export function ModuleDetailPage() {
 
                     <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
                       {r.hasText ? (
-                        r.previewText
+                        normalizeAllCapsText(r.previewText)
                       ) : (
                         <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
                       )}
@@ -884,7 +884,7 @@ export function ModuleDetailPage() {
               </div>
 
               <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-sm text-slate-800">
-                {active.text || "—"}
+                {normalizeAllCapsText(active.text || "—")}
               </pre>
             </div>
           ) : null}
