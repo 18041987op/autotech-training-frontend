@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,6 +12,7 @@ import {
   Shield,
   LogOut,
   Menu,
+  MoreHorizontal,
   Wrench,
   X,
   ExternalLink
@@ -271,6 +272,20 @@ function SideItem({ to, label, icon: Icon, end }) {
 // ─── TopBar ──────────────────────────────────────────────────────────────────
 function TopBar({ onSignOut, onOpenMobileMenu }) {
   const { t } = useTranslation();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef(null);
+
+  // Close ⋯ dropdown on outside click
+  useEffect(() => {
+    if (!moreOpen) return;
+    const handler = (e) => {
+      if (moreRef.current && !moreRef.current.contains(e.target)) {
+        setMoreOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [moreOpen]);
 
   return (
     <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -296,19 +311,40 @@ function TopBar({ onSignOut, onOpenMobileMenu }) {
           </div>
         </div>
 
-        {/* Right: same icons on both desktop and mobile */}
+        {/* Right: Bell always visible + ⋯ for DarkMode & LogOut */}
         <div className="flex items-center gap-1.5">
           <NotificationCenter />
-          <DarkModeToggle />
-          <button
-            onClick={onSignOut}
-            className="btn-outline-sm"
-            title={t("auth.signOut")}
-            aria-label={t("auth.signOut")}
-            type="button"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+
+          <div className="relative" ref={moreRef}>
+            <button
+              type="button"
+              onClick={() => setMoreOpen((o) => !o)}
+              className="btn-outline-sm px-2"
+              aria-label="More options"
+            >
+              <MoreHorizontal className="h-4 w-4" />
+            </button>
+
+            {moreOpen && (
+              <div className="absolute right-0 top-full mt-2 rounded-2xl border border-slate-200 bg-white shadow-lg z-30 min-w-[160px] overflow-hidden">
+                {/* Dark mode toggle row */}
+                <div className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-slate-50 transition-colors">
+                  <span className="text-sm font-medium text-slate-700">{t("settings.darkMode", "Dark mode")}</span>
+                  <DarkModeToggle />
+                </div>
+                <div className="border-t border-slate-100" />
+                {/* Sign out row */}
+                <button
+                  onClick={() => { setMoreOpen(false); onSignOut(); }}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  type="button"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t("auth.signOut")}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
       </div>

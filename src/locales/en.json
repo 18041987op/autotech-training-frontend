@@ -1199,6 +1199,11 @@
       }
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You're all caught up!",
+    "clearAll": "Clear all"
+  },
   "adminModules": {
     "title": "Modules",
     "subtitle": "Create and edit modules used in Training, Onboarding, Culture, and Assessments.",

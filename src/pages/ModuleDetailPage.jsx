@@ -579,47 +579,6 @@ export function ModuleDetailPage() {
           )}
         </div>
 
-        {/* Zone 3 — Admin toolbar (only if isAdmin) */}
-        {isAdmin && (
-          <div className="border-t border-slate-200 bg-slate-50 px-6 py-3">
-            <div className="flex items-center justify-between gap-3">
-              {/* LEFT: Edit */}
-              <button
-                className="btn-outline-sm"
-                onClick={() => setEditOpen(true)}
-                type="button"
-              >
-                <Pencil className="h-3 w-3" />
-                {t("actions.edit", "Edit")}
-              </button>
-
-              {/* CENTER: Generate / Append assessment */}
-              <button
-                className={`flex items-center gap-1.5 rounded-xl px-4 py-1.5 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all ${appendStop ? "bg-slate-400" : "bg-brand-primary hover:bg-brand-primaryHover"}`}
-                onClick={runAdaptiveAssessmentAction}
-                disabled={adaptiveButtonDisabled}
-                type="button"
-                title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
-              >
-                <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
-                {hasActiveAssessment
-                  ? (appendLoading ? "+10…" : "+10 Questions")
-                  : (genLoading ? "Generating…" : "Generate")}
-              </button>
-
-              {/* RIGHT: Sync */}
-              <button
-                className="btn-outline-sm disabled:opacity-50"
-                onClick={runSync}
-                disabled={syncing}
-                type="button"
-              >
-                <span>{syncing ? "⏳" : "↻"}</span>
-                {syncing ? "Syncing…" : "Sync Drive"}
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Tab navigation ───────────────────────────────────────────────── */}
@@ -922,6 +881,51 @@ export function ModuleDetailPage() {
           ) : null}
         </>
       )} {/* end activeTab === "overview" */}
+
+      {/* ── Admin tools card (below Resources, visible on any tab) ─────────── */}
+      {isAdmin && (
+        <div className="card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
+            Admin tools
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {/* Edit module */}
+            <button
+              className="btn-outline-sm"
+              onClick={() => setEditOpen(true)}
+              type="button"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              {t("actions.edit", "Edit")}
+            </button>
+
+            {/* Sync Drive */}
+            <button
+              className="btn-outline-sm disabled:opacity-50"
+              onClick={runSync}
+              disabled={syncing}
+              type="button"
+            >
+              <span className="text-sm">{syncing ? "⏳" : "↻"}</span>
+              {syncing ? "Syncing…" : "Sync Drive"}
+            </button>
+
+            {/* Generate / Append assessment */}
+            <button
+              className={`btn-sm flex items-center gap-1.5 font-extrabold text-white disabled:opacity-50 transition-all ${appendStop ? "bg-slate-400" : "bg-brand-primary hover:bg-brand-primaryHover"}`}
+              onClick={runAdaptiveAssessmentAction}
+              disabled={adaptiveButtonDisabled}
+              type="button"
+              title={appendStop ? "Bank stopped (cap reached or material exhausted)." : ""}
+            >
+              <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
+              {hasActiveAssessment
+                ? (appendLoading ? "+10…" : "+10 Questions")
+                : (genLoading ? "Generating…" : "Generate")}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Admin: Inline Edit Modal */}
       {editOpen && module ? (
