@@ -882,16 +882,50 @@ export function ModuleDetailPage() {
               </div>
 
               {(() => {
-                const displayText = (isEs && active.textEs) ? active.textEs : (active.text || "");
-                const paragraphs = displayText.split(/\n+/).filter((p) => p.trim().length > 0);
+                const rawText = (isEs && active.textEs) ? active.textEs : (active.text || "");
+
+                // Clean up extracted text artifacts
+                const cleaned = rawText
+                  .replace(/={3,}/g, "")           // remove ===...=== separator lines
+                  .replace(/_{3,}/g, "")           // remove ___...___
+                  .replace(/\*{3,}/g, "")          // remove ***...***
+                  .replace(/-{4,}/g, "")           // remove ----...---- (but keep list dashes)
+                  .replace(/\r\n/g, "\n")          // normalize line endings
+                  .replace(/[ \t]+\n/g, "\n")      // trim trailing spaces per line
+                  .replace(/\n{3,}/g, "\n\n");     // collapse 3+ blank lines to 2
+
+                // Split into logical blocks on double newlines
+                const blocks = cleaned.split(/\n{2,}/).map((block) => {
+                  // Within each block, join soft-wrapped lines (single \n) into one paragraph
+                  return block
+                    .split("\n")
+                    .map((l) => l.trim())
+                    .filter(Boolean)
+                    .join(" ");
+                }).filter((b) => b.trim().length > 0);
+
+                // Detect if a block looks like a heading (short, no period at end, possibly all-caps)
+                const isHeading = (text) =>
+                  text.length < 80 && !text.endsWith(".") && !text.endsWith(",");
+
                 return (
-                  <div className="mt-4 rounded-2xl bg-slate-50 p-4 space-y-3">
-                    {paragraphs.length > 0 ? (
-                      paragraphs.map((p, i) => (
-                        <p key={i} className="text-sm text-slate-800 leading-relaxed">
-                          {normalizeAllCapsText(p)}
-                        </p>
-                      ))
+                  <div className="mt-4 rounded-2xl bg-slate-50 p-4 sm:p-6 space-y-4 max-w-prose mx-auto w-full">
+                    {blocks.length > 0 ? (
+                      blocks.map((block, i) => {
+                        const normalized = normalizeAllCapsText(block);
+                        if (isHeading(block) && i > 0) {
+                          return (
+                            <p key={i} className="text-sm font-bold text-slate-700 mt-2">
+                              {normalized}
+                            </p>
+                          );
+                        }
+                        return (
+                          <p key={i} className="text-sm text-slate-800 leading-relaxed">
+                            {normalized}
+                          </p>
+                        );
+                      })
                     ) : (
                       <p className="text-sm text-slate-500">—</p>
                     )}
