@@ -956,19 +956,24 @@ export function ModuleDetailPage() {
                   safePage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE
                 );
 
-                // ── Page-flip helpers ────────────────────────────────────────
+                // ── Book-page flip helpers ───────────────────────────────────
+                // angle: 0 = flat, 180 = fully turned (we animate 0→180 for next, 180→0 for prev)
+                // We use a split-page technique: the page is divided at the spine (center).
+                // "next": right half of current page folds toward us (rotateY 0→-180, origin=left of that half)
+                //         revealing right half of next page behind it
+                // "prev": left half of current page folds toward us (rotateY 0→180, origin=right of that half)
+                //         revealing left half of prev page behind it
                 const isFlipping = flipPhase !== "idle";
 
-                // Animate angle smoothly to a target, then call onDone
                 const animateTo = (fromAngle, toAngle, duration, onDone) => {
                   if (flipRafRef.current) cancelAnimationFrame(flipRafRef.current);
                   const start = performance.now();
                   const range = toAngle - fromAngle;
-                  const ease = (t) => t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // ease-in-out quad
+                  // ease-in-out cubic for natural page feel
+                  const ease = (t) => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
                   const step = (now) => {
                     const raw = Math.min((now - start) / duration, 1);
-                    const t   = ease(raw);
-                    setFlipAngle(fromAngle + range * t);
+                    setFlipAngle(fromAngle + range * ease(raw));
                     if (raw < 1) {
                       flipRafRef.current = requestAnimationFrame(step);
                     } else {
@@ -979,35 +984,28 @@ export function ModuleDetailPage() {
                   flipRafRef.current = requestAnimationFrame(step);
                 };
 
-                // Commit the flip: complete to 90° (page exits), swap content, return from 90°
-                const commitFlip = (currentAngle, newPage, dir) => {
+                const commitFlip = (startAngle, newPage) => {
                   setFlipPhase("settling");
                   setFlipNextPage(newPage);
-                  animateTo(currentAngle, 90, (90 - currentAngle) / 90 * 280, () => {
-                    // Content swap — at 90° the page is edge-on, invisible
+                  // Animate to 180° (page fully turned), then swap and reset
+                  animateTo(startAngle, 180, (180 - startAngle) / 180 * 420, () => {
                     setReaderPage(newPage);
                     setFlipNextPage(null);
-                    setFlipAngle(90);
-                    // Now animate the new page unfolding from 90° → 0°
-                    animateTo(90, 0, 280, () => {
-                      setFlipPhase("idle");
-                      setFlipDir("next");
-                      if (fullTextRef.current)
-                        fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-                    });
+                    setFlipAngle(0);
+                    setFlipPhase("idle");
+                    if (fullTextRef.current)
+                      fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
                   });
                 };
 
-                // Spring back to 0°
                 const springBack = (currentAngle) => {
                   setFlipPhase("settling");
-                  animateTo(currentAngle, 0, currentAngle / 90 * 220, () => {
+                  animateTo(currentAngle, 0, (currentAngle / 180) * 300, () => {
                     setFlipPhase("idle");
                     setFlipNextPage(null);
                   });
                 };
 
-                // Programmatic navigation (buttons / dots)
                 const goTo = (p) => {
                   if (isFlipping) return;
                   const dir = p > safePage ? "next" : "prev";
@@ -1015,7 +1013,7 @@ export function ModuleDetailPage() {
                   setFlipNextPage(p);
                   setFlipPhase("settling");
                   setFlipAngle(0);
-                  commitFlip(0, p, dir);
+                  commitFlip(0, p);
                 };
 
                 // ── Touch handlers ───────────────────────────────────────────
@@ -1027,10 +1025,8 @@ export function ModuleDetailPage() {
                 const onTouchMove = (e) => {
                   if (flipTouchStartX.current === null || flipPhase === "settling") return;
                   const touchDx = e.touches[0].clientX - flipTouchStartX.current;
-                  const w   = flipContainerRef.current?.offsetWidth || 320;
                   const dir = touchDx < 0 ? "next" : "prev";
 
-                  // Resist at edges
                   if (dir === "next" && safePage === totalPages - 1) return;
                   if (dir === "prev" && safePage === 0) return;
 
@@ -1038,37 +1034,32 @@ export function ModuleDetailPage() {
                     setFlipDir(dir);
                     setFlipPhase("dragging");
                   }
-                  // Map drag distance → 0–90° angle (max angle at half container width)
-                  const drag    = Math.abs(touchDx);
-                  const angle   = Math.min(drag / (w * 0.5) * 90, 88);
+                  // Map drag distance → 0–180°
+                  const w = flipContainerRef.current?.offsetWidth || 320;
+                  const angle = Math.min(Math.abs(touchDx) / (w * 0.6) * 180, 175);
                   setFlipAngle(angle);
                 };
 
-                const onTouchEnd = (e) => {
+                const onTouchEnd = () => {
                   if (flipTouchStartX.current === null) return;
                   flipTouchStartX.current = null;
                   if (flipPhase !== "dragging") return;
-
-                  const threshold = 35; // degrees — past this → commit
-                  if (flipAngle >= threshold) {
+                  if (flipAngle >= 60) {
                     const newPage = flipDir === "next" ? safePage + 1 : safePage - 1;
-                    commitFlip(flipAngle, newPage, flipDir);
+                    commitFlip(flipAngle, newPage);
                   } else {
                     springBack(flipAngle);
                   }
                 };
 
-                // ── Render helpers ───────────────────────────────────────────
-                // The "flap" rotates around the trailing edge:
-                //   next → origin = right edge (fold left)
-                //   prev → origin = left edge  (fold right)
-                const flapOrigin  = flipDir === "next" ? "right center" : "left center";
-                const flapRotateY = flipDir === "next" ? -flipAngle : flipAngle;
-                // Show corner peel while dragging
-                const showPeelNext = (flipPhase === "dragging" && flipDir === "next") || (flipPhase === "settling" && flipDir === "next" && flipAngle > 5);
-                const showPeelPrev = (flipPhase === "dragging" && flipDir === "prev") || (flipPhase === "settling" && flipDir === "prev" && flipAngle > 5);
+                // ── Render: split-page book flip ─────────────────────────────
+                // angle goes 0→180. At 90° the fold is edge-on.
+                // Left half: stays put (static, clipped at center)
+                // Right half of CURRENT page: rotates around left edge of that half (= center of page)
+                //   rotateY: 0→-180 (folds backward for "next")
+                // Right half of NEXT page: sits behind, revealed as flap sweeps over it
+                //   it's already at -180°, but we show it via backface of the fold (or just absolute under)
 
-                // Blocks for the "next" page (shown beneath the flap as it lifts)
                 const nextPageBlocks = flipNextPage !== null
                   ? allBlocks.slice(flipNextPage * BLOCKS_PER_PAGE, flipNextPage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE)
                   : [];
@@ -1081,49 +1072,63 @@ export function ModuleDetailPage() {
                       : <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">{norm}</p>;
                   }) : <p className="text-sm text-slate-500">—</p>;
 
+                // For "next": fold right half of current page to the left
+                // For "prev": fold left half of current page to the right
+                // foldAngle: how far along 0→180 the fold is
+                const foldAngle = flipAngle; // 0–180
+                // The half that lifts: its rotateY
+                // next: starts 0°, goes to -180° (folds back left)
+                // prev: starts 0°, goes to  180° (folds back right)
+                const flapRotate = flipDir === "next" ? -foldAngle : foldAngle;
+                // Fold origin is at the spine (center of book)
+                // Shadow intensity on the fold
+                const shadowStrength = Math.sin((foldAngle / 180) * Math.PI); // peaks at 90°
+                const flapShadow = shadowStrength > 0.05
+                  ? `inset ${flipDir === "next" ? "-" : ""}${Math.round(shadowStrength * 20)}px 0 ${Math.round(shadowStrength * 30)}px rgba(0,0,0,${(shadowStrength * 0.35).toFixed(2)})`
+                  : "none";
+                // Static half shadow (the non-folding half gets darker as flap passes over it)
+                const staticShadow = shadowStrength > 0.05
+                  ? `inset ${flipDir === "next" ? "" : "-"}${Math.round(shadowStrength * 12)}px 0 ${Math.round(shadowStrength * 20)}px rgba(0,0,0,${(shadowStrength * 0.15).toFixed(2)})`
+                  : "none";
+
+                // Corner peel indicator
+                const showPeelNext = isFlipping && flipDir === "next" && foldAngle > 3;
+                const showPeelPrev = isFlipping && flipDir === "prev" && foldAngle > 3;
+
                 return (
                   <div className="flex flex-col gap-6">
-                    {/* Page-flip CSS */}
+                    {/* Book-flip CSS */}
                     <style>{`
-                      .flip-book {
-                        perspective: 1200px;
-                        touch-action: pan-y;
-                        /* stays in flow — no fixed height */
-                      }
-                      .flip-stage {
-                        position: relative;
-                      }
-                      /* The flap sits IN the flow and rotates. Clip the book container
-                         so a rotating flap doesn't bleed over sibling elements. */
-                      .flip-book-clip {
-                        overflow: hidden;
-                        border-radius: 1rem;
-                      }
-                      .flip-flap {
-                        position: relative;           /* in flow — pushes siblings down */
-                        will-change: transform;
+                      .book-page { position: relative; background: white; border-radius: 1rem; }
+                      .book-half {
+                        position: absolute; top: 0; bottom: 0; width: 50%; overflow: hidden;
                         background: white;
-                        border-radius: 1rem;
-                        backface-visibility: hidden;
                       }
-                      /* Under-page: absolute, clipped inside flip-stage */
-                      .flip-under {
-                        position: absolute; inset: 0;
-                        border-radius: 1rem;
-                        background: white;
-                        pointer-events: none;
-                        overflow: hidden;
+                      .book-half-left  { left: 0;  border-radius: 1rem 0 0 1rem; }
+                      .book-half-right { right: 0; border-radius: 0 1rem 1rem 0; }
+                      /* inner div shifts content so both halves show the full page text */
+                      .book-half-inner { position: absolute; top: 0; left: 0; right: 0; }
+                      .book-half-left  .book-half-inner { width: 200%; }
+                      .book-half-right .book-half-inner { width: 200%; right: auto; }
+                      .book-flap {
+                        position: absolute; top: 0; bottom: 0; width: 50%;
+                        will-change: transform; background: white; overflow: hidden;
+                        transform-style: preserve-3d;
                       }
+                      .book-flap-next { right: 0; border-radius: 0 1rem 1rem 0; transform-origin: left center; }
+                      .book-flap-prev { left: 0;  border-radius: 1rem 0 0 1rem; transform-origin: right center; }
+                      .book-flap-inner { position: absolute; top: 0; bottom: 0; }
+                      .book-flap-next .book-flap-inner { right: 0; left: -100%; }
+                      .book-flap-prev .book-flap-inner { left: 0; right: -100%; }
                       .corner-peel-r, .corner-peel-l {
-                        position: absolute; bottom: 0;
+                        position: absolute; bottom: 0; z-index: 20;
                         width: 0; height: 0; border-style: solid;
-                        opacity: 0; transition: opacity 0.12s ease, border-width 0.12s ease;
+                        opacity: 0; transition: opacity 0.1s ease;
                         pointer-events: none;
-                        z-index: 10;
                       }
-                      .corner-peel-r { right: 0; border-color: transparent transparent #475569 transparent; }
-                      .corner-peel-l { left: 0;  border-color: transparent transparent transparent #475569; }
-                      .corner-peel-r.on, .corner-peel-l.on { opacity: 1; border-width: 0 0 52px 52px; }
+                      .corner-peel-r { right: 0; border-color: transparent transparent #475569 transparent; border-width: 0 0 48px 48px; }
+                      .corner-peel-l { left: 0;  border-color: transparent transparent transparent #475569; border-width: 0 0 48px 48px; }
+                      .corner-peel-r.on, .corner-peel-l.on { opacity: 1; }
                     `}</style>
 
                     {/* Progress bar */}
@@ -1139,33 +1144,66 @@ export function ModuleDetailPage() {
                       </span>
                     </div>
 
-                    {/* Book flip stage — clipped so rotating flap stays inside */}
+                    {/* Book page — split-half flip */}
                     <div
-                      className="flip-book flip-book-clip flip-stage"
                       ref={flipContainerRef}
+                      className="book-page select-none"
+                      style={{ perspective: "1400px", touchAction: "pan-y" }}
                       onTouchStart={onTouchStart}
                       onTouchMove={onTouchMove}
                       onTouchEnd={onTouchEnd}
                     >
-                      {/* Under-page: next content, shown behind the lifting flap */}
-                      {flipNextPage !== null && (
-                        <div className="flip-under p-5 sm:p-6 space-y-5">
-                          {renderBlocks(nextPageBlocks, flipNextPage)}
-                        </div>
-                      )}
+                      {/* Invisible full-page content — sets the container height */}
+                      <div className="invisible p-5 sm:p-6 space-y-5 pointer-events-none" aria-hidden>
+                        {renderBlocks(pageBlocks, safePage)}
+                      </div>
 
-                      {/* Flap: current page, rotates around trailing edge */}
+                      {/* Static left half — current page left side (always visible) */}
                       <div
-                        className="flip-flap p-5 sm:p-6 space-y-5 select-none"
+                        className="book-half book-half-left"
+                        style={{ boxShadow: flipDir === "next" ? staticShadow : "none" }}
+                      >
+                        <div className="book-half-inner p-5 sm:p-6 space-y-5">
+                          {renderBlocks(pageBlocks, safePage)}
+                        </div>
+                      </div>
+
+                      {/* Static right half — shows NEXT page right side (revealed as flap sweeps left) */}
+                      <div
+                        className="book-half book-half-right"
+                        style={{ boxShadow: flipDir === "prev" ? staticShadow : "none" }}
+                      >
+                        <div
+                          className="book-half-inner p-5 sm:p-6 space-y-5"
+                          style={{ paddingLeft: "calc(50% + 1.25rem)" }}
+                        >
+                          {isFlipping
+                            ? renderBlocks(nextPageBlocks, flipNextPage)
+                            : renderBlocks(pageBlocks, safePage)}
+                        </div>
+                      </div>
+
+                      {/* Folding flap — the half that lifts and curls */}
+                      <div
+                        className={`book-flap ${flipDir === "next" ? "book-flap-next" : "book-flap-prev"}`}
                         style={{
-                          transformOrigin: flapOrigin,
-                          transform: `perspective(1200px) rotateY(${flapRotateY}deg)`,
-                          boxShadow: flipAngle > 2
-                            ? `${flipDir === "next" ? "-" : ""}${Math.round(flipAngle / 90 * 16)}px 0px ${Math.round(flipAngle / 90 * 22)}px rgba(0,0,0,${(flipAngle / 90 * 0.25).toFixed(2)})`
-                            : "none",
+                          transform: `rotateY(${flapRotate}deg)`,
+                          boxShadow: flapShadow,
+                          // Hide once past 90° — backface would show mirrored text
+                          opacity: foldAngle > 90 ? 0 : 1,
+                          pointerEvents: "none",
                         }}
                       >
-                        {renderBlocks(pageBlocks, safePage)}
+                        <div
+                          className="book-flap-inner p-5 sm:p-6 space-y-5"
+                          style={
+                            flipDir === "next"
+                              ? { right: 0, left: "-100%", paddingLeft: "calc(50% + 1.25rem)" }
+                              : { left: 0, right: "-100%" }
+                          }
+                        >
+                          {renderBlocks(pageBlocks, safePage)}
+                        </div>
                       </div>
 
                       {/* Corner peels */}
