@@ -186,11 +186,14 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
   const [readerPage, setReaderPage] = useState(0);
-  // Swipe state — raw pixel offset while dragging; settling = CSS transition is running
-  const [swipeDx, setSwipeDx]         = useState(0);
-  const [swipeSettling, setSwipeSettling] = useState(false);
-  const swipeTouchStartX  = useRef(null);
-  const swipeContainerRef = useRef(null);
+  // Page-flip state
+  const [flipAngle, setFlipAngle]       = useState(0);   // 0–180 degrees
+  const [flipDir, setFlipDir]           = useState("next"); // "next"|"prev"
+  const [flipPhase, setFlipPhase]       = useState("idle"); // "idle"|"dragging"|"settling"|"done"
+  const [flipNextPage, setFlipNextPage] = useState(null);
+  const flipTouchStartX = useRef(null);
+  const flipContainerRef = useRef(null);
+  const flipRafRef       = useRef(null);
 
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
@@ -411,8 +414,9 @@ export function ModuleDetailPage() {
       const d = await apiFetch(`/api/modules/${id}/resources/${rid}`);
       setActive(d.resource);
       setReaderPage(0);
-      setSwipeDx(0);
-      setSwipeSettling(false);
+      setFlipAngle(0);
+      setFlipPhase("idle");
+      setFlipNextPage(null);
     } catch (e) {
       alert(e.message || "Failed to open resource");
     }
@@ -952,87 +956,160 @@ export function ModuleDetailPage() {
                   safePage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE
                 );
 
-                // ── Swipe & programmatic navigation ─────────────────────────
-                // settleToPage: animates the strip to targetX then updates page
-                const settleToPage = (targetX, newPage) => {
-                  setSwipeDx(targetX);            // snap to exit position instantly
-                  setSwipeSettling(true);          // enable CSS transition
-                  // After transition completes (300ms), flip page and reset strip
-                  setTimeout(() => {
+                // ── Page-flip helpers ────────────────────────────────────────
+                const isFlipping = flipPhase !== "idle";
+
+                // Animate angle smoothly to a target, then call onDone
+                const animateTo = (fromAngle, toAngle, duration, onDone) => {
+                  if (flipRafRef.current) cancelAnimationFrame(flipRafRef.current);
+                  const start = performance.now();
+                  const range = toAngle - fromAngle;
+                  const ease = (t) => t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // ease-in-out quad
+                  const step = (now) => {
+                    const raw = Math.min((now - start) / duration, 1);
+                    const t   = ease(raw);
+                    setFlipAngle(fromAngle + range * t);
+                    if (raw < 1) {
+                      flipRafRef.current = requestAnimationFrame(step);
+                    } else {
+                      flipRafRef.current = null;
+                      onDone && onDone();
+                    }
+                  };
+                  flipRafRef.current = requestAnimationFrame(step);
+                };
+
+                // Commit the flip: complete to 90° (page exits), swap content, return from 90°
+                const commitFlip = (currentAngle, newPage, dir) => {
+                  setFlipPhase("settling");
+                  setFlipNextPage(newPage);
+                  animateTo(currentAngle, 90, (90 - currentAngle) / 90 * 280, () => {
+                    // Content swap — at 90° the page is edge-on, invisible
                     setReaderPage(newPage);
-                    setSwipeDx(0);
-                    setSwipeSettling(false);
-                    if (fullTextRef.current)
-                      fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }, 300);
+                    setFlipNextPage(null);
+                    setFlipAngle(90);
+                    // Now animate the new page unfolding from 90° → 0°
+                    animateTo(90, 0, 280, () => {
+                      setFlipPhase("idle");
+                      setFlipDir("next");
+                      if (fullTextRef.current)
+                        fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                    });
+                  });
                 };
 
+                // Spring back to 0°
+                const springBack = (currentAngle) => {
+                  setFlipPhase("settling");
+                  animateTo(currentAngle, 0, currentAngle / 90 * 220, () => {
+                    setFlipPhase("idle");
+                    setFlipNextPage(null);
+                  });
+                };
+
+                // Programmatic navigation (buttons / dots)
                 const goTo = (p) => {
-                  if (swipeSettling) return;
-                  const w = swipeContainerRef.current?.offsetWidth || 320;
-                  const dir = p > safePage ? -1 : 1;  // -1 = slide left (next), 1 = slide right (prev)
-                  settleToPage(dir * w, p);
+                  if (isFlipping) return;
+                  const dir = p > safePage ? "next" : "prev";
+                  setFlipDir(dir);
+                  setFlipNextPage(p);
+                  setFlipPhase("settling");
+                  setFlipAngle(0);
+                  commitFlip(0, p, dir);
                 };
 
-                // Touch handlers — move strip in real time with the finger
+                // ── Touch handlers ───────────────────────────────────────────
                 const onTouchStart = (e) => {
-                  if (swipeSettling) return;
-                  swipeTouchStartX.current = e.touches[0].clientX;
-                  setSwipeDx(0);
+                  if (isFlipping) return;
+                  flipTouchStartX.current = e.touches[0].clientX;
                 };
 
                 const onTouchMove = (e) => {
-                  if (swipeTouchStartX.current === null || swipeSettling) return;
-                  let dx = e.touches[0].clientX - swipeTouchStartX.current;
-                  // Resist at edges: can't swipe past first/last page
-                  if (dx > 0 && safePage === 0) dx = dx * 0.2;
-                  if (dx < 0 && safePage === totalPages - 1) dx = dx * 0.2;
-                  setSwipeDx(dx);
+                  if (flipTouchStartX.current === null || flipPhase === "settling") return;
+                  const touchDx = e.touches[0].clientX - flipTouchStartX.current;
+                  const w   = flipContainerRef.current?.offsetWidth || 320;
+                  const dir = touchDx < 0 ? "next" : "prev";
+
+                  // Resist at edges
+                  if (dir === "next" && safePage === totalPages - 1) return;
+                  if (dir === "prev" && safePage === 0) return;
+
+                  if (flipPhase === "idle") {
+                    setFlipDir(dir);
+                    setFlipPhase("dragging");
+                  }
+                  // Map drag distance → 0–90° angle (max angle at half container width)
+                  const drag    = Math.abs(touchDx);
+                  const angle   = Math.min(drag / (w * 0.5) * 90, 88);
+                  setFlipAngle(angle);
                 };
 
                 const onTouchEnd = (e) => {
-                  if (swipeTouchStartX.current === null || swipeSettling) return;
-                  const dx = e.changedTouches[0].clientX - swipeTouchStartX.current;
-                  swipeTouchStartX.current = null;
-                  const w = swipeContainerRef.current?.offsetWidth || 320;
-                  const threshold = w * 0.3;   // 30% of container width to commit
-                  if (dx < -threshold && safePage < totalPages - 1) {
-                    settleToPage(-w, safePage + 1);
-                  } else if (dx > threshold && safePage > 0) {
-                    settleToPage(w, safePage - 1);
+                  if (flipTouchStartX.current === null) return;
+                  flipTouchStartX.current = null;
+                  if (flipPhase !== "dragging") return;
+
+                  const threshold = 35; // degrees — past this → commit
+                  if (flipAngle >= threshold) {
+                    const newPage = flipDir === "next" ? safePage + 1 : safePage - 1;
+                    commitFlip(flipAngle, newPage, flipDir);
                   } else {
-                    // Spring back
-                    setSwipeSettling(true);
-                    setSwipeDx(0);
-                    setTimeout(() => setSwipeSettling(false), 300);
+                    springBack(flipAngle);
                   }
                 };
 
-                // Corner peel visibility: show when actively dragging past 20px
-                const showPeelRight = swipeDx < -20 && safePage < totalPages - 1;
-                const showPeelLeft  = swipeDx >  20 && safePage > 0;
+                // ── Render helpers ───────────────────────────────────────────
+                // The "flap" rotates around the trailing edge:
+                //   next → origin = right edge (fold left)
+                //   prev → origin = left edge  (fold right)
+                const flapOrigin  = flipDir === "next" ? "right center" : "left center";
+                const flapRotateY = flipDir === "next" ? -flipAngle : flipAngle;
+                // Show corner peel while dragging
+                const showPeelNext = (flipPhase === "dragging" && flipDir === "next") || (flipPhase === "settling" && flipDir === "next" && flipAngle > 5);
+                const showPeelPrev = (flipPhase === "dragging" && flipDir === "prev") || (flipPhase === "settling" && flipDir === "prev" && flipAngle > 5);
+
+                // Blocks for the "next" page (shown beneath the flap as it lifts)
+                const nextPageBlocks = flipNextPage !== null
+                  ? allBlocks.slice(flipNextPage * BLOCKS_PER_PAGE, flipNextPage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE)
+                  : [];
+
+                const renderBlocks = (blocks, pageIdx) =>
+                  blocks.length > 0 ? blocks.map((block, i) => {
+                    const norm = normalizeAllCapsText(block);
+                    return isHeading(block) && !(pageIdx === 0 && i === 0)
+                      ? <p key={i} className="text-base sm:text-lg font-bold text-slate-700 pt-2">{norm}</p>
+                      : <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">{norm}</p>;
+                  }) : <p className="text-sm text-slate-500">—</p>;
 
                 return (
                   <div className="flex flex-col gap-6">
-                    {/* Swipe strip CSS */}
+                    {/* Page-flip CSS */}
                     <style>{`
-                      .swipe-strip {
+                      .flip-book { perspective: 1200px; touch-action: pan-y; }
+                      .flip-flap {
+                        position: absolute; inset: 0;
+                        backface-visibility: hidden;
+                        transform-style: preserve-3d;
                         will-change: transform;
-                        touch-action: pan-y;
+                        background: white;
+                        border-radius: inherit;
                       }
-                      .swipe-strip.settling {
-                        transition: transform 300ms cubic-bezier(0.25, 1, 0.5, 1);
+                      /* Curl shadow overlay on the flap */
+                      .flip-flap::after {
+                        content: "";
+                        position: absolute; inset: 0;
+                        border-radius: inherit;
+                        pointer-events: none;
                       }
                       .corner-peel-r, .corner-peel-l {
                         position: absolute; bottom: 0;
                         width: 0; height: 0; border-style: solid;
-                        opacity: 0;
-                        transition: opacity 0.15s ease, border-width 0.15s ease;
+                        opacity: 0; transition: opacity 0.12s ease, border-width 0.12s ease;
                         pointer-events: none;
                       }
-                      .corner-peel-r { right: 0; border-color: transparent transparent #64748b transparent; }
-                      .corner-peel-l { left: 0;  border-color: transparent transparent transparent #64748b; }
-                      .corner-peel-r.on, .corner-peel-l.on { opacity: 1; border-width: 0 0 44px 44px; }
+                      .corner-peel-r { right: 0; border-color: transparent transparent #475569 transparent; }
+                      .corner-peel-l { left: 0;  border-color: transparent transparent transparent #475569; }
+                      .corner-peel-r.on, .corner-peel-l.on { opacity: 1; border-width: 0 0 52px 52px; }
                     `}</style>
 
                     {/* Progress bar */}
@@ -1048,42 +1125,39 @@ export function ModuleDetailPage() {
                       </span>
                     </div>
 
-                    {/* Swipeable page strip */}
+                    {/* Book flip stage */}
                     <div
-                      ref={swipeContainerRef}
-                      className="relative overflow-hidden select-none"
+                      ref={flipContainerRef}
+                      className="flip-book relative rounded-2xl bg-slate-50 select-none overflow-visible"
+                      style={{ minHeight: 320 }}
                       onTouchStart={onTouchStart}
                       onTouchMove={onTouchMove}
                       onTouchEnd={onTouchEnd}
                     >
+                      {/* Layer 1 — page underneath (next content, visible through the lifting flap) */}
+                      {flipNextPage !== null && (
+                        <div className="absolute inset-0 p-5 sm:p-6 space-y-5 overflow-hidden pointer-events-none">
+                          {renderBlocks(nextPageBlocks, flipNextPage)}
+                        </div>
+                      )}
+
+                      {/* Layer 2 — current page flap (rotates around its trailing edge) */}
                       <div
-                        className={`swipe-strip${swipeSettling ? " settling" : ""} min-h-[320px] space-y-5 w-full max-w-4xl mx-auto pb-8`}
-                        style={{ transform: `translateX(${swipeDx}px)` }}
+                        className="flip-flap p-5 sm:p-6 space-y-5"
+                        style={{
+                          transformOrigin: flapOrigin,
+                          transform: `perspective(1200px) rotateY(${flapRotateY}deg)`,
+                          boxShadow: flipAngle > 2
+                            ? `${flipDir === "next" ? "-" : ""}${Math.round(flipAngle / 90 * 18)}px 4px ${Math.round(flipAngle / 90 * 24)}px rgba(0,0,0,${(flipAngle / 90 * 0.28).toFixed(2)})`
+                            : "none",
+                        }}
                       >
-                        {pageBlocks.length > 0 ? (
-                          pageBlocks.map((block, i) => {
-                            const normalized = normalizeAllCapsText(block);
-                            if (isHeading(block) && !(safePage === 0 && i === 0)) {
-                              return (
-                                <p key={i} className="text-base sm:text-lg font-bold text-slate-700 pt-2">
-                                  {normalized}
-                                </p>
-                              );
-                            }
-                            return (
-                              <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">
-                                {normalized}
-                              </p>
-                            );
-                          })
-                        ) : (
-                          <p className="text-sm text-slate-500">—</p>
-                        )}
+                        {renderBlocks(pageBlocks, safePage)}
                       </div>
 
-                      {/* Corner peels — appear while dragging */}
-                      <div className={`corner-peel-r${showPeelRight ? " on" : ""}`} />
-                      <div className={`corner-peel-l${showPeelLeft  ? " on" : ""}`} />
+                      {/* Corner peels */}
+                      <div className={`corner-peel-r${showPeelNext ? " on" : ""}`} />
+                      <div className={`corner-peel-l${showPeelPrev ? " on" : ""}`} />
                     </div>
 
                     {/* Navigation */}
@@ -1091,7 +1165,7 @@ export function ModuleDetailPage() {
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
                         onClick={() => goTo(safePage - 1)}
-                        disabled={safePage === 0 || swipeSettling}
+                        disabled={safePage === 0 || isFlipping}
                         type="button"
                       >
                         ← {t("lessons.previous", "Previous")}
@@ -1107,7 +1181,7 @@ export function ModuleDetailPage() {
                           return (
                             <button
                               key={i}
-                              onClick={() => !swipeSettling && goTo(i)}
+                              onClick={() => !isFlipping && goTo(i)}
                               type="button"
                               className={`rounded-full transition-all ${
                                 i === safePage
@@ -1122,7 +1196,7 @@ export function ModuleDetailPage() {
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
                         onClick={() => goTo(safePage + 1)}
-                        disabled={safePage >= totalPages - 1 || swipeSettling}
+                        disabled={safePage >= totalPages - 1 || isFlipping}
                         type="button"
                       >
                         {t("lessons.next", "Next")} →
