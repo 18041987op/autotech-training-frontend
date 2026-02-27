@@ -185,6 +185,7 @@ export function ModuleDetailPage() {
   const { moduleTitle, moduleDescription } = useModuleTranslation(module);
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
+  const [readerPage, setReaderPage] = useState(0);
 
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
@@ -404,6 +405,7 @@ export function ModuleDetailPage() {
     try {
       const d = await apiFetch(`/api/modules/${id}/resources/${rid}`);
       setActive(d.resource);
+      setReaderPage(0);
     } catch (e) {
       alert(e.message || "Failed to open resource");
     }
@@ -818,6 +820,16 @@ export function ModuleDetailPage() {
             </h2>
             <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
+            {/* Admin: recommended language hint */}
+            {isAdmin && (
+              <div className="mt-3 flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                <span className="mt-0.5 text-base">💡</span>
+                <span>
+                  For best results, upload files to Drive <strong>in English</strong>. The app will automatically generate the Spanish translation on Sync.
+                </span>
+              </div>
+            )}
+
             {/* Admin: resync banner when resources have text but missing ES translation */}
             {isAdmin && resources.some((r) => r.hasText && !r.hasTextEs) && (
               <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -884,16 +896,16 @@ export function ModuleDetailPage() {
             )}
           </div>
 
-          {/* Expanded full text section */}
+          {/* Expanded full text — paginated book reader */}
           {active ? (
-            <div ref={fullTextRef} className="card p-6">
-              <div className="flex items-start justify-between gap-4">
+            <div ref={fullTextRef} className="card p-5 sm:p-8">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
-                  <h3 className="text-lg font-extrabold">{normalizeAllCaps(active.name)}</h3>
-                  {isAdmin ? <p className="text-xs text-slate-500">{active.mimeType}</p> : null}
+                  <h3 className="text-lg font-extrabold leading-snug">{normalizeAllCaps(active.name)}</h3>
+                  {isAdmin ? <p className="text-xs text-slate-400 mt-0.5">{active.mimeType}</p> : null}
                 </div>
-
-                <button className="btn-outline-sm" onClick={() => setActive(null)} type="button">
+                <button className="btn-outline-sm shrink-0" onClick={() => setActive(null)} type="button">
                   {t("actions.close")}
                 </button>
               </div>
@@ -903,49 +915,116 @@ export function ModuleDetailPage() {
 
                 // Clean up extracted text artifacts
                 const cleaned = rawText
-                  .replace(/={3,}/g, "")           // remove ===...=== separator lines
-                  .replace(/_{3,}/g, "")           // remove ___...___
-                  .replace(/\*{3,}/g, "")          // remove ***...***
-                  .replace(/-{4,}/g, "")           // remove ----...---- (but keep list dashes)
-                  .replace(/\r\n/g, "\n")          // normalize line endings
-                  .replace(/[ \t]+\n/g, "\n")      // trim trailing spaces per line
-                  .replace(/\n{3,}/g, "\n\n");     // collapse 3+ blank lines to 2
+                  .replace(/={3,}/g, "")
+                  .replace(/_{3,}/g, "")
+                  .replace(/\*{3,}/g, "")
+                  .replace(/-{4,}/g, "")
+                  .replace(/\r\n/g, "\n")
+                  .replace(/[ \t]+\n/g, "\n")
+                  .replace(/\n{3,}/g, "\n\n");
 
-                // Split into logical blocks on double newlines
-                const blocks = cleaned.split(/\n{2,}/).map((block) => {
-                  // Within each block, join soft-wrapped lines (single \n) into one paragraph
-                  return block
-                    .split("\n")
-                    .map((l) => l.trim())
-                    .filter(Boolean)
-                    .join(" ");
-                }).filter((b) => b.trim().length > 0);
+                // Build blocks (paragraphs / headings)
+                const allBlocks = cleaned.split(/\n{2,}/).map((block) =>
+                  block.split("\n").map((l) => l.trim()).filter(Boolean).join(" ")
+                ).filter((b) => b.trim().length > 0);
 
-                // Detect if a block looks like a heading (short, no period at end, possibly all-caps)
                 const isHeading = (text) =>
                   text.length < 80 && !text.endsWith(".") && !text.endsWith(",");
 
+                // Paginate: ~6 blocks per page
+                const BLOCKS_PER_PAGE = 6;
+                const totalPages = Math.max(1, Math.ceil(allBlocks.length / BLOCKS_PER_PAGE));
+                const safePage = Math.min(readerPage, totalPages - 1);
+                const pageBlocks = allBlocks.slice(
+                  safePage * BLOCKS_PER_PAGE,
+                  safePage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE
+                );
+
+                const goTo = (p) => {
+                  setReaderPage(p);
+                  if (fullTextRef.current) fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                };
+
                 return (
-                  <div className="mt-4 rounded-2xl bg-slate-50 p-5 sm:p-8 space-y-4 w-full max-w-4xl mx-auto">
-                    {blocks.length > 0 ? (
-                      blocks.map((block, i) => {
-                        const normalized = normalizeAllCapsText(block);
-                        if (isHeading(block) && i > 0) {
+                  <div className="flex flex-col gap-6">
+                    {/* Progress bar */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                        <div
+                          className="h-1.5 rounded-full transition-all duration-300"
+                          style={{ background: "#1E6FAE", width: `${((safePage + 1) / totalPages) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-400 shrink-0">
+                        {safePage + 1} / {totalPages}
+                      </span>
+                    </div>
+
+                    {/* Page content */}
+                    <div className="min-h-[320px] space-y-5 w-full max-w-4xl mx-auto">
+                      {pageBlocks.length > 0 ? (
+                        pageBlocks.map((block, i) => {
+                          const normalized = normalizeAllCapsText(block);
+                          if (isHeading(block) && !(safePage === 0 && i === 0)) {
+                            return (
+                              <p key={i} className="text-base sm:text-lg font-bold text-slate-700 pt-2">
+                                {normalized}
+                              </p>
+                            );
+                          }
                           return (
-                            <p key={i} className="text-base sm:text-lg font-bold text-slate-700 mt-4">
+                            <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">
                               {normalized}
                             </p>
                           );
-                        }
-                        return (
-                          <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">
-                            {normalized}
-                          </p>
-                        );
-                      })
-                    ) : (
-                      <p className="text-sm text-slate-500">—</p>
-                    )}
+                        })
+                      ) : (
+                        <p className="text-sm text-slate-500">—</p>
+                      )}
+                    </div>
+
+                    {/* Navigation */}
+                    <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                      <button
+                        className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
+                        onClick={() => goTo(safePage - 1)}
+                        disabled={safePage === 0}
+                        type="button"
+                      >
+                        ← {t("lessons.previous", "Previous")}
+                      </button>
+
+                      {/* Page dots — show up to 7 */}
+                      <div className="flex items-center gap-1.5">
+                        {Array.from({ length: totalPages }).map((_, i) => {
+                          if (totalPages > 7 && Math.abs(i - safePage) > 2 && i !== 0 && i !== totalPages - 1) {
+                            if (i === 1 || i === totalPages - 2) return <span key={i} className="text-slate-300 text-xs">…</span>;
+                            return null;
+                          }
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => goTo(i)}
+                              type="button"
+                              className={`rounded-full transition-all ${
+                                i === safePage
+                                  ? "w-3 h-3 bg-brand-primary"
+                                  : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
+                              }`}
+                            />
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
+                        onClick={() => goTo(safePage + 1)}
+                        disabled={safePage >= totalPages - 1}
+                        type="button"
+                      >
+                        {t("lessons.next", "Next")} →
+                      </button>
+                    </div>
                   </div>
                 );
               })()}
