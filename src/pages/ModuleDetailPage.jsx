@@ -186,6 +186,8 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
   const [readerPage, setReaderPage] = useState(0);
+  const [readerDir, setReaderDir] = useState("next");   // "next" | "prev"
+  const [readerFlipping, setReaderFlipping] = useState(false);
 
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
@@ -945,13 +947,52 @@ export function ModuleDetailPage() {
                   safePage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE
                 );
 
-                const goTo = (p) => {
-                  setReaderPage(p);
-                  if (fullTextRef.current) fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                const goTo = (p, dir) => {
+                  if (readerFlipping) return;
+                  const direction = dir || (p > safePage ? "next" : "prev");
+                  setReaderDir(direction);
+                  setReaderFlipping(true);
+                  setTimeout(() => {
+                    setReaderPage(p);
+                    setReaderFlipping(false);
+                    if (fullTextRef.current) fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 320);
                 };
 
                 return (
                   <div className="flex flex-col gap-6">
+                    {/* Page-turn CSS */}
+                    <style>{`
+                      @keyframes pageFlipNext {
+                        0%   { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: left center; }
+                        40%  { opacity: 0.3; transform: perspective(800px) rotateY(-15deg); transform-origin: left center; }
+                        41%  { opacity: 0; transform: perspective(800px) rotateY(15deg); transform-origin: left center; }
+                        100% { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: left center; }
+                      }
+                      @keyframes pageFlipPrev {
+                        0%   { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: right center; }
+                        40%  { opacity: 0.3; transform: perspective(800px) rotateY(15deg); transform-origin: right center; }
+                        41%  { opacity: 0; transform: perspective(800px) rotateY(-15deg); transform-origin: right center; }
+                        100% { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: right center; }
+                      }
+                      .page-flip-next { animation: pageFlipNext 0.32s ease-in-out; }
+                      .page-flip-prev { animation: pageFlipPrev 0.32s ease-in-out; }
+                      .corner-peel {
+                        position: absolute;
+                        bottom: 0; right: 0;
+                        width: 0; height: 0;
+                        border-style: solid;
+                        border-width: 0 0 28px 28px;
+                        border-color: transparent transparent #cbd5e1 transparent;
+                        transition: border-width 0.18s ease;
+                        cursor: pointer;
+                      }
+                      .corner-peel:hover {
+                        border-width: 0 0 44px 44px;
+                        border-color: transparent transparent #94a3b8 transparent;
+                      }
+                    `}</style>
+
                     {/* Progress bar */}
                     <div className="flex items-center gap-3">
                       <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
@@ -965,26 +1006,68 @@ export function ModuleDetailPage() {
                       </span>
                     </div>
 
-                    {/* Page content */}
-                    <div className="min-h-[320px] space-y-5 w-full max-w-4xl mx-auto">
-                      {pageBlocks.length > 0 ? (
-                        pageBlocks.map((block, i) => {
-                          const normalized = normalizeAllCapsText(block);
-                          if (isHeading(block) && !(safePage === 0 && i === 0)) {
+                    {/* Page content with flip animation + corner peel */}
+                    <div className="relative">
+                      <div
+                        key={safePage}
+                        className={`min-h-[320px] space-y-5 w-full max-w-4xl mx-auto ${
+                          readerFlipping
+                            ? readerDir === "next" ? "page-flip-next" : "page-flip-prev"
+                            : ""
+                        }`}
+                      >
+                        {pageBlocks.length > 0 ? (
+                          pageBlocks.map((block, i) => {
+                            const normalized = normalizeAllCapsText(block);
+                            if (isHeading(block) && !(safePage === 0 && i === 0)) {
+                              return (
+                                <p key={i} className="text-base sm:text-lg font-bold text-slate-700 pt-2">
+                                  {normalized}
+                                </p>
+                              );
+                            }
                             return (
-                              <p key={i} className="text-base sm:text-lg font-bold text-slate-700 pt-2">
+                              <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">
                                 {normalized}
                               </p>
                             );
-                          }
-                          return (
-                            <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">
-                              {normalized}
-                            </p>
-                          );
-                        })
-                      ) : (
-                        <p className="text-sm text-slate-500">—</p>
+                          })
+                        ) : (
+                          <p className="text-sm text-slate-500">—</p>
+                        )}
+                      </div>
+
+                      {/* Corner peel — bottom-right (go next) */}
+                      {safePage < totalPages - 1 && (
+                        <div
+                          className="corner-peel"
+                          title={t("lessons.next", "Next")}
+                          onClick={() => goTo(safePage + 1, "next")}
+                        />
+                      )}
+                      {/* Corner peel — bottom-left (go prev) */}
+                      {safePage > 0 && (
+                        <div
+                          style={{
+                            position: "absolute", bottom: 0, left: 0,
+                            width: 0, height: 0,
+                            borderStyle: "solid",
+                            borderWidth: "0 0 28px 28px",
+                            borderColor: "transparent transparent transparent #cbd5e1",
+                            transition: "border-width 0.18s ease",
+                            cursor: "pointer",
+                          }}
+                          onMouseEnter={e => {
+                            e.currentTarget.style.borderWidth = "0 0 44px 44px";
+                            e.currentTarget.style.borderColor = "transparent transparent transparent #94a3b8";
+                          }}
+                          onMouseLeave={e => {
+                            e.currentTarget.style.borderWidth = "0 0 28px 28px";
+                            e.currentTarget.style.borderColor = "transparent transparent transparent #cbd5e1";
+                          }}
+                          title={t("lessons.previous", "Previous")}
+                          onClick={() => goTo(safePage - 1, "prev")}
+                        />
                       )}
                     </div>
 
@@ -992,7 +1075,7 @@ export function ModuleDetailPage() {
                     <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
-                        onClick={() => goTo(safePage - 1)}
+                        onClick={() => goTo(safePage - 1, "prev")}
                         disabled={safePage === 0}
                         type="button"
                       >
@@ -1009,7 +1092,7 @@ export function ModuleDetailPage() {
                           return (
                             <button
                               key={i}
-                              onClick={() => goTo(i)}
+                              onClick={() => goTo(i, i > safePage ? "next" : "prev")}
                               type="button"
                               className={`rounded-full transition-all ${
                                 i === safePage
@@ -1023,7 +1106,7 @@ export function ModuleDetailPage() {
 
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
-                        onClick={() => goTo(safePage + 1)}
+                        onClick={() => goTo(safePage + 1, "next")}
                         disabled={safePage >= totalPages - 1}
                         type="button"
                       >
