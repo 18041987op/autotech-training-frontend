@@ -188,6 +188,7 @@ export function ModuleDetailPage() {
   const [readerPage, setReaderPage] = useState(0);
   const [readerDir, setReaderDir] = useState("next");   // "next" | "prev"
   const [readerFlipping, setReaderFlipping] = useState(false);
+  const swipeTouchStartX = useRef(null);
 
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
@@ -963,33 +964,42 @@ export function ModuleDetailPage() {
                   <div className="flex flex-col gap-6">
                     {/* Page-turn CSS */}
                     <style>{`
-                      @keyframes pageFlipNext {
-                        0%   { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: left center; }
-                        40%  { opacity: 0.3; transform: perspective(800px) rotateY(-15deg); transform-origin: left center; }
-                        41%  { opacity: 0; transform: perspective(800px) rotateY(15deg); transform-origin: left center; }
-                        100% { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: left center; }
+                      @keyframes slideInNext {
+                        from { opacity: 0; transform: translateX(48px); }
+                        to   { opacity: 1; transform: translateX(0); }
                       }
-                      @keyframes pageFlipPrev {
-                        0%   { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: right center; }
-                        40%  { opacity: 0.3; transform: perspective(800px) rotateY(15deg); transform-origin: right center; }
-                        41%  { opacity: 0; transform: perspective(800px) rotateY(-15deg); transform-origin: right center; }
-                        100% { opacity: 1; transform: perspective(800px) rotateY(0deg); transform-origin: right center; }
+                      @keyframes slideInPrev {
+                        from { opacity: 0; transform: translateX(-48px); }
+                        to   { opacity: 1; transform: translateX(0); }
                       }
-                      .page-flip-next { animation: pageFlipNext 0.32s ease-in-out; }
-                      .page-flip-prev { animation: pageFlipPrev 0.32s ease-in-out; }
-                      .corner-peel {
-                        position: absolute;
-                        bottom: 0; right: 0;
-                        width: 0; height: 0;
-                        border-style: solid;
-                        border-width: 0 0 28px 28px;
-                        border-color: transparent transparent #cbd5e1 transparent;
-                        transition: border-width 0.18s ease;
-                        cursor: pointer;
+                      .page-slide-next { animation: slideInNext 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+                      .page-slide-prev { animation: slideInPrev 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+
+                      /* Corner peels — hidden by default, revealed during flip */
+                      .corner-peel-right, .corner-peel-left {
+                        position: absolute; bottom: 0;
+                        width: 0; height: 0; border-style: solid;
+                        opacity: 0;
+                        transition: opacity 0.18s ease, border-width 0.22s ease;
+                        pointer-events: none;
                       }
-                      .corner-peel:hover {
-                        border-width: 0 0 44px 44px;
+                      .corner-peel-right {
+                        right: 0;
+                        border-width: 0 0 0 0;
                         border-color: transparent transparent #94a3b8 transparent;
+                      }
+                      .corner-peel-left {
+                        left: 0;
+                        border-width: 0 0 0 0;
+                        border-color: transparent transparent transparent #94a3b8;
+                      }
+                      .corner-peel-right.visible {
+                        opacity: 1; border-width: 0 0 48px 48px;
+                        pointer-events: auto; cursor: pointer;
+                      }
+                      .corner-peel-left.visible {
+                        opacity: 1; border-width: 0 0 48px 48px;
+                        pointer-events: auto; cursor: pointer;
                       }
                     `}</style>
 
@@ -997,7 +1007,7 @@ export function ModuleDetailPage() {
                     <div className="flex items-center gap-3">
                       <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
                         <div
-                          className="h-1.5 rounded-full transition-all duration-300"
+                          className="h-1.5 rounded-full transition-all duration-500"
                           style={{ background: "#1E6FAE", width: `${((safePage + 1) / totalPages) * 100}%` }}
                         />
                       </div>
@@ -1006,13 +1016,24 @@ export function ModuleDetailPage() {
                       </span>
                     </div>
 
-                    {/* Page content with flip animation + corner peel */}
-                    <div className="relative">
+                    {/* Page content — swipeable on mobile */}
+                    <div
+                      className="relative overflow-hidden"
+                      onTouchStart={(e) => { swipeTouchStartX.current = e.touches[0].clientX; }}
+                      onTouchEnd={(e) => {
+                        if (swipeTouchStartX.current === null) return;
+                        const dx = e.changedTouches[0].clientX - swipeTouchStartX.current;
+                        swipeTouchStartX.current = null;
+                        if (Math.abs(dx) < 40) return; // ignore tiny taps
+                        if (dx < 0 && safePage < totalPages - 1) goTo(safePage + 1, "next");
+                        if (dx > 0 && safePage > 0) goTo(safePage - 1, "prev");
+                      }}
+                    >
                       <div
                         key={safePage}
-                        className={`min-h-[320px] space-y-5 w-full max-w-4xl mx-auto ${
+                        className={`min-h-[320px] space-y-5 w-full max-w-4xl mx-auto pb-8 ${
                           readerFlipping
-                            ? readerDir === "next" ? "page-flip-next" : "page-flip-prev"
+                            ? readerDir === "next" ? "page-slide-next" : "page-slide-prev"
                             : ""
                         }`}
                       >
@@ -1037,38 +1058,15 @@ export function ModuleDetailPage() {
                         )}
                       </div>
 
-                      {/* Corner peel — bottom-right (go next) */}
-                      {safePage < totalPages - 1 && (
-                        <div
-                          className="corner-peel"
-                          title={t("lessons.next", "Next")}
-                          onClick={() => goTo(safePage + 1, "next")}
-                        />
-                      )}
-                      {/* Corner peel — bottom-left (go prev) */}
-                      {safePage > 0 && (
-                        <div
-                          style={{
-                            position: "absolute", bottom: 0, left: 0,
-                            width: 0, height: 0,
-                            borderStyle: "solid",
-                            borderWidth: "0 0 28px 28px",
-                            borderColor: "transparent transparent transparent #cbd5e1",
-                            transition: "border-width 0.18s ease",
-                            cursor: "pointer",
-                          }}
-                          onMouseEnter={e => {
-                            e.currentTarget.style.borderWidth = "0 0 44px 44px";
-                            e.currentTarget.style.borderColor = "transparent transparent transparent #94a3b8";
-                          }}
-                          onMouseLeave={e => {
-                            e.currentTarget.style.borderWidth = "0 0 28px 28px";
-                            e.currentTarget.style.borderColor = "transparent transparent transparent #cbd5e1";
-                          }}
-                          title={t("lessons.previous", "Previous")}
-                          onClick={() => goTo(safePage - 1, "prev")}
-                        />
-                      )}
+                      {/* Corner peels — only visible while flipping */}
+                      <div
+                        className={`corner-peel-right${readerFlipping && readerDir === "next" && safePage < totalPages - 1 ? " visible" : ""}`}
+                        onClick={() => !readerFlipping && goTo(safePage + 1, "next")}
+                      />
+                      <div
+                        className={`corner-peel-left${readerFlipping && readerDir === "prev" && safePage > 0 ? " visible" : ""}`}
+                        onClick={() => !readerFlipping && goTo(safePage - 1, "prev")}
+                      />
                     </div>
 
                     {/* Navigation */}
@@ -1076,7 +1074,7 @@ export function ModuleDetailPage() {
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
                         onClick={() => goTo(safePage - 1, "prev")}
-                        disabled={safePage === 0}
+                        disabled={safePage === 0 || readerFlipping}
                         type="button"
                       >
                         ← {t("lessons.previous", "Previous")}
@@ -1092,7 +1090,7 @@ export function ModuleDetailPage() {
                           return (
                             <button
                               key={i}
-                              onClick={() => goTo(i, i > safePage ? "next" : "prev")}
+                              onClick={() => !readerFlipping && goTo(i, i > safePage ? "next" : "prev")}
                               type="button"
                               className={`rounded-full transition-all ${
                                 i === safePage
@@ -1107,7 +1105,7 @@ export function ModuleDetailPage() {
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
                         onClick={() => goTo(safePage + 1, "next")}
-                        disabled={safePage >= totalPages - 1}
+                        disabled={safePage >= totalPages - 1 || readerFlipping}
                         type="button"
                       >
                         {t("lessons.next", "Next")} →
