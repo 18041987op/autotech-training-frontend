@@ -186,9 +186,11 @@ export function ModuleDetailPage() {
   const [resources, setResources] = useState([]);
   const [active, setActive] = useState(null);
   const [readerPage, setReaderPage] = useState(0);
-  const [readerDir, setReaderDir] = useState("next");   // "next" | "prev"
-  const [readerFlipping, setReaderFlipping] = useState(false);
-  const swipeTouchStartX = useRef(null);
+  // Swipe state — raw pixel offset while dragging; settling = CSS transition is running
+  const [swipeDx, setSwipeDx]         = useState(0);
+  const [swipeSettling, setSwipeSettling] = useState(false);
+  const swipeTouchStartX  = useRef(null);
+  const swipeContainerRef = useRef(null);
 
   const [assessments, setAssessments] = useState([]);
   const [assessLoading, setAssessLoading] = useState(false);
@@ -409,6 +411,8 @@ export function ModuleDetailPage() {
       const d = await apiFetch(`/api/modules/${id}/resources/${rid}`);
       setActive(d.resource);
       setReaderPage(0);
+      setSwipeDx(0);
+      setSwipeSettling(false);
     } catch (e) {
       alert(e.message || "Failed to open resource");
     }
@@ -948,59 +952,87 @@ export function ModuleDetailPage() {
                   safePage * BLOCKS_PER_PAGE + BLOCKS_PER_PAGE
                 );
 
-                const goTo = (p, dir) => {
-                  if (readerFlipping) return;
-                  const direction = dir || (p > safePage ? "next" : "prev");
-                  setReaderDir(direction);
-                  setReaderFlipping(true);
+                // ── Swipe & programmatic navigation ─────────────────────────
+                // settleToPage: animates the strip to targetX then updates page
+                const settleToPage = (targetX, newPage) => {
+                  setSwipeDx(targetX);            // snap to exit position instantly
+                  setSwipeSettling(true);          // enable CSS transition
+                  // After transition completes (300ms), flip page and reset strip
                   setTimeout(() => {
-                    setReaderPage(p);
-                    setReaderFlipping(false);
-                    if (fullTextRef.current) fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }, 320);
+                    setReaderPage(newPage);
+                    setSwipeDx(0);
+                    setSwipeSettling(false);
+                    if (fullTextRef.current)
+                      fullTextRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 300);
                 };
+
+                const goTo = (p) => {
+                  if (swipeSettling) return;
+                  const w = swipeContainerRef.current?.offsetWidth || 320;
+                  const dir = p > safePage ? -1 : 1;  // -1 = slide left (next), 1 = slide right (prev)
+                  settleToPage(dir * w, p);
+                };
+
+                // Touch handlers — move strip in real time with the finger
+                const onTouchStart = (e) => {
+                  if (swipeSettling) return;
+                  swipeTouchStartX.current = e.touches[0].clientX;
+                  setSwipeDx(0);
+                };
+
+                const onTouchMove = (e) => {
+                  if (swipeTouchStartX.current === null || swipeSettling) return;
+                  let dx = e.touches[0].clientX - swipeTouchStartX.current;
+                  // Resist at edges: can't swipe past first/last page
+                  if (dx > 0 && safePage === 0) dx = dx * 0.2;
+                  if (dx < 0 && safePage === totalPages - 1) dx = dx * 0.2;
+                  setSwipeDx(dx);
+                };
+
+                const onTouchEnd = (e) => {
+                  if (swipeTouchStartX.current === null || swipeSettling) return;
+                  const dx = e.changedTouches[0].clientX - swipeTouchStartX.current;
+                  swipeTouchStartX.current = null;
+                  const w = swipeContainerRef.current?.offsetWidth || 320;
+                  const threshold = w * 0.3;   // 30% of container width to commit
+                  if (dx < -threshold && safePage < totalPages - 1) {
+                    settleToPage(-w, safePage + 1);
+                  } else if (dx > threshold && safePage > 0) {
+                    settleToPage(w, safePage - 1);
+                  } else {
+                    // Spring back
+                    setSwipeSettling(true);
+                    setSwipeDx(0);
+                    setTimeout(() => setSwipeSettling(false), 300);
+                  }
+                };
+
+                // Corner peel visibility: show when actively dragging past 20px
+                const showPeelRight = swipeDx < -20 && safePage < totalPages - 1;
+                const showPeelLeft  = swipeDx >  20 && safePage > 0;
 
                 return (
                   <div className="flex flex-col gap-6">
-                    {/* Page-turn CSS */}
+                    {/* Swipe strip CSS */}
                     <style>{`
-                      @keyframes slideInNext {
-                        from { opacity: 0; transform: translateX(48px); }
-                        to   { opacity: 1; transform: translateX(0); }
+                      .swipe-strip {
+                        will-change: transform;
+                        touch-action: pan-y;
                       }
-                      @keyframes slideInPrev {
-                        from { opacity: 0; transform: translateX(-48px); }
-                        to   { opacity: 1; transform: translateX(0); }
+                      .swipe-strip.settling {
+                        transition: transform 300ms cubic-bezier(0.25, 1, 0.5, 1);
                       }
-                      .page-slide-next { animation: slideInNext 0.38s cubic-bezier(0.22,1,0.36,1) both; }
-                      .page-slide-prev { animation: slideInPrev 0.38s cubic-bezier(0.22,1,0.36,1) both; }
-
-                      /* Corner peels — hidden by default, revealed during flip */
-                      .corner-peel-right, .corner-peel-left {
+                      .corner-peel-r, .corner-peel-l {
                         position: absolute; bottom: 0;
                         width: 0; height: 0; border-style: solid;
                         opacity: 0;
-                        transition: opacity 0.18s ease, border-width 0.22s ease;
+                        transition: opacity 0.15s ease, border-width 0.15s ease;
                         pointer-events: none;
                       }
-                      .corner-peel-right {
-                        right: 0;
-                        border-width: 0 0 0 0;
-                        border-color: transparent transparent #94a3b8 transparent;
-                      }
-                      .corner-peel-left {
-                        left: 0;
-                        border-width: 0 0 0 0;
-                        border-color: transparent transparent transparent #94a3b8;
-                      }
-                      .corner-peel-right.visible {
-                        opacity: 1; border-width: 0 0 48px 48px;
-                        pointer-events: auto; cursor: pointer;
-                      }
-                      .corner-peel-left.visible {
-                        opacity: 1; border-width: 0 0 48px 48px;
-                        pointer-events: auto; cursor: pointer;
-                      }
+                      .corner-peel-r { right: 0; border-color: transparent transparent #64748b transparent; }
+                      .corner-peel-l { left: 0;  border-color: transparent transparent transparent #64748b; }
+                      .corner-peel-r.on, .corner-peel-l.on { opacity: 1; border-width: 0 0 44px 44px; }
                     `}</style>
 
                     {/* Progress bar */}
@@ -1016,26 +1048,17 @@ export function ModuleDetailPage() {
                       </span>
                     </div>
 
-                    {/* Page content — swipeable on mobile */}
+                    {/* Swipeable page strip */}
                     <div
-                      className="relative overflow-hidden"
-                      onTouchStart={(e) => { swipeTouchStartX.current = e.touches[0].clientX; }}
-                      onTouchEnd={(e) => {
-                        if (swipeTouchStartX.current === null) return;
-                        const dx = e.changedTouches[0].clientX - swipeTouchStartX.current;
-                        swipeTouchStartX.current = null;
-                        if (Math.abs(dx) < 40) return; // ignore tiny taps
-                        if (dx < 0 && safePage < totalPages - 1) goTo(safePage + 1, "next");
-                        if (dx > 0 && safePage > 0) goTo(safePage - 1, "prev");
-                      }}
+                      ref={swipeContainerRef}
+                      className="relative overflow-hidden select-none"
+                      onTouchStart={onTouchStart}
+                      onTouchMove={onTouchMove}
+                      onTouchEnd={onTouchEnd}
                     >
                       <div
-                        key={safePage}
-                        className={`min-h-[320px] space-y-5 w-full max-w-4xl mx-auto pb-8 ${
-                          readerFlipping
-                            ? readerDir === "next" ? "page-slide-next" : "page-slide-prev"
-                            : ""
-                        }`}
+                        className={`swipe-strip${swipeSettling ? " settling" : ""} min-h-[320px] space-y-5 w-full max-w-4xl mx-auto pb-8`}
+                        style={{ transform: `translateX(${swipeDx}px)` }}
                       >
                         {pageBlocks.length > 0 ? (
                           pageBlocks.map((block, i) => {
@@ -1058,23 +1081,17 @@ export function ModuleDetailPage() {
                         )}
                       </div>
 
-                      {/* Corner peels — only visible while flipping */}
-                      <div
-                        className={`corner-peel-right${readerFlipping && readerDir === "next" && safePage < totalPages - 1 ? " visible" : ""}`}
-                        onClick={() => !readerFlipping && goTo(safePage + 1, "next")}
-                      />
-                      <div
-                        className={`corner-peel-left${readerFlipping && readerDir === "prev" && safePage > 0 ? " visible" : ""}`}
-                        onClick={() => !readerFlipping && goTo(safePage - 1, "prev")}
-                      />
+                      {/* Corner peels — appear while dragging */}
+                      <div className={`corner-peel-r${showPeelRight ? " on" : ""}`} />
+                      <div className={`corner-peel-l${showPeelLeft  ? " on" : ""}`} />
                     </div>
 
                     {/* Navigation */}
                     <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
-                        onClick={() => goTo(safePage - 1, "prev")}
-                        disabled={safePage === 0 || readerFlipping}
+                        onClick={() => goTo(safePage - 1)}
+                        disabled={safePage === 0 || swipeSettling}
                         type="button"
                       >
                         ← {t("lessons.previous", "Previous")}
@@ -1090,7 +1107,7 @@ export function ModuleDetailPage() {
                           return (
                             <button
                               key={i}
-                              onClick={() => !readerFlipping && goTo(i, i > safePage ? "next" : "prev")}
+                              onClick={() => !swipeSettling && goTo(i)}
                               type="button"
                               className={`rounded-full transition-all ${
                                 i === safePage
@@ -1104,8 +1121,8 @@ export function ModuleDetailPage() {
 
                       <button
                         className="btn-outline-sm flex items-center gap-1.5 disabled:opacity-40"
-                        onClick={() => goTo(safePage + 1, "next")}
-                        disabled={safePage >= totalPages - 1 || readerFlipping}
+                        onClick={() => goTo(safePage + 1)}
+                        disabled={safePage >= totalPages - 1 || swipeSettling}
                         type="button"
                       >
                         {t("lessons.next", "Next")} →
