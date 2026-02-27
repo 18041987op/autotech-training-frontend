@@ -1085,27 +1085,41 @@ export function ModuleDetailPage() {
                   <div className="flex flex-col gap-6">
                     {/* Page-flip CSS */}
                     <style>{`
-                      .flip-book { perspective: 1200px; touch-action: pan-y; }
+                      .flip-book {
+                        perspective: 1200px;
+                        touch-action: pan-y;
+                        /* stays in flow — no fixed height */
+                      }
+                      .flip-stage {
+                        position: relative;
+                      }
+                      /* The flap sits IN the flow and rotates. Clip the book container
+                         so a rotating flap doesn't bleed over sibling elements. */
+                      .flip-book-clip {
+                        overflow: hidden;
+                        border-radius: 1rem;
+                      }
                       .flip-flap {
-                        position: absolute; inset: 0;
-                        backface-visibility: hidden;
-                        transform-style: preserve-3d;
+                        position: relative;           /* in flow — pushes siblings down */
                         will-change: transform;
                         background: white;
-                        border-radius: inherit;
+                        border-radius: 1rem;
+                        backface-visibility: hidden;
                       }
-                      /* Curl shadow overlay on the flap */
-                      .flip-flap::after {
-                        content: "";
+                      /* Under-page: absolute, clipped inside flip-stage */
+                      .flip-under {
                         position: absolute; inset: 0;
-                        border-radius: inherit;
+                        border-radius: 1rem;
+                        background: white;
                         pointer-events: none;
+                        overflow: hidden;
                       }
                       .corner-peel-r, .corner-peel-l {
                         position: absolute; bottom: 0;
                         width: 0; height: 0; border-style: solid;
                         opacity: 0; transition: opacity 0.12s ease, border-width 0.12s ease;
                         pointer-events: none;
+                        z-index: 10;
                       }
                       .corner-peel-r { right: 0; border-color: transparent transparent #475569 transparent; }
                       .corner-peel-l { left: 0;  border-color: transparent transparent transparent #475569; }
@@ -1125,30 +1139,29 @@ export function ModuleDetailPage() {
                       </span>
                     </div>
 
-                    {/* Book flip stage */}
+                    {/* Book flip stage — clipped so rotating flap stays inside */}
                     <div
+                      className="flip-book flip-book-clip flip-stage"
                       ref={flipContainerRef}
-                      className="flip-book relative rounded-2xl bg-slate-50 select-none overflow-visible"
-                      style={{ minHeight: 320 }}
                       onTouchStart={onTouchStart}
                       onTouchMove={onTouchMove}
                       onTouchEnd={onTouchEnd}
                     >
-                      {/* Layer 1 — page underneath (next content, visible through the lifting flap) */}
+                      {/* Under-page: next content, shown behind the lifting flap */}
                       {flipNextPage !== null && (
-                        <div className="absolute inset-0 p-5 sm:p-6 space-y-5 overflow-hidden pointer-events-none">
+                        <div className="flip-under p-5 sm:p-6 space-y-5">
                           {renderBlocks(nextPageBlocks, flipNextPage)}
                         </div>
                       )}
 
-                      {/* Layer 2 — current page flap (rotates around its trailing edge) */}
+                      {/* Flap: current page, rotates around trailing edge */}
                       <div
-                        className="flip-flap p-5 sm:p-6 space-y-5"
+                        className="flip-flap p-5 sm:p-6 space-y-5 select-none"
                         style={{
                           transformOrigin: flapOrigin,
                           transform: `perspective(1200px) rotateY(${flapRotateY}deg)`,
                           boxShadow: flipAngle > 2
-                            ? `${flipDir === "next" ? "-" : ""}${Math.round(flipAngle / 90 * 18)}px 4px ${Math.round(flipAngle / 90 * 24)}px rgba(0,0,0,${(flipAngle / 90 * 0.28).toFixed(2)})`
+                            ? `${flipDir === "next" ? "-" : ""}${Math.round(flipAngle / 90 * 16)}px 0px ${Math.round(flipAngle / 90 * 22)}px rgba(0,0,0,${(flipAngle / 90 * 0.25).toFixed(2)})`
                             : "none",
                         }}
                       >
