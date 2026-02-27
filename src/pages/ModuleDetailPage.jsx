@@ -818,6 +818,16 @@ export function ModuleDetailPage() {
             </h2>
             <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
+            {/* Admin: resync banner when resources have text but missing ES translation */}
+            {isAdmin && resources.some((r) => r.hasText && !r.hasTextEs) && (
+              <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                <span className="mt-0.5 text-base">⚠️</span>
+                <span>
+                  Some resources are missing the Spanish translation. Run <strong>Sync Drive</strong> to generate it.
+                </span>
+              </div>
+            )}
+
             {resources.length === 0 ? (
               <div className="mt-4 text-sm text-slate-600">{t("moduleDetail.noResources")}</div>
             ) : (
@@ -826,7 +836,14 @@ export function ModuleDetailPage() {
                   <div key={r.id} className="card p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                       <div className="min-w-0">
-                    <div className="font-extrabold truncate">{normalizeAllCaps(r.name)}</div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="font-extrabold truncate">{normalizeAllCaps(r.name)}</div>
+                          {isAdmin && r.hasText && !r.hasTextEs && (
+                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                              🔄 Needs sync
+                            </span>
+                          )}
+                        </div>
                         {isAdmin ? <div className="text-xs text-slate-500">{r.mimeType}</div> : null}
                       </div>
 
