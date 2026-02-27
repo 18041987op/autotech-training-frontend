@@ -18,6 +18,7 @@ export function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [showInactive, setShowInactive] = useState(false);
 
   // Add User modal state
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -69,6 +70,12 @@ export function AdminUsersPage() {
     const admins = users.filter((u) => u.role === "admin").length;
     return { total, pending, inactive, admins };
   }, [users]);
+
+  // Hide inactive users by default
+  const visibleUsers = useMemo(() => {
+    if (showInactive) return users;
+    return users.filter((u) => u.approved || (!u.approved && !u.last_login));
+  }, [users, showInactive]);
 
   const approve = async (id) => {
     try {
@@ -165,6 +172,16 @@ export function AdminUsersPage() {
               + Add User
             </button>
 
+            {stats.inactive > 0 && (
+              <button
+                className={`btn-outline-sm flex items-center gap-1.5 ${showInactive ? "border-red-300 bg-red-50 text-red-700" : ""}`}
+                onClick={() => setShowInactive((v) => !v)}
+                type="button"
+              >
+                {showInactive ? `Hide inactive (${stats.inactive})` : `Show inactive (${stats.inactive})`}
+              </button>
+            )}
+
             <button className="btn-outline-sm" onClick={load} type="button">
               {t("actions.refresh")}
             </button>
@@ -203,11 +220,11 @@ export function AdminUsersPage() {
       </div>
 
       <div className="rounded-3xl border bg-white p-6 shadow-sm">
-        {users.length === 0 ? (
+        {visibleUsers.length === 0 ? (
           <div className="text-sm text-slate-600">{t("status.noneFound")}</div>
         ) : (
           <div className="space-y-3">
-            {users.map((u) => (
+            {visibleUsers.map((u) => (
               <div
                 key={u.id}
                 className="rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
