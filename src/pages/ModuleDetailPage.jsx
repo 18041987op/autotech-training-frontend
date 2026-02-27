@@ -883,11 +883,16 @@ export function ModuleDetailPage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
+                    <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-600 leading-relaxed line-clamp-3">
                       {r.hasText ? (
-                        normalizeAllCapsText(isEs && r.previewTextEs ? r.previewTextEs : r.previewText)
+                        normalizeAllCapsText(
+                          (isEs && r.previewTextEs ? r.previewTextEs : r.previewText || "")
+                            .replace(/={3,}/g, "").replace(/_{3,}/g, "")
+                            .replace(/\*{3,}/g, "").replace(/-{4,}/g, "")
+                            .replace(/\s+/g, " ").trim()
+                        )
                       ) : (
-                        <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
+                        <span className="text-slate-400 italic">{t("moduleDetail.noExtractedText")}</span>
                       )}
                     </div>
                   </div>
