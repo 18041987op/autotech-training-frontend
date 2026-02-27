@@ -125,18 +125,25 @@
   },
   "admin": {
     "usersTitle": "Gestión de Usuarios",
-    "contentTitle": "Gestión de Contenido"
+    "contentTitle": "Gestión de Contenido",
+    "toolsLabel": "Herramientas de admin"
   },
   "actions": {
     "open": "Abrir",
     "close": "Cerrar",
     "save": "Guardar",
-    "sync": "Sincronizar desde Drive",
+    "sync": "Sincronizar Drive",
     "syncing": "Sincronizando…",
     "openInDrive": "Abrir en Drive",
     "refresh": "Actualizar",
     "edit": "Editar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "generate": "Generar",
+    "generating": "Generando…",
+    "append10": "+10 Preguntas",
+    "appending10": "+10…"
   },
   "status": {
     "loading": "Cargando…",
@@ -216,7 +223,9 @@
       "contentTitle": "Contenido del módulo",
       "contentSubtitle": "El contenido de entrenamiento está disponible dentro de la app. Abre el texto completo para leer.",
       "read": "Leer"
-    }
+    },
+    "showInactive": "Ver inactivos ({{count}})",
+    "inactive": "Inactivo"
   },
   "assessmentRunner": {
     "progress": "Pregunta {{current}} de {{total}}",
@@ -1234,5 +1243,11 @@
       "subcategory": "Subcategoría",
       "subcategoryNone": "Sin subcategoría"
     }
+  },
+  "aiCoach": {
+    "subtitle": "Tu asistente personal de entrenamiento",
+    "context": "Contexto",
+    "autoRecommended": "Auto (recomendado)",
+    "selectedModule": "Módulo seleccionado"
   }
 }

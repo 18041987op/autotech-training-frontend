@@ -175,7 +175,8 @@ function EditModuleModal({ module: m, onClose, onSaved }) {
 export function ModuleDetailPage() {
   const { id } = useParams();
   const nav = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isEs = i18n.language?.startsWith("es");
 
   const { user } = useOutletContext();
   const isAdmin = (user?.role || "").toLowerCase() === "admin";
@@ -244,10 +245,7 @@ export function ModuleDetailPage() {
   const adminResourcesSubtitle = useMemo(() => t("moduleDetail.resourcesSubtitle"), [t]);
 
   // User subtitle (no Drive mention)
-  const userResourcesSubtitle = useMemo(() => {
-    // Keep this simple; we can move it into i18n later if you want.
-    return "Training content is available inside the app. Open Full text to read.";
-  }, []);
+  const userResourcesSubtitle = useMemo(() => t("moduleDetail.user.contentSubtitle"), [t]);
 
   const headerSubtitle = isAdmin ? adminResourcesSubtitle : userResourcesSubtitle;
 
@@ -705,7 +703,7 @@ export function ModuleDetailPage() {
                     checked={showInactive}
                     onChange={(e) => setShowInactive(e.target.checked)}
                   />
-                  Show inactive ({inactiveCount})
+                  {t("moduleDetail.showInactive", { count: inactiveCount })}
                 </label>
               </div>
             ) : null}
@@ -752,7 +750,7 @@ export function ModuleDetailPage() {
                         </div>
                         {!isActive ? (
                           <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold">
-                            Inactive
+                            {t("moduleDetail.inactive")}
                           </span>
                         ) : null}
                       </div>
@@ -789,7 +787,7 @@ export function ModuleDetailPage() {
                             type="button"
                             onClick={() => deactivateAssessment(a.id)}
                           >
-                            Deactivate
+                            {t("actions.deactivate")}
                           </button>
                         ) : (
                           <button
@@ -797,7 +795,7 @@ export function ModuleDetailPage() {
                             type="button"
                             onClick={() => activateAssessment(a.id)}
                           >
-                            Activate
+                            {t("actions.activate")}
                           </button>
                         )
                       ) : null}
@@ -816,7 +814,7 @@ export function ModuleDetailPage() {
         <>
           <div className="card p-6">
             <h2 className="text-lg font-extrabold">
-              {isAdmin ? t("moduleDetail.resourcesTitle") : "Module content"}
+              {isAdmin ? t("moduleDetail.resourcesTitle") : t("moduleDetail.user.contentTitle")}
             </h2>
             <p className="mt-1 text-sm text-slate-600">{headerSubtitle}</p>
 
@@ -851,14 +849,14 @@ export function ModuleDetailPage() {
                           title={!r.hasText ? t("moduleDetail.noExtractedText") : ""}
                           type="button"
                         >
-                          {isAdmin ? t("moduleDetail.fullText") : "Read"}
+                          {isAdmin ? t("moduleDetail.fullText") : t("moduleDetail.user.read")}
                         </button>
                       </div>
                     </div>
 
                     <div className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700 max-h-24 overflow-hidden">
                       {r.hasText ? (
-                        normalizeAllCapsText(r.previewText)
+                        normalizeAllCapsText(isEs && r.previewTextEs ? r.previewTextEs : r.previewText)
                       ) : (
                         <span className="text-slate-500">{t("moduleDetail.noExtractedText")}</span>
                       )}
@@ -883,9 +881,23 @@ export function ModuleDetailPage() {
                 </button>
               </div>
 
-              <pre className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-50 p-4 text-sm text-slate-800">
-                {normalizeAllCapsText(active.text || "—")}
-              </pre>
+              {(() => {
+                const displayText = (isEs && active.textEs) ? active.textEs : (active.text || "");
+                const paragraphs = displayText.split(/\n+/).filter((p) => p.trim().length > 0);
+                return (
+                  <div className="mt-4 rounded-2xl bg-slate-50 p-4 space-y-3">
+                    {paragraphs.length > 0 ? (
+                      paragraphs.map((p, i) => (
+                        <p key={i} className="text-sm text-slate-800 leading-relaxed">
+                          {normalizeAllCapsText(p)}
+                        </p>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-500">—</p>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           ) : null}
         </>
@@ -895,7 +907,7 @@ export function ModuleDetailPage() {
       {isAdmin && (
         <div className="card p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
-            Admin tools
+            {t("admin.toolsLabel")}
           </p>
           <div className="flex flex-wrap gap-2">
             {/* Edit module */}
@@ -916,7 +928,7 @@ export function ModuleDetailPage() {
               type="button"
             >
               <span className="text-sm">{syncing ? "⏳" : "↻"}</span>
-              {syncing ? "Syncing…" : "Sync Drive"}
+              {syncing ? t("actions.syncing") : t("actions.sync")}
             </button>
 
             {/* Generate / Append assessment */}
@@ -929,8 +941,8 @@ export function ModuleDetailPage() {
             >
               <span>{hasActiveAssessment ? "⚡" : "✨"}</span>
               {hasActiveAssessment
-                ? (appendLoading ? "+10…" : "+10 Questions")
-                : (genLoading ? "Generating…" : "Generate")}
+                ? (appendLoading ? t("actions.appending10") : t("actions.append10"))
+                : (genLoading ? t("actions.generating") : t("actions.generate"))}
             </button>
           </div>
         </div>

@@ -125,18 +125,25 @@
   },
   "admin": {
     "usersTitle": "User Management",
-    "contentTitle": "Content Management"
+    "contentTitle": "Content Management",
+    "toolsLabel": "Admin tools"
   },
   "actions": {
     "open": "Open",
     "close": "Close",
     "save": "Save",
-    "sync": "Sync from Drive",
+    "sync": "Sync Drive",
     "syncing": "Syncing…",
     "openInDrive": "Open in Drive",
     "refresh": "Refresh",
     "edit": "Edit",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "generate": "Generate",
+    "generating": "Generating…",
+    "append10": "+10 Questions",
+    "appending10": "+10…"
   },
   "status": {
     "loading": "Loading…",
@@ -217,7 +224,9 @@
       "contentTitle": "Module content",
       "contentSubtitle": "Training content is available inside the app. Open Full text to read.",
       "read": "Read"
-    }
+    },
+    "showInactive": "Show inactive ({{count}})",
+    "inactive": "Inactive"
   },
   "assessmentRunner": {
     "progress": "Question {{current}} of {{total}}",
@@ -1236,5 +1245,11 @@
       "subcategory": "Subcategory",
       "subcategoryNone": "No subcategory"
     }
+  },
+  "aiCoach": {
+    "subtitle": "Your personal training assistant",
+    "context": "Context",
+    "autoRecommended": "Auto (recommended)",
+    "selectedModule": "Selected module"
   }
 }

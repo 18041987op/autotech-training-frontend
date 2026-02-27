@@ -36,10 +36,10 @@ export function AICoachWidget({
   }, []);
 
   const selectedLabel = useMemo(() => {
-    if (!selectedModuleId) return "Auto (recommended)";
+    if (!selectedModuleId) return t("aiCoach.autoRecommended");
     const m = modules.find((x) => String(x.id) === String(selectedModuleId));
-    return m ? m.title : "Selected module";
-  }, [selectedModuleId, modules]);
+    return m ? m.title : t("aiCoach.selectedModule");
+  }, [selectedModuleId, modules, t]);
 
   const ask = async () => {
     if (!question.trim()) return;
@@ -82,27 +82,27 @@ export function AICoachWidget({
       {showHeader ? (
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold">{t("pages.aiCoachTitle") || "AI Coach"}</h1>
-            <p className="text-sm text-slate-600">Your personal training assistant</p>
+            <h1 className="text-2xl font-extrabold">{t("pages.aiCoachTitle")}</h1>
+            <p className="text-sm text-slate-600">{t("aiCoach.subtitle")}</p>
             <p className="mt-1 text-xs text-slate-500">
-              Context: <span className="font-semibold text-slate-700">{selectedLabel}</span>
+              {t("aiCoach.context")}: <span className="font-semibold text-slate-700">{selectedLabel}</span>
             </p>
           </div>
 
           {onClose ? (
             <button className="btn-outline-sm" type="button" onClick={onClose}>
-              Close
+              {t("actions.close")}
             </button>
           ) : null}
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm font-semibold text-slate-700">
-            Context: <span className="font-extrabold">{selectedLabel}</span>
+            {t("aiCoach.context")}: <span className="font-extrabold">{selectedLabel}</span>
           </p>
           {onClose ? (
             <button className="btn-outline-sm" type="button" onClick={onClose}>
-              Close
+              {t("actions.close")}
             </button>
           ) : null}
         </div>

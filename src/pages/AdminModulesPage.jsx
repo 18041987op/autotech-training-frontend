@@ -89,6 +89,23 @@ export function AdminModulesPage() {
     }
   };
 
+  // ── Module title/description translation migration ───────────────────────
+  const [moduleMigrating, setModuleMigrating] = useState(false);
+  const [moduleMigDone, setModuleMigDone]     = useState(null);
+
+  const runModuleMigration = async () => {
+    setModuleMigrating(true);
+    setModuleMigDone(null);
+    try {
+      const data = await apiFetch("/api/admin/migrate-translate-modules", { method: "POST" });
+      setModuleMigDone(data);
+    } catch (e) {
+      setModuleMigDone({ error: e.message });
+    } finally {
+      setModuleMigrating(false);
+    }
+  };
+
   const [editing, setEditing] = useState(null); // module object or {id:null} for create
   const [form, setForm] = useState({
     title: "",
@@ -639,6 +656,45 @@ export function AdminModulesPage() {
           </div>{/* end sheet */}
         </div>
       ) : null}
+
+      {/* ── Database Tools: Translate existing module titles ─────────────────── */}
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-800">🏷️ Translate Module Titles</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Translate existing module titles and descriptions to Spanish using AI.
+              Safe to run multiple times — skips already-translated modules.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={runModuleMigration}
+            disabled={moduleMigrating}
+            className="shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-extrabold text-white shadow-sm disabled:opacity-50 transition-all"
+            style={{ background: "#1E6FAE" }}
+          >
+            {moduleMigrating ? "🔄 Translating…" : "▶ Run"}
+          </button>
+        </div>
+        {moduleMigDone && !moduleMigrating && (
+          <div className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${
+            moduleMigDone.error
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-green-200 bg-green-50 text-green-700"
+          }`}>
+            {moduleMigDone.error ? (
+              <span>❌ {moduleMigDone.error}</span>
+            ) : (
+              <span>
+                ✅ Done — <strong>{moduleMigDone.translated}</strong> modules translated
+                {moduleMigDone.failed > 0 && <span className="text-red-600"> · {moduleMigDone.failed} failed</span>}
+                {" "}· {moduleMigDone.skipped} already had translations.
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ── Database Tools: Translate existing questions ─────────────────────── */}
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
