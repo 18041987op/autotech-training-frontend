@@ -909,19 +909,19 @@ export function ModuleDetailPage() {
                   text.length < 80 && !text.endsWith(".") && !text.endsWith(",");
 
                 return (
-                  <div className="mt-4 rounded-2xl bg-slate-50 p-4 sm:p-6 space-y-4 max-w-prose mx-auto w-full">
+                  <div className="mt-4 rounded-2xl bg-slate-50 p-5 sm:p-8 space-y-4 w-full max-w-4xl mx-auto">
                     {blocks.length > 0 ? (
                       blocks.map((block, i) => {
                         const normalized = normalizeAllCapsText(block);
                         if (isHeading(block) && i > 0) {
                           return (
-                            <p key={i} className="text-sm font-bold text-slate-700 mt-2">
+                            <p key={i} className="text-base sm:text-lg font-bold text-slate-700 mt-4">
                               {normalized}
                             </p>
                           );
                         }
                         return (
-                          <p key={i} className="text-sm text-slate-800 leading-relaxed">
+                          <p key={i} className="text-base sm:text-[17px] text-slate-800 leading-relaxed sm:leading-7">
                             {normalized}
                           </p>
                         );
