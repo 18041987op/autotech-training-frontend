@@ -474,7 +474,7 @@ export function ModuleDetailPage() {
   return (
     <div className="space-y-5">
       <PageHero
-        eyebrow="AutoRx Academy"
+        eyebrow="AutoRx Training"
         title={normalizeAllCaps(moduleTitle)}
         subtitle={
           <span

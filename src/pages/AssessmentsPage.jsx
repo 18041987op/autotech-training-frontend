@@ -84,7 +84,7 @@ export function AssessmentsPage() {
   return (
     <div className="space-y-5">
       <PageHero
-        eyebrow="AutoRx Academy"
+        eyebrow="AutoRx Training"
         title={t("modules.assessments.title")}
         subtitle={t("modules.assessments.subtitle")}
         actions={

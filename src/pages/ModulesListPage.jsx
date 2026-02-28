@@ -474,7 +474,7 @@ export function ModulesListPage({ pageType }) {
     <div className="space-y-5">
       {/* Page header */}
       <PageHero
-        eyebrow="AutoRx Academy"
+        eyebrow="AutoRx Training"
         title={safeT(titleKey, "Training")}
         subtitle={safeT(subtitleKey, "")}
         actions={

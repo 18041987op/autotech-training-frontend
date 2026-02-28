@@ -481,7 +481,7 @@ export function MyProgressPage() {
       <style>{BADGE_ANIMATIONS}</style>
 
       <PageHero
-        eyebrow="AutoRx Academy"
+        eyebrow="AutoRx Training"
         title={t("progress.title")}
         subtitle={t("progress.subtitle")}
       />

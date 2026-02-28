@@ -1,5 +1,6 @@
 {
-  "appName": "AutoTech Training Hub",
+  "appName": "AutoRx Training",
+  "appSlogan": "Built for the shop floor.",
   "nav": {
     "home": "Home",
     "onboarding": "Onboarding",

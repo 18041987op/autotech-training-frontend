@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const DEFAULT_GRADIENT =
   "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)";
@@ -12,6 +13,7 @@ export function PageHero({
   right,
   gradient = DEFAULT_GRADIENT,
 }) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -33,9 +35,13 @@ export function PageHero({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             {eyebrow ? (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
                   {eyebrow}
+                </span>
+                <span className="text-white/30 text-[10px]">·</span>
+                <span className="text-[10px] font-medium italic text-white/55 tracking-wide">
+                  {t("appSlogan")}
                 </span>
               </div>
             ) : null}

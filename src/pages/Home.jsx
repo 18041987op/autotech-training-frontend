@@ -188,9 +188,13 @@ function HeroBanner({ user, t, navigate }) {
         <div className="flex items-start justify-between gap-4">
           {/* Left: brand pill + greeting + CTA */}
           <div className="min-w-0 flex-1">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 mb-3 backdrop-blur-sm">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
-                AutoRx Academy
+                AutoRx Training
+              </span>
+              <span className="text-white/30 text-[10px]">·</span>
+              <span className="text-[10px] font-medium italic text-white/55 tracking-wide">
+                {t("appSlogan")}
               </span>
             </div>
 

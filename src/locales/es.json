@@ -1,5 +1,6 @@
 {
-  "appName": "Centro de Capacitación AutoTech",
+  "appName": "AutoRx Training",
+  "appSlogan": "Hecho para el taller.",
   "nav": {
     "home": "Inicio",
     "onboarding": "Inducción",
