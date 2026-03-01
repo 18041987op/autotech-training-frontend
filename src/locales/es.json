@@ -119,7 +119,19 @@
     "manageUsers": "Administrar usuarios",
     "manageUsersHelp": "Aprobar cuentas y cambiar roles.",
     "manageModules": "Administrar módulos",
-    "manageModulesHelp": "Crear y editar módulos."
+    "manageModulesHelp": "Crear y editar módulos.",
+    "changePasswordTitle": "Cambiar contraseña",
+    "changePasswordSubtitle": "Actualiza tu contraseña de acceso.",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "changePasswordBtn": "Actualizar contraseña",
+    "changingPassword": "Actualizando…",
+    "passwordSuccess": "Contraseña actualizada correctamente.",
+    "passwordMismatch": "Las nuevas contraseñas no coinciden.",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres.",
+    "passwordSameAsCurrent": "La nueva contraseña debe ser diferente a la actual.",
+    "darkMode": "Modo oscuro"
   },
   "brand": {
     "tagline": "Aprendizaje + cultura"

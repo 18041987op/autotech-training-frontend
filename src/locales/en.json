@@ -119,7 +119,19 @@
     "manageUsers": "Manage users",
     "manageUsersHelp": "Approve accounts and change roles.",
     "manageModules": "Manage modules",
-    "manageModulesHelp": "Create and edit training modules."
+    "manageModulesHelp": "Create and edit training modules.",
+    "changePasswordTitle": "Change password",
+    "changePasswordSubtitle": "Update your login password.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "changePasswordBtn": "Update password",
+    "changingPassword": "Updating…",
+    "passwordSuccess": "Password updated successfully.",
+    "passwordMismatch": "New passwords don't match.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordSameAsCurrent": "New password must be different from current.",
+    "darkMode": "Dark mode"
   },
   "brand": {
     "tagline": "Company learning + culture"
