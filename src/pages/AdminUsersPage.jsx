@@ -1,7 +1,89 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router-dom";
+import { KeyRound, Eye, EyeOff, CheckCircle2, X } from "lucide-react";
 import { apiFetch } from "../lib/api";
+
+// ─── Inline reset-password widget ────────────────────────────────────────────
+function ResetPasswordInline({ userId, onClose }) {
+  const [pwd, setPwd]       = useState("");
+  const [show, setShow]     = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError]   = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (pwd.length < 8) return setError("Minimum 8 characters.");
+    setLoading(true);
+    try {
+      await apiFetch(`/api/admin/users/${userId}/password`, {
+        method: "PATCH",
+        body: { password: pwd },
+      });
+      setSuccess(true);
+      setTimeout(onClose, 1500);
+    } catch (err) {
+      setError(err.message || "Error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="relative flex-1 min-w-[180px]">
+        <input
+          type={show ? "text" : "password"}
+          value={pwd}
+          onChange={(e) => setPwd(e.target.value)}
+          placeholder="New password (min 8)"
+          autoFocus
+          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 pr-9 text-sm outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-soft transition"
+        />
+        <button
+          type="button"
+          onClick={() => setShow((v) => !v)}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          tabIndex={-1}
+        >
+          {show ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
+      {success ? (
+        <span className="flex items-center gap-1 text-xs font-semibold text-green-600">
+          <CheckCircle2 className="h-3.5 w-3.5" /> Updated!
+        </span>
+      ) : (
+        <>
+          <button
+            type="submit"
+            disabled={loading || pwd.length < 8}
+            className="btn-primary btn-sm disabled:opacity-50"
+          >
+            {loading ? "Saving…" : "Save"}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn-outline-sm px-2"
+            title="Cancel"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </>
+      )}
+
+      {error && <p className="w-full text-xs text-red-600 font-medium">{error}</p>}
+    </form>
+  );
+}
 
 function Pill({ children }) {
   return (
@@ -19,6 +101,7 @@ export function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [showInactive, setShowInactive] = useState(false);
+  const [resetingId, setResetingId] = useState(null); // userId with reset form open
 
   // Add User modal state
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -276,6 +359,20 @@ export function AdminUsersPage() {
                       </button>
                     ) : null}
 
+                    {/* Reset password button */}
+                    <button
+                      type="button"
+                      className={`rounded-xl border px-3 py-2 text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                        resetingId === u.id
+                          ? "border-brand-primary bg-brand-soft text-brand-primary"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-brand-primary hover:text-brand-primary"
+                      }`}
+                      onClick={() => setResetingId(resetingId === u.id ? null : u.id)}
+                    >
+                      <KeyRound className="h-3.5 w-3.5" />
+                      Reset pwd
+                    </button>
+
                     <select
                       className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold transition-colors hover:bg-brand-soft focus:outline-none focus:ring-2 focus:ring-brand-soft"
                       value={u.role}
@@ -288,6 +385,14 @@ export function AdminUsersPage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Inline reset-password form */}
+                {resetingId === u.id && (
+                  <ResetPasswordInline
+                    userId={u.id}
+                    onClose={() => setResetingId(null)}
+                  />
+                )}
               </div>
             ))}
           </div>
