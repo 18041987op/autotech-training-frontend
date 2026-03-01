@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   BookOpen,
@@ -155,7 +155,7 @@ export function Layout({ user, onSignOut }) {
 function Brand() {
   const [imgErr, setImgErr] = React.useState(false);
   return (
-    <div className="px-2 py-1">
+    <Link to="/" className="block px-2 py-1">
       {imgErr ? (
         /* Fallback: icon + text */
         <div className="flex items-center gap-3">
@@ -176,7 +176,7 @@ function Brand() {
           onError={() => setImgErr(true)}
         />
       )}
-    </div>
+    </Link>
   );
 }
 
@@ -185,7 +185,7 @@ function Brand() {
 function BrandInline() {
   const [imgErr, setImgErr] = React.useState(false);
   return (
-    <div className="flex items-center gap-2">
+    <Link to="/" className="flex items-center gap-2">
       {imgErr ? (
         <>
           <div className="h-8 w-8 rounded-xl bg-brand-primary flex items-center justify-center">
@@ -201,7 +201,7 @@ function BrandInline() {
           onError={() => setImgErr(true)}
         />
       )}
-    </div>
+    </Link>
   );
 }
 
