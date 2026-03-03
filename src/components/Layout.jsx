@@ -15,7 +15,8 @@ import {
   MoreHorizontal,
   Wrench,
   X,
-  ExternalLink
+  ExternalLink,
+  BarChart2,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -56,10 +57,11 @@ export function Layout({ user, onSignOut }) {
     ...(!isAdmin ? [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] : []),
   ];
 
-  // Admin section: Settings only — Users & Content live inside Settings page
+  // Admin section
   const adminExtra = isAdmin
     ? [
-        { to: "/settings", label: t("nav.settings"), icon: SettingsIcon },
+        { to: "/admin/progress", label: t("nav.dashboard"), icon: BarChart2 },
+        { to: "/settings",       label: t("nav.settings"),  icon: SettingsIcon },
       ]
     : [];
 
