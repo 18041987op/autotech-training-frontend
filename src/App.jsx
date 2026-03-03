@@ -19,6 +19,7 @@ import { MyProgressPage } from "./pages/MyProgressPage";
 import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AdminModulesPage } from "./pages/AdminModulesPage";
+import { AdminProgressPage } from "./pages/AdminProgressPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
 
@@ -126,6 +127,7 @@ function AppRoutes() {
 
         {/* Keep admin placeholders for later */}
         <Route path="admin/users" element={<AdminUsersPage />} />
+        <Route path="admin/progress" element={<AdminProgressPage />} />
         <Route path="admin/content" element={<ModulesListPage pageType="admin-content-placeholder" />} />
       </Route>
 

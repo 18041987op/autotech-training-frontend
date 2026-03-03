@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useOutletContext } from "react-router-dom";
-import { Users, FolderKanban } from "lucide-react";
+import { Users, FolderKanban, BarChart2 } from "lucide-react";
 
 const LANGUAGES = [
   { code: "en", flag: "🇺🇸", label: "English" },
@@ -90,6 +90,19 @@ export function SettingsPage() {
               <div className="min-w-0">
                 <div className="text-sm font-extrabold">{t("settings.manageModules")}</div>
                 <div className="mt-0.5 text-xs text-slate-500">{t("settings.manageModulesHelp")}</div>
+              </div>
+            </Link>
+
+            <Link
+              to="/admin/progress"
+              className="card p-4 flex items-start gap-3 transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+            >
+              <div className="shrink-0 h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
+                <BarChart2 className="h-4 w-4 text-brand-primary" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-extrabold">{t("settings.trainingProgress")}</div>
+                <div className="mt-0.5 text-xs text-slate-500">{t("settings.trainingProgressHelp")}</div>
               </div>
             </Link>
           </div>

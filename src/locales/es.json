@@ -120,6 +120,8 @@
     "manageUsersHelp": "Aprobar cuentas y cambiar roles.",
     "manageModules": "Administrar módulos",
     "manageModulesHelp": "Crear y editar módulos.",
+    "trainingProgress": "Progreso de entrenamiento",
+    "trainingProgressHelp": "Completación y scores de todos los usuarios.",
     "changePasswordTitle": "Cambiar contraseña",
     "changePasswordSubtitle": "Actualiza tu contraseña de acceso.",
     "currentPassword": "Contraseña actual",
