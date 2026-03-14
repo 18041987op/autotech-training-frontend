@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "admin": "Admin",
     "users": "Users",
-    "content": "Content"
+    "content": "Content",
+    "production": "My Production"
   },
   "common": {
     "language": "Language",
@@ -1320,5 +1321,29 @@
     "thankYou": "Got it! We'll personalize your training recommendations.",
     "mandatory": "Please select an answer to continue",
     "performanceNote": "Your metrics are below target this week — training can help close the gap."
+  },
+  "history": {
+    "title": "Production History",
+    "subtitle": "Your performance across the last 13 pay periods",
+    "teamPosition": "Team Position",
+    "outOf": "out of {{total}}",
+    "roleLabel": {
+      "tech": "Among technicians",
+      "sa": "Among service advisors"
+    },
+    "trendUp": "↑ {{pct}}% vs last 3 periods",
+    "trendDown": "↓ {{pct}}% vs last 3 periods",
+    "trendFlat": "Flat vs last 3 periods",
+    "streak1": "1 period on track 🔥",
+    "streakN": "{{n}} periods on track 🔥",
+    "trendChart": "Performance Trend",
+    "chartCaption": "{{metric}} — last 13 pay periods",
+    "leaderboard": "Team Leaderboard",
+    "latestPeriod": "Latest Period",
+    "you": "You",
+    "teammate": "Teammate",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "periodHistory": "Pay Period History"
   }
 }

@@ -22,6 +22,7 @@ import { AdminModulesPage } from "./pages/AdminModulesPage";
 import { AdminProgressPage } from "./pages/AdminProgressPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
+import { PayHistoryPage } from "./pages/PayHistoryPage";
 
 
 
@@ -118,6 +119,9 @@ function AppRoutes() {
         {/* AI Coach page */}
         <Route path="ai" element={<AICoachPage />} />
         
+        {/* Production history page */}
+        <Route path="production" element={<PayHistoryPage />} />
+
         {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />
 

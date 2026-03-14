@@ -49,6 +49,27 @@ export function useCheckinPending() {
   });
 }
 
+// ── Fetch full pay history (up to 13 periods) ────────────────────────────────
+
+export function usePayrollHistory() {
+  return useQuery({
+    queryKey: ["payroll-history"],
+    queryFn: async () => {
+      try {
+        const data = await apiFetch("/api/payroll-history");
+        return { linked: true, ...data };
+      } catch (e) {
+        if (e.message?.includes("not found") || e.message?.includes("404")) {
+          return { linked: false };
+        }
+        return { linked: false, error: e.message };
+      }
+    },
+    staleTime: 10 * 60 * 1000,
+    retry: false,
+  });
+}
+
 // ── Submit check-in response ──────────────────────────────────────────────────
 
 export function useSubmitCheckin() {

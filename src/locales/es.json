@@ -13,7 +13,8 @@
     "dashboard": "Dashboard",
     "admin": "Admin",
     "users": "Usuarios",
-    "content": "Contenido"
+    "content": "Contenido",
+    "production": "Mi Producción"
   },
   "common": {
     "language": "Idioma",
@@ -1318,5 +1319,29 @@
     "thankYou": "¡Listo! Personalizaremos tus recomendaciones de entrenamiento.",
     "mandatory": "Por favor selecciona una respuesta para continuar",
     "performanceNote": "Tus métricas están por debajo del objetivo esta semana — el entrenamiento puede ayudarte a cerrar la brecha."
+  },
+  "history": {
+    "title": "Historial de Producción",
+    "subtitle": "Tu desempeño en los últimos 13 períodos de pago",
+    "teamPosition": "Posición en el Equipo",
+    "outOf": "de {{total}}",
+    "roleLabel": {
+      "tech": "Entre los técnicos",
+      "sa": "Entre los asesores de servicio"
+    },
+    "trendUp": "↑ {{pct}}% vs últimos 3 períodos",
+    "trendDown": "↓ {{pct}}% vs últimos 3 períodos",
+    "trendFlat": "Sin cambio vs últimos 3 períodos",
+    "streak1": "1 período en objetivo 🔥",
+    "streakN": "{{n}} períodos en objetivo 🔥",
+    "trendChart": "Tendencia de Producción",
+    "chartCaption": "{{metric}} — últimos 13 períodos de pago",
+    "leaderboard": "Tabla de Posiciones",
+    "latestPeriod": "Período Actual",
+    "you": "Tú",
+    "teammate": "Compañero",
+    "showAll": "Ver todos ({{count}})",
+    "showLess": "Ver menos",
+    "periodHistory": "Historial de Períodos"
   }
 }
