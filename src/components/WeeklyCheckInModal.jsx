@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, AlertTriangle, X } from "lucide-react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 import { useSubmitCheckin } from "../hooks/usePayrollMetrics";
 
 // ── Question options per role ─────────────────────────────────────────────────

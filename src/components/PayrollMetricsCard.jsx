@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { TrendingUp, Award, Clock, DollarSign, Target, Car, Wrench, AlertCircle } from "lucide-react";
+import { TrendingUp, Award, DollarSign, Car, Wrench, AlertCircle } from "lucide-react";
 
 // ── Tier colour map ───────────────────────────────────────────────────────────
 const TIER_STYLE = {
