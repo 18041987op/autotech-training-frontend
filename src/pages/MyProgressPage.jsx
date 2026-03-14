@@ -380,7 +380,7 @@ export function MyProgressPage() {
     if (checkinData?.pending && metricsData?.linked) {
       setShowCheckin(true);
     }
-  }, [checkinData?.pending, metricsData?.linked]);
+  }, [checkinData, metricsData]);
 
   useEffect(() => {
     (async () => {
