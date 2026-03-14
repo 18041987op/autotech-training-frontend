@@ -1265,5 +1265,58 @@
     "context": "Contexto",
     "autoRecommended": "Auto (recomendado)",
     "selectedModule": "Módulo seleccionado"
+  },
+  "payroll": {
+    "title": "Métricas de Producción",
+    "subtitle": "Tu desempeño en este período de pago",
+    "linkedBadge": "En vivo desde Nómina",
+    "notLinked": "Sin datos de nómina enlazados",
+    "notLinkedHint": "Pide a tu gerente que conecte tu cuenta de entrenamiento con nómina.",
+    "period": "Período de Pago",
+    "rank": "Posición en el Equipo",
+    "tier": "Nivel",
+    "motivation": "El coach dice",
+    "billedHours": "Horas Producidas",
+    "laborSales": "Ventas de Mano de Obra",
+    "jobCount": "Trabajos",
+    "closeRatio": "Tasa de Cierre",
+    "aro": "ARO",
+    "totalSold": "Total Vendido",
+    "carCount": "Carros",
+    "benchmarks": "Benchmarks",
+    "entry": "Básico",
+    "developing": "Desarrollando",
+    "proficient": "Competente",
+    "expert": "Experto",
+    "showMetrics": "Mostrar métricas de producción",
+    "hideMetrics": "Ocultar métricas de producción",
+    "noDataThisPeriod": "Sin datos para este período",
+    "hoursUnit": "hrs"
+  },
+  "checkin": {
+    "title": "Check-In Semanal",
+    "subtitle": "Una pregunta rápida para personalizar tu entrenamiento",
+    "techQuestion": "¿En qué área sientes que necesitas más entrenamiento?",
+    "saQuestion": "¿En qué parte del proceso de ventas podrías mejorar?",
+    "techOptions": {
+      "brakes": "Frenos",
+      "suspension": "Suspensión y Dirección",
+      "diagnostics": "Diagnóstico y Electrónica",
+      "engine": "Rendimiento del Motor",
+      "maintenance": "Mantenimiento Preventivo",
+      "other": "Otro"
+    },
+    "saOptions": {
+      "presenting": "Presentar opciones de reparación al cliente",
+      "declined": "Seguimiento de trabajos rechazados",
+      "estimates": "Precisión en estimados",
+      "techComm": "Comunicación con técnicos",
+      "other": "Otro"
+    },
+    "submit": "Enviar",
+    "submitting": "Guardando…",
+    "thankYou": "¡Listo! Personalizaremos tus recomendaciones de entrenamiento.",
+    "mandatory": "Por favor selecciona una respuesta para continuar",
+    "performanceNote": "Tus métricas están por debajo del objetivo esta semana — el entrenamiento puede ayudarte a cerrar la brecha."
   }
 }

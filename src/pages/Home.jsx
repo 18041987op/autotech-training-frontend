@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -12,6 +12,8 @@ import {
   Target,
   Award,
   ArrowRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 import { useProgress, useProgressBadges } from "../hooks/useProgress";
@@ -20,6 +22,11 @@ import {
   ALL_BADGE_IDS,
   AnimatedBadge,
 } from "../components/BadgeSystem";
+import { PayrollMetricsCard } from "../components/PayrollMetricsCard";
+import { usePayrollMetrics } from "../hooks/usePayrollMetrics";
+
+// Persist show/hide preference in localStorage
+const METRICS_PREF_KEY = "home_show_payroll_metrics";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function getGreetingKey() {
@@ -406,6 +413,62 @@ function EarnedBadgesRow({ badgesData, isLoading, t, navigate }) {
   );
 }
 
+// ── PayrollMetricsWidget ──────────────────────────────────────────────────────
+// Collapsible widget on the Home page. Toggle persisted in localStorage.
+function PayrollMetricsWidget({ t }) {
+  const { data: metricsData, isLoading } = usePayrollMetrics();
+
+  const [show, setShow] = useState(() => {
+    try {
+      const stored = localStorage.getItem(METRICS_PREF_KEY);
+      // Default to shown (true) unless explicitly set to "false"
+      return stored === null ? true : stored === "true";
+    } catch {
+      return true;
+    }
+  });
+
+  const toggle = () => {
+    const next = !show;
+    setShow(next);
+    try { localStorage.setItem(METRICS_PREF_KEY, String(next)); } catch {}
+  };
+
+  // Don't render anything while loading (avoids flash of "not linked")
+  if (isLoading) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: 0.1 }}
+    >
+      {/* Toggle row */}
+      <button
+        type="button"
+        onClick={toggle}
+        className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors mb-2 select-none"
+      >
+        {show ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+        {show ? t("payroll.hideMetrics") : t("payroll.showMetrics")}
+      </button>
+
+      {/* Card (compact mode on home) */}
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.25 }}
+          className="overflow-hidden"
+        >
+          <PayrollMetricsCard metricsData={metricsData} compact />
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 export function Home({ user }) {
   const { t } = useTranslation();
@@ -425,13 +488,16 @@ export function Home({ user }) {
       {/* 1 — Hero banner */}
       <HeroBanner user={user} t={t} navigate={navigate} />
 
-      {/* 2 — Stats grid */}
+      {/* 2 — Production metrics widget (collapsible, localStorage persisted) */}
+      <PayrollMetricsWidget t={t} />
+
+      {/* 3 — Stats grid */}
       <StatsGrid stats={stats} isLoading={isLoading} />
 
-      {/* 3 — Quick action cards */}
+      {/* 4 — Quick action cards */}
       <QuickActionCards t={t} navigate={navigate} />
 
-      {/* 4 — Earned badges (hidden when none) */}
+      {/* 5 — Earned badges (hidden when none) */}
       <EarnedBadgesRow
         badgesData={badgesData}
         isLoading={badgesLoading}

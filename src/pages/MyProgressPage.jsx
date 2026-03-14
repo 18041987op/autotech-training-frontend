@@ -4,6 +4,9 @@ import { apiFetch } from "../lib/api";
 import { BADGE_ANIMATIONS, BadgeShelf } from "../components/BadgeSystem";
 import { PageHero } from "../components/PageHero";
 import { normalizeAllCaps } from "../lib/text";
+import { PayrollMetricsCard } from "../components/PayrollMetricsCard";
+import { WeeklyCheckInModal } from "../components/WeeklyCheckInModal";
+import { usePayrollMetrics, useCheckinPending } from "../hooks/usePayrollMetrics";
 
 function clampPct(n) {
   const v = Number(n || 0);
@@ -366,6 +369,19 @@ export function MyProgressPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  // ── Payroll metrics + check-in ───────────────────────────────────────────
+  const { data: metricsData } = usePayrollMetrics();
+  const { data: checkinData } = useCheckinPending();
+  const [showCheckin, setShowCheckin]   = useState(false);
+  const isTech = metricsData?.employee?.is_tech ?? true;
+
+  // Show check-in modal once metrics & pending flag are both loaded
+  useEffect(() => {
+    if (checkinData?.pending && metricsData?.linked) {
+      setShowCheckin(true);
+    }
+  }, [checkinData?.pending, metricsData?.linked]);
+
   useEffect(() => {
     (async () => {
       try {
@@ -480,11 +496,22 @@ export function MyProgressPage() {
     <div className="space-y-5 overflow-x-hidden">
       <style>{BADGE_ANIMATIONS}</style>
 
+      {/* Weekly check-in modal (mandatory when metrics below threshold) */}
+      {showCheckin && (
+        <WeeklyCheckInModal
+          isTech={isTech}
+          onClose={() => setShowCheckin(false)}
+        />
+      )}
+
       <PageHero
         eyebrow="AutoRx Training"
         title={t("progress.title")}
         subtitle={t("progress.subtitle")}
       />
+
+      {/* Production metrics from payroll portal */}
+      <PayrollMetricsCard metricsData={metricsData} />
 
       {/* Summary (compact on mobile) */}
       <div className="card p-6">

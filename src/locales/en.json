@@ -1267,5 +1267,58 @@
     "context": "Context",
     "autoRecommended": "Auto (recommended)",
     "selectedModule": "Selected module"
+  },
+  "payroll": {
+    "title": "Production Metrics",
+    "subtitle": "Your performance this pay period",
+    "linkedBadge": "Live from Payroll",
+    "notLinked": "No payroll data linked yet",
+    "notLinkedHint": "Ask your manager to link your training account to payroll.",
+    "period": "Pay Period",
+    "rank": "Team Rank",
+    "tier": "Tier",
+    "motivation": "Coach says",
+    "billedHours": "Billed Hours",
+    "laborSales": "Labor Sales",
+    "jobCount": "Jobs",
+    "closeRatio": "Close Ratio",
+    "aro": "ARO",
+    "totalSold": "Total Sold",
+    "carCount": "Cars",
+    "benchmarks": "Benchmarks",
+    "entry": "Entry",
+    "developing": "Developing",
+    "proficient": "Proficient",
+    "expert": "Expert",
+    "showMetrics": "Show production metrics",
+    "hideMetrics": "Hide production metrics",
+    "noDataThisPeriod": "No data yet for this period",
+    "hoursUnit": "hrs"
+  },
+  "checkin": {
+    "title": "Weekly Check-In",
+    "subtitle": "One quick question to personalize your training",
+    "techQuestion": "In what area do you feel you need more training?",
+    "saQuestion": "In what part of the sales process could you improve?",
+    "techOptions": {
+      "brakes": "Brakes",
+      "suspension": "Suspension & Steering",
+      "diagnostics": "Diagnostics & Electronics",
+      "engine": "Engine Performance",
+      "maintenance": "Preventive Maintenance",
+      "other": "Other"
+    },
+    "saOptions": {
+      "presenting": "Presenting repair options to customers",
+      "declined": "Following up on declined work",
+      "estimates": "Estimate accuracy",
+      "techComm": "Communicating with technicians",
+      "other": "Other"
+    },
+    "submit": "Submit",
+    "submitting": "Saving…",
+    "thankYou": "Got it! We'll personalize your training recommendations.",
+    "mandatory": "Please select an answer to continue",
+    "performanceNote": "Your metrics are below target this week — training can help close the gap."
   }
 }
