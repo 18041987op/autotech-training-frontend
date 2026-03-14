@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Minus, Award, Flame,
-  ChevronDown, ChevronUp, Trophy, Users, Wrench, Star,
+  ChevronDown, ChevronUp, Trophy, Star,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip,
@@ -259,7 +259,6 @@ export function PayHistoryPage() {
   const history      = useMemo(() => data?.history ?? [], [data]);
   const streak       = data?.streak ?? 0;
   const trend        = data?.trend ?? null;
-  const benchmarks   = data?.benchmarks ?? {};
   const latestItem   = history[0];
   const latestTier   = latestItem?.metrics?.tier ?? null;
   const latestRank   = latestItem?.ranking?.rank ?? null;
@@ -278,11 +277,12 @@ export function PayHistoryPage() {
 
   // Benchmark reference lines for chart
   const refLines = useMemo(() => {
+    const benchmarks = data?.benchmarks ?? {};
     if (isTech) {
       return Object.entries(benchmarks).map(([label, v]) => ({ label, v }));
     }
     return Object.entries(benchmarks.close_ratio ?? {}).map(([label, v]) => ({ label, v }));
-  }, [benchmarks, isTech]);
+  }, [data, isTech]);
 
   if (isLoading) {
     return (
