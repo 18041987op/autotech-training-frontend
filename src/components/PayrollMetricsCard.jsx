@@ -103,7 +103,7 @@ export function PayrollMetricsCard({ metricsData, compact = false }) {
     );
   }
 
-  const { employee, period, metrics, ranking, benchmarks, checkin_needed } = metricsData;
+  const { employee, period, metrics, ranking, benchmarks } = metricsData;
   const isTech = employee?.is_tech;
   const tier   = metrics?.tier;
   const tierStyle = TIER_STYLE[tier] ?? TIER_STYLE.Entry;
