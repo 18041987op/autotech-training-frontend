@@ -1236,6 +1236,151 @@
         "q3d": "Do not proceed until proper jack stands or a lift is available",
         "q3exp": "NEVER work under a vehicle supported only by a floor jack. Floor jacks are lifting devices, not safety stands. Hydraulic seals can fail without warning, causing the vehicle to drop instantly. Always use proper jack stands or a lift for any work that requires getting under the vehicle."
       }
+    },
+    "jobAssignment": {
+      "title": "Job Assignment & Dispatch",
+      "description": "Learn how to assign and reassign jobs to technicians using the priority queue and 7 override rules.",
+      "section1Title": "The Priority Queue",
+      "section1Subtitle": "Tap each technician to see their profile and dispatch number.",
+      "section2Title": "Override Rules",
+      "section2Subtitle": "7 situations that change the normal dispatch order. Tap each rule to expand.",
+      "section3Title": "Scenario Practice",
+      "section3Subtitle": "4 real-world dispatch situations. Choose the correct action.",
+      "section4Title": "Final Quiz",
+      "section4Subtitle": "3 knowledge questions. Select the best answer for each.",
+      "section1Tip": "Dispatch numbers are assigned by management based on technical knowledge and company tenure. They reflect overall capability and trust — not just seniority.",
+      "section2Tip": "Override rules exist to protect customers and keep the shop efficient. When in doubt, apply the rule that best serves the waiting customer and shop flow.",
+      "queueLabel": "Queue",
+      "techProfile": "Technician Profile",
+      "correct": "Correct",
+      "incorrect": "Incorrect",
+      "navPills": {
+        "queue":     "📋 Queue",
+        "rules":     "⚠️ Rules",
+        "scenarios": "🎯 Scenarios",
+        "quiz":      "📝 Quiz"
+      },
+      "techs": {
+        "romel": {
+          "name": "Romel",
+          "profile": "Most senior technician at AutoRx. Highest diagnostic and repair skill across all vehicle systems. First in line for all job assignments. Go-to technician for complex or unfamiliar vehicles."
+        },
+        "juan": {
+          "name": "Juan",
+          "profile": "Second most senior. Strong across multiple vehicle systems including brakes, suspension, and driveability. Handles most jobs independently with high accuracy and efficiency."
+        },
+        "eluzahin": {
+          "name": "Eluzahin",
+          "profile": "Mid-level technician. Developing expertise in routine services and common repairs. Works efficiently on familiar jobs and escalates when needed."
+        },
+        "kevin": {
+          "name": "Kevin",
+          "profile": "Developing technician. Handles routine maintenance and is building diagnostic skills. Assigned jobs matched to current skill level to support continued growth."
+        },
+        "ivan": {
+          "name": "Ivan",
+          "profile": "Newest team member. Focused on routine maintenance and basic repairs. Currently building familiarity with shop systems and processes."
+        }
+      },
+      "rules": {
+        "punctuality": {
+          "label": "Punctuality",
+          "short": "Late without excuse → moves to end of queue",
+          "detail": "A technician who arrives late without a valid excuse is moved to the end of the queue for that day's job assignments. The jobs that would have gone to them are redistributed to the technicians ahead. Consistent late arrivals may result in a permanent change to the dispatch number."
+        },
+        "committedTime": {
+          "label": "Committed Time",
+          "short": "Promised delivery time cannot be compromised",
+          "detail": "If a technician has already committed to completing a job by a specific time — a promise made to the customer — they should not receive a new assignment that would conflict with that deadline. The new job goes to the next available technician in queue."
+        },
+        "waitingCustomer": {
+          "label": "Waiting Room Customer",
+          "short": "Customer waiting → next available tech takes it",
+          "detail": "When a customer is waiting in the waiting room, the job goes to the next available technician regardless of normal queue order. Minimizing customer wait time takes priority over rotation. Any idle or just-finished technician should take the job immediately."
+        },
+        "abandonedWork": {
+          "label": "Abandoned Work",
+          "short": "Absent tech's unfinished job → reassigned to next qualified",
+          "detail": "If a technician is absent and left a job incomplete, the job is reassigned to the next technician in queue who has the skill to complete it. The absent technician loses the job credit. If no one in the queue has the required skill, escalate to the shop manager."
+        },
+        "skillGap": {
+          "label": "Skill Gap",
+          "short": "Can't do the job → skip to next qualified tech",
+          "detail": "If the next technician in queue lacks the skill for a specific job, the job passes to the next qualified technician. Assigning work to someone not equipped to handle it wastes the technician's time and delays the customer. This override protects shop efficiency and job quality."
+        },
+        "rejectionLimit": {
+          "label": "Rejection Limit",
+          "short": "3+ rejections in a week → end of queue",
+          "detail": "A technician may decline a job assignment. However, after 3 rejections in the same week, the technician is moved to the end of the queue for the remainder of that week. Frequent refusals disrupt shop flow and are tracked by management."
+        },
+        "returnVehicle": {
+          "label": "Return Vehicle",
+          "short": "Repeat visit → always goes back to original technician",
+          "detail": "A vehicle returning for follow-up work on a previous repair goes back to the same technician who performed the original job — regardless of queue position. Exception: if the original technician is absent or arrived late without excuse, the job follows normal queue order for that day."
+        }
+      },
+      "scenarios": {
+        "s1": {
+          "title": "Scenario 1 — Waiting Room",
+          "story": "It's 10:15 AM. The queue order is Romel → Juan → Eluzahin → Kevin → Ivan. A new customer just walked in and is waiting in the waiting room. Eluzahin just finished his previous job and is available. Romel is still working. Juan is between jobs but is reviewing paperwork. Who should get the next assignment?",
+          "a": "Romel — he's #1 in queue",
+          "b": "Juan — he's #2 and between jobs",
+          "c": "Eluzahin — he's the next available technician",
+          "d": "Ivan — give him the experience",
+          "answer": "c",
+          "explanation": "The Waiting Room Customer rule overrides normal queue rotation. The next available technician — in this case Eluzahin, who just finished — takes the job immediately to minimize the customer's wait time."
+        },
+        "s2": {
+          "title": "Scenario 2 — Return Vehicle",
+          "story": "A customer's vehicle is back for a follow-up on brake work performed last week. Kevin was the technician who did the original job. Today, Romel is #1 in queue and Juan is #2. Kevin is currently available but is #4 in the rotation. Who should take the return vehicle?",
+          "a": "Romel — he's #1 and most experienced",
+          "b": "Juan — he's #2 and also very capable",
+          "c": "Kevin — he did the original job",
+          "d": "Anyone who is free at the moment",
+          "answer": "c",
+          "explanation": "The Return Vehicle rule states that follow-up work on a previous repair always goes back to the original technician, regardless of queue position. Kevin did the original brake job, so he handles the return — unless he is absent or arrived late without excuse."
+        },
+        "s3": {
+          "title": "Scenario 3 — Late Arrival",
+          "story": "Ivan normally holds position #5 in the queue. This morning he arrived 45 minutes late with no prior notice and no valid excuse. The other technicians (Romel, Juan, Eluzahin, Kevin) were all on time. Where does Ivan stand in today's dispatch queue?",
+          "a": "He stays at #5 — nothing changes for one late day",
+          "b": "He moves to #3 since two people already got jobs",
+          "c": "He is skipped entirely for today",
+          "d": "He goes to the end of the queue after all on-time technicians",
+          "answer": "d",
+          "explanation": "The Punctuality rule applies: a technician who arrives late without a valid excuse moves to the end of the queue for that day. Ivan goes behind all four technicians who arrived on time. His position is #5 tomorrow (assuming on-time arrival), but today he is last."
+        },
+        "s4": {
+          "title": "Scenario 4 — Abandoned Work",
+          "story": "Juan is unexpectedly absent today. Yesterday he started a transmission service on a customer's vehicle and left it half-finished. Eluzahin is next in queue but is not certified for transmission work. Kevin is also not certified. Romel and Ivan are both available. Who takes Juan's unfinished job?",
+          "a": "Eluzahin — he's next in queue",
+          "b": "Kevin — he should learn",
+          "c": "Ivan — he needs the experience",
+          "d": "Romel — he is qualified and next in queue with the skill",
+          "answer": "d",
+          "explanation": "The Skill Gap rule overrides normal queue order. Since Eluzahin and Kevin lack the certification for transmission work, the job passes to Romel — the next technician in queue who has the required skill. Assigning the job to an unqualified technician would waste time and could damage the vehicle."
+        }
+      },
+      "quiz": {
+        "q1": "What two factors determine a technician's dispatch number?",
+        "q1a": "Seniority and the number of jobs completed last month",
+        "q1b": "Technical knowledge and company tenure",
+        "q1c": "Billed hours and customer satisfaction scores",
+        "q1d": "Alphabetical order and shift start time",
+        "q1exp": "Dispatch numbers are assigned by management based on two factors: technical knowledge (overall diagnostic and repair capability) and company tenure (time working at AutoRx). Both matter — a highly skilled recent hire may rank above a long-tenured technician with lower technical capability.",
+        "q2": "A customer is waiting in the waiting room. The technician who is next in queue is in the middle of paperwork. What should happen?",
+        "q2a": "Wait for the queue technician to finish their paperwork",
+        "q2b": "Ask the customer to come back tomorrow",
+        "q2c": "The next available (free) technician takes the job immediately",
+        "q2d": "Assign the job to the lowest-ranked technician",
+        "q2exp": "The Waiting Room Customer rule overrides normal queue rotation. Any available technician should take the job right away to minimize the customer's wait. Paperwork and non-urgent tasks should yield to a waiting customer.",
+        "q3": "A technician was working on a vehicle but is absent today. The job is unfinished. The next technician in queue does not have the skill for that type of repair. What happens?",
+        "q3a": "The job waits until the original technician returns",
+        "q3b": "Assign it to the next in queue regardless of skill",
+        "q3c": "The job passes to the next technician in queue who has the required skill",
+        "q3d": "Cancel the repair order and return the vehicle",
+        "q3exp": "Two rules apply here: Abandoned Work (job must be reassigned when original tech is absent) and Skill Gap (job passes to the next qualified technician). The job goes to the next person in queue who can actually do the work. Sending it to an unqualified technician wastes their time and delays the customer."
+      }
     }
   },
   "notifications": {

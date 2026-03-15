@@ -27,6 +27,7 @@ import { BrakeSystem }              from "./BrakeSystem";
 import { TireService }              from "./TireService";
 import { EngineCooling }            from "./EngineCooling";
 import { VehicleSafety }            from "./VehicleSafety";
+import { JobAssignment }           from "./JobAssignment";
 
 // ─── Lesson configs ───────────────────────────────────────────────────────────
 
@@ -238,6 +239,44 @@ Q2: Engine overheats only at highway speed → thermostat stuck open OR low cool
 Q3: Mixing green and orange coolant → not recommended; different inhibitor packages can react.`,
 };
 
+const jobAssignmentLesson = {
+  id: "job-assignment-dispatch",
+  titleKey: "lessons.jobAssignment.title",
+  descriptionKey: "lessons.jobAssignment.description",
+  icon: "📋",
+  component: JobAssignment,
+  contentText: `JOB ASSIGNMENT & DISPATCH — INTERACTIVE LESSON
+
+SECTION 1: THE PRIORITY QUEUE
+Each technician is assigned a dispatch number based on technical knowledge and company tenure.
+Current dispatch order:
+- #1 Romel: Most senior technician. Highest technical knowledge across all systems. First to receive job assignments.
+- #2 Juan: Second most senior. Strong diagnostic and repair skills across multiple vehicle systems.
+- #3 Eluzahin: Mid-level technician. Developing expertise across common repair categories.
+- #4 Kevin: Developing technician. Handles routine services and is building diagnostic skills.
+- #5 Ivan: Newest team member. Focused on routine maintenance and basic repairs.
+
+SECTION 2: OVERRIDE RULES (7 rules that change the normal dispatch order)
+1. Punctuality: A technician who arrives late without a valid excuse moves to the end of the queue for that day's assignments. Consistent unpunctuality affects the dispatch number long-term.
+2. Committed Time: If a technician has already committed to completing a job at a specific time for a customer, they should not receive a new assignment that would conflict with that deadline. Assign to the next available technician.
+3. Waiting Room Customer: A customer who is waiting in the waiting room takes priority over the normal queue. The next available technician — regardless of queue order — should take the job to minimize customer wait time.
+4. Abandoned Work: If a technician is absent and a job was left incomplete, that job must be reassigned. It goes to the next technician in queue who has the skill to complete it. The original technician loses the job credit.
+5. Skill Gap: If the next technician in queue clearly cannot perform the assigned job (lacks the skill), the job passes to the next technician who can. Assigning a job to someone without the skill wastes time for everyone.
+6. Rejection Limit: A technician may decline a job assignment. However, after 3 rejections in a single week, the technician moves to the end of the queue for the remainder of that week.
+7. Return Vehicle: A vehicle returning for a follow-up on a previous repair goes back to the same technician who did the original work — regardless of queue position. Exception: if that technician is absent or arrived late without excuse, the job follows normal queue order.
+
+SECTION 3: SCENARIO PRACTICE
+Scenario 1 — Waiting Room Customer: Normal queue is Romel→Juan→Eluzahin. A new customer just arrived and is waiting in the waiting room. Eluzahin just finished a job. Who gets the next assignment? Answer: Eluzahin — waiting room rule overrides normal rotation; the next available technician takes it.
+Scenario 2 — Return Vehicle: A customer's car is back for a follow-up on brake work done last week by Kevin. Romel and Juan are next in queue. Who gets the job? Answer: Kevin — return vehicle rule means the original technician gets the follow-up regardless of queue.
+Scenario 3 — Late Arrival: Ivan arrived 45 minutes late this morning with no notification. He's normally #5. Where does he go in today's queue? Answer: End of queue after all present technicians — punctuality override applies.
+Scenario 4 — Abandoned Work: Juan is absent today. He had a half-finished transmission job from yesterday. Eluzahin is next in queue but is not certified for transmission. Kevin is also not certified. Who takes the job? Answer: Romel — skill gap rule means the job goes to the next technician with the required skill.
+
+SECTION 4: QUIZ ANSWERS
+Q1: Dispatch numbers are assigned based on technical knowledge + company tenure (not seniority alone, not alphabetical, not hours billed).
+Q2: Waiting room customer rule — the next available technician takes the job, bypassing normal queue order.
+Q3: Abandoned work rule — if the original technician is absent, the job goes to the next qualified technician in queue.`,
+};
+
 const vehicleSafetyLesson = {
   id: "vehicle-safety-lift-operation",
   titleKey: "lessons.vehicleSafety.title",
@@ -307,5 +346,8 @@ export const lessonRegistryByTitle = {
   ],
   "Vehicle Safety & Lift Operation": [
     vehicleSafetyLesson,
+  ],
+  "Scheduling & Shop Loading": [
+    jobAssignmentLesson,
   ],
 };

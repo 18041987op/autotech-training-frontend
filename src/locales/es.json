@@ -1234,6 +1234,151 @@
         "q3d": "No proceder hasta tener soportes de seguridad o un elevador adecuado",
         "q3exp": "NUNCA trabajes debajo de un vehículo soportado solo por un gato de piso. Los gatos son dispositivos de levantamiento, no soportes de seguridad. Las juntas hidráulicas pueden fallar sin aviso, causando que el vehículo caiga instantáneamente. Siempre usa soportes de seguridad adecuados o un elevador."
       }
+    },
+    "jobAssignment": {
+      "title": "Asignación y Despacho de Trabajos",
+      "description": "Aprende cómo asignar y reasignar trabajos a los técnicos usando la cola de prioridad y las 7 reglas de excepción.",
+      "section1Title": "La Cola de Prioridad",
+      "section1Subtitle": "Toca cada técnico para ver su perfil y número de despacho.",
+      "section2Title": "Reglas de Excepción",
+      "section2Subtitle": "7 situaciones que cambian el orden normal de despacho. Toca cada regla para expandirla.",
+      "section3Title": "Práctica de Escenarios",
+      "section3Subtitle": "4 situaciones reales de despacho. Elige la acción correcta.",
+      "section4Title": "Evaluación Final",
+      "section4Subtitle": "3 preguntas de conocimiento. Selecciona la mejor respuesta.",
+      "section1Tip": "Los números de despacho los asigna la gerencia según el conocimiento técnico y el tiempo en la compañía. Reflejan la capacidad general y la confianza — no solo la antigüedad.",
+      "section2Tip": "Las reglas de excepción existen para proteger a los clientes y mantener el taller eficiente. Ante la duda, aplica la regla que mejor sirva al cliente y al flujo del taller.",
+      "queueLabel": "Cola",
+      "techProfile": "Perfil del Técnico",
+      "correct": "Correcto",
+      "incorrect": "Incorrecto",
+      "navPills": {
+        "queue":     "📋 Cola",
+        "rules":     "⚠️ Reglas",
+        "scenarios": "🎯 Escenarios",
+        "quiz":      "📝 Evaluación"
+      },
+      "techs": {
+        "romel": {
+          "name": "Romel",
+          "profile": "Técnico más veterano en AutoRx. Mayor habilidad diagnóstica y de reparación en todos los sistemas del vehículo. Primero en línea para todas las asignaciones. Referente para vehículos complejos o desconocidos."
+        },
+        "juan": {
+          "name": "Juan",
+          "profile": "Segundo técnico más veterano. Sólido en múltiples sistemas del vehículo incluyendo frenos, suspensión y diagnóstico de manejo. Maneja la mayoría de trabajos de forma independiente con alta precisión."
+        },
+        "eluzahin": {
+          "name": "Eluzahin",
+          "profile": "Técnico de nivel intermedio. Desarrollando experiencia en servicios rutinarios y reparaciones comunes. Trabaja eficientemente en trabajos conocidos y escala cuando es necesario."
+        },
+        "kevin": {
+          "name": "Kevin",
+          "profile": "Técnico en desarrollo. Realiza mantenimiento rutinario y está construyendo habilidades diagnósticas. Se le asignan trabajos acordes a su nivel actual para apoyar su crecimiento."
+        },
+        "ivan": {
+          "name": "Ivan",
+          "profile": "Miembro más nuevo del equipo. Enfocado en mantenimiento rutinario y reparaciones básicas. Actualmente desarrollando familiaridad con los sistemas y procesos del taller."
+        }
+      },
+      "rules": {
+        "punctuality": {
+          "label": "Puntualidad",
+          "short": "Llegar tarde sin excusa → pasa al final de la cola",
+          "detail": "Un técnico que llega tarde sin una excusa válida es movido al final de la cola de asignaciones para ese día. Los trabajos que le correspondían se redistribuyen a los técnicos anteriores en la cola. Las llegadas tarde frecuentes pueden resultar en un cambio permanente al número de despacho."
+        },
+        "committedTime": {
+          "label": "Tiempo Comprometido",
+          "short": "Hora de entrega prometida no puede comprometerse",
+          "detail": "Si un técnico ya se comprometió a terminar un trabajo a cierta hora — una promesa hecha al cliente — no debe recibir una nueva asignación que conflictúe con esa fecha límite. El nuevo trabajo va al siguiente técnico disponible en la cola."
+        },
+        "waitingCustomer": {
+          "label": "Cliente en Sala de Espera",
+          "short": "Cliente esperando → siguiente técnico disponible lo toma",
+          "detail": "Cuando un cliente está esperando en la sala, el trabajo va al siguiente técnico disponible independientemente del orden normal de la cola. Minimizar el tiempo de espera del cliente tiene prioridad sobre la rotación. Cualquier técnico disponible o que acabe de terminar debe tomar el trabajo de inmediato."
+        },
+        "abandonedWork": {
+          "label": "Trabajo Abandonado",
+          "short": "Trabajo incompleto de técnico ausente → se reasigna al siguiente calificado",
+          "detail": "Si un técnico está ausente y dejó un trabajo incompleto, el trabajo se reasigna al siguiente técnico en cola que tenga la habilidad para completarlo. El técnico ausente pierde el crédito del trabajo. Si nadie en la cola tiene la habilidad requerida, escalar al gerente del taller."
+        },
+        "skillGap": {
+          "label": "Brecha de Habilidad",
+          "short": "No puede hacer el trabajo → pasar al siguiente calificado",
+          "detail": "Si el siguiente técnico en cola carece de la habilidad para un trabajo específico, el trabajo pasa al siguiente técnico calificado. Asignar trabajo a alguien que no está equipado para manejarlo desperdicia tiempo y retrasa al cliente. Esta excepción protege la eficiencia del taller y la calidad del trabajo."
+        },
+        "rejectionLimit": {
+          "label": "Límite de Rechazos",
+          "short": "3+ rechazos en una semana → al final de la cola",
+          "detail": "Un técnico puede rechazar una asignación de trabajo. Sin embargo, después de 3 rechazos en la misma semana, el técnico es movido al final de la cola por el resto de esa semana. Los rechazos frecuentes interrumpen el flujo del taller y son rastreados por la gerencia."
+        },
+        "returnVehicle": {
+          "label": "Vehículo de Regreso",
+          "short": "Visita de seguimiento → siempre vuelve al técnico original",
+          "detail": "Un vehículo que regresa para trabajo de seguimiento sobre una reparación anterior vuelve al mismo técnico que realizó el trabajo original — independientemente de la posición en la cola. Excepción: si el técnico original está ausente o llegó tarde sin excusa, el trabajo sigue el orden normal de la cola para ese día."
+        }
+      },
+      "scenarios": {
+        "s1": {
+          "title": "Escenario 1 — Sala de Espera",
+          "story": "Son las 10:15 AM. El orden de la cola es Romel → Juan → Eluzahin → Kevin → Ivan. Un nuevo cliente acaba de llegar y está esperando en la sala. Eluzahin acaba de terminar su trabajo anterior y está disponible. Romel sigue trabajando. Juan está entre trabajos pero revisando documentos. ¿Quién debe recibir la próxima asignación?",
+          "a": "Romel — él es #1 en la cola",
+          "b": "Juan — es #2 y está entre trabajos",
+          "c": "Eluzahin — es el próximo técnico disponible",
+          "d": "Ivan — darle la experiencia",
+          "answer": "c",
+          "explanation": "La regla de Cliente en Sala de Espera anula la rotación normal de la cola. El próximo técnico disponible — en este caso Eluzahin, quien acaba de terminar — toma el trabajo de inmediato para minimizar el tiempo de espera del cliente."
+        },
+        "s2": {
+          "title": "Escenario 2 — Vehículo de Regreso",
+          "story": "El vehículo de un cliente regresa para seguimiento de un trabajo de frenos realizado la semana pasada. Kevin fue el técnico que hizo el trabajo original. Hoy, Romel es #1 en la cola y Juan es #2. Kevin está disponible actualmente pero es #4 en la rotación. ¿Quién debe atender el vehículo de regreso?",
+          "a": "Romel — él es #1 y el más experimentado",
+          "b": "Juan — es #2 y también muy capaz",
+          "c": "Kevin — él hizo el trabajo original",
+          "d": "Cualquiera que esté libre en este momento",
+          "answer": "c",
+          "explanation": "La regla de Vehículo de Regreso establece que el trabajo de seguimiento sobre una reparación anterior siempre vuelve al técnico original, independientemente de la posición en la cola. Kevin hizo el trabajo de frenos original, así que él atiende el regreso — a menos que esté ausente o haya llegado tarde sin excusa."
+        },
+        "s3": {
+          "title": "Escenario 3 — Llegada Tarde",
+          "story": "Ivan normalmente ocupa la posición #5 en la cola. Esta mañana llegó 45 minutos tarde sin aviso previo y sin una excusa válida. Los demás técnicos (Romel, Juan, Eluzahin, Kevin) llegaron a tiempo. ¿Dónde queda Ivan en la cola de despacho de hoy?",
+          "a": "Se queda en #5 — nada cambia por un día de retraso",
+          "b": "Pasa a #3 ya que dos personas ya recibieron trabajos",
+          "c": "Se le salta completamente por hoy",
+          "d": "Va al final de la cola después de todos los técnicos que llegaron a tiempo",
+          "answer": "d",
+          "explanation": "Aplica la regla de Puntualidad: un técnico que llega tarde sin excusa válida pasa al final de la cola para ese día. Ivan va detrás de los cuatro técnicos que llegaron a tiempo. Su posición es #5 mañana (asumiendo llegada a tiempo), pero hoy es el último."
+        },
+        "s4": {
+          "title": "Escenario 4 — Trabajo Abandonado",
+          "story": "Juan está ausente inesperadamente hoy. Ayer comenzó un servicio de transmisión en el vehículo de un cliente y lo dejó a medias. Eluzahin es el siguiente en la cola pero no está certificado para trabajo de transmisión. Kevin tampoco está certificado. Romel e Ivan están disponibles. ¿Quién toma el trabajo incompleto de Juan?",
+          "a": "Eluzahin — es el siguiente en la cola",
+          "b": "Kevin — debería aprender",
+          "c": "Ivan — necesita la experiencia",
+          "d": "Romel — está calificado y es el siguiente en la cola con la habilidad",
+          "answer": "d",
+          "explanation": "Aplican dos reglas: Trabajo Abandonado (el trabajo debe reasignarse cuando el técnico original está ausente) y Brecha de Habilidad (el trabajo pasa al próximo técnico calificado). El trabajo va a Romel — el siguiente en la cola que tiene la habilidad requerida. Enviarlo a un técnico no calificado desperdiciaría su tiempo y retrasaría al cliente."
+        }
+      },
+      "quiz": {
+        "q1": "¿Qué dos factores determinan el número de despacho de un técnico?",
+        "q1a": "Antigüedad y número de trabajos completados el mes anterior",
+        "q1b": "Conocimiento técnico y tiempo en la compañía",
+        "q1c": "Horas facturadas y puntuaciones de satisfacción del cliente",
+        "q1d": "Orden alfabético y hora de inicio del turno",
+        "q1exp": "Los números de despacho los asigna la gerencia basándose en dos factores: conocimiento técnico (capacidad diagnóstica y de reparación general) y tiempo en la compañía (tiempo trabajando en AutoRx). Ambos importan — un empleado reciente con alta habilidad puede estar por encima de uno veterano con menor capacidad técnica.",
+        "q2": "Un cliente está esperando en la sala de espera. El técnico que es el próximo en la cola está en medio de documentación. ¿Qué debe ocurrir?",
+        "q2a": "Esperar a que el técnico en cola termine su documentación",
+        "q2b": "Pedirle al cliente que regrese mañana",
+        "q2c": "El próximo técnico disponible (libre) toma el trabajo de inmediato",
+        "q2d": "Asignar el trabajo al técnico de menor rango",
+        "q2exp": "La regla de Cliente en Sala de Espera anula la rotación normal de la cola. Cualquier técnico disponible debe tomar el trabajo de inmediato para minimizar el tiempo de espera del cliente. La documentación y tareas no urgentes deben ceder ante un cliente que está esperando.",
+        "q3": "Un técnico estaba trabajando en un vehículo pero está ausente hoy. El trabajo quedó incompleto. El próximo técnico en la cola no tiene la habilidad para ese tipo de reparación. ¿Qué ocurre?",
+        "q3a": "El trabajo espera hasta que regrese el técnico original",
+        "q3b": "Asignarlo al siguiente en cola sin importar la habilidad",
+        "q3c": "El trabajo pasa al próximo técnico en cola que tenga la habilidad requerida",
+        "q3d": "Cancelar la orden de reparación y devolver el vehículo",
+        "q3exp": "Aplican dos reglas: Trabajo Abandonado (el trabajo debe reasignarse cuando el técnico original está ausente) y Brecha de Habilidad (el trabajo pasa al próximo técnico calificado). El trabajo va a la próxima persona en cola que realmente pueda hacerlo. Enviarlo a un técnico no calificado desperdiciaría su tiempo y retrasaría al cliente."
+      }
     }
   },
   "notifications": {
