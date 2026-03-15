@@ -157,13 +157,14 @@ function QueueSection({ onComplete }) {
 // ─── SECTION 2: Override Rules ────────────────────────────────────────────────
 
 const OVERRIDE_RULES = [
-  { key: "punctuality",    icon: "🕐", colorClass: "bg-red-50   border-red-200   text-red-800"   },
-  { key: "committedTime",  icon: "⏱️", colorClass: "bg-amber-50 border-amber-200 text-amber-800" },
-  { key: "waitingCustomer",icon: "🛋️", colorClass: "bg-blue-50  border-blue-200  text-blue-800"  },
-  { key: "abandonedWork",  icon: "🔄", colorClass: "bg-orange-50 border-orange-200 text-orange-800" },
-  { key: "skillGap",       icon: "❌", colorClass: "bg-purple-50 border-purple-200 text-purple-800" },
-  { key: "rejectionLimit", icon: "✋", colorClass: "bg-slate-50 border-slate-300  text-slate-800"  },
-  { key: "returnVehicle",  icon: "🔁", colorClass: "bg-green-50 border-green-200  text-green-800"  },
+  { key: "punctuality",    icon: "🕐", colorClass: "bg-red-50    border-red-200    text-red-800"    },
+  { key: "committedTime",  icon: "⏱️", colorClass: "bg-amber-50  border-amber-200  text-amber-800"  },
+  { key: "waitingCustomer",icon: "🛋️", colorClass: "bg-blue-50   border-blue-200   text-blue-800"   },
+  { key: "abandonedWork",  icon: "🔄", colorClass: "bg-orange-50  border-orange-200 text-orange-800" },
+  { key: "skillGap",       icon: "❌", colorClass: "bg-purple-50  border-purple-200 text-purple-800" },
+  { key: "rejectionLimit", icon: "✋", colorClass: "bg-slate-50   border-slate-300  text-slate-800"  },
+  { key: "returnVehicle",  icon: "🔁", colorClass: "bg-green-50   border-green-200  text-green-800"  },
+  { key: "warrantyReturn", icon: "🛡️", colorClass: "bg-teal-50    border-teal-200   text-teal-800"   },
 ];
 
 function RulesSection({ onComplete }) {
@@ -234,67 +235,111 @@ function RulesSection({ onComplete }) {
   );
 }
 
-// ─── SECTION 3: Scenario Practice ────────────────────────────────────────────
+// ─── SECTION 3: Interactive Dispatch Simulator ───────────────────────────────
 
-const SCENARIOS = ["s1", "s2", "s3", "s4"];
+// Tech state configs — visual only
+const STATE_CFG = {
+  free:      { bg: "#f0fdf4", border: "#86efac", text: "#166534" },
+  busy:      { bg: "#fef3c7", border: "#fcd34d", text: "#92400e" },
+  late:      { bg: "#fef2f2", border: "#fca5a5", text: "#991b1b" },
+  committed: { bg: "#f0f9ff", border: "#7dd3fc", text: "#0369a1" },
+  absent:    { bg: "#f1f5f9", border: "#cbd5e1", text: "#94a3b8" },
+};
 
-function ScenariosSection({ onComplete }) {
+// 6 job scenarios covering the 6 most common override situations
+const SIM_JOBS = [
+  {
+    key: "sim1",
+    ruleKey: "normal",
+    correctTech: "romel",
+    techStates: { romel:"free", juan:"free", eluzahin:"free", kevin:"free", ivan:"free" },
+  },
+  {
+    key: "sim2",
+    ruleKey: "waitingCustomer",
+    correctTech: "eluzahin",
+    techStates: { romel:"busy", juan:"busy", eluzahin:"free", kevin:"free", ivan:"free" },
+  },
+  {
+    key: "sim3",
+    ruleKey: "returnVehicle",
+    correctTech: "kevin",
+    techStates: { romel:"free", juan:"free", eluzahin:"free", kevin:"free", ivan:"free" },
+  },
+  {
+    key: "sim4",
+    ruleKey: "punctuality",
+    correctTech: "ivan",
+    techStates: { romel:"busy", juan:"busy", eluzahin:"busy", kevin:"late", ivan:"free" },
+  },
+  {
+    key: "sim5",
+    ruleKey: "committedTime",
+    correctTech: "eluzahin",
+    techStates: { romel:"busy", juan:"committed", eluzahin:"free", kevin:"free", ivan:"free" },
+  },
+  {
+    key: "sim6",
+    ruleKey: "skillGap",
+    correctTech: "romel",
+    techStates: { romel:"free", juan:"absent", eluzahin:"free", kevin:"free", ivan:"free" },
+  },
+];
+
+function SimulatorSection({ onComplete }) {
   const { t } = useTranslation();
-  const [idx, setIdx]         = useState(0);
-  const [answers, setAnswers] = useState({});
+  const [jobIdx, setJobIdx] = useState(0);
+  const [results, setResults] = useState({});   // { sim1: "correct"|"incorrect" }
+  const [chosen, setChosen]   = useState(null); // tech key chosen for this job
   const [allDone, setAllDone] = useState(false);
 
-  const scenario = SCENARIOS[idx];
-  const chosen   = answers[scenario];
-  const correctKey = t(`lessons.jobAssignment.scenarios.${scenario}.answer`);
-  const isCorrect  = chosen === correctKey;
+  const job       = SIM_JOBS[jobIdx];
+  const isCorrect = chosen === job.correctTech;
+  const correct   = Object.values(results).filter((r) => r === "correct").length;
+  const PASS      = 4; // need 4/6 to unlock section complete
 
-  const OPTIONS = ["a", "b", "c", "d"];
+  function handleAssign(techKey) {
+    if (chosen) return;
+    const right = techKey === job.correctTech;
+    setChosen(techKey);
+    setResults((prev) => ({ ...prev, [job.key]: right ? "correct" : "incorrect" }));
+  }
 
   function handleNext() {
-    if (idx < SCENARIOS.length - 1) {
-      setIdx(idx + 1);
+    if (jobIdx < SIM_JOBS.length - 1) {
+      setJobIdx((i) => i + 1);
+      setChosen(null);
     } else {
       setAllDone(true);
     }
   }
 
   if (allDone) {
-    const correctCount = SCENARIOS.filter((s) => {
-      const ans = t(`lessons.jobAssignment.scenarios.${s}.answer`);
-      return answers[s] === ans;
-    }).length;
+    const finalScore = Object.values(results).filter((r) => r === "correct").length;
     return (
-      <SectionCard
-        icon="🎯"
-        title={t("lessons.jobAssignment.section3Title")}
-        subtitle={t("lessons.jobAssignment.section3Subtitle")}
-      >
-        <div className="rounded-2xl border-2 p-5 text-center"
-          style={{
-            borderColor: correctCount === 4 ? B_GREEN : correctCount >= 2 ? B_BLUE : B_ORANGE,
-            background:  correctCount === 4 ? "#f0fdf4" : correctCount >= 2 ? B_SOFT : "#fff7ed",
-          }}>
-          <div className="text-3xl mb-2">{correctCount === 4 ? "🎉" : correctCount >= 2 ? "👍" : "📚"}</div>
-          <p className="text-xl font-extrabold text-slate-800 mb-1">
-            {correctCount} {t("lessons.outOf", { total: 4 })}
+      <SectionCard icon="🎮" title={t("lessons.jobAssignment.section3Title")} subtitle={t("lessons.jobAssignment.section3Subtitle")}>
+        <div className="rounded-2xl border-2 p-6 text-center" style={{
+          borderColor: finalScore >= PASS ? B_GREEN : finalScore >= 3 ? B_BLUE : B_ORANGE,
+          background:  finalScore >= PASS ? "#f0fdf4" : finalScore >= 3 ? B_SOFT : "#fff7ed",
+        }}>
+          <div className="text-4xl mb-2">{finalScore >= PASS ? "🎉" : finalScore >= 3 ? "👍" : "📚"}</div>
+          <p className="text-2xl font-extrabold text-slate-800 mb-1">{finalScore} / {SIM_JOBS.length}</p>
+          <p className="text-sm text-slate-600 mb-4">
+            {finalScore >= PASS ? t("lessons.scoreExcellent") : finalScore >= 3 ? t("lessons.scoreGood") : t("lessons.scoreReview")}
           </p>
-          <p className="text-sm text-slate-600">
-            {correctCount === 4 ? t("lessons.scoreExcellent") : correctCount >= 2 ? t("lessons.scoreGood") : t("lessons.scoreReview")}
-          </p>
-          {correctCount < 4 && (
+          {finalScore < PASS && (
             <button
-              onClick={() => { setAnswers({}); setIdx(0); setAllDone(false); }}
-              className="mt-3 px-4 py-2 rounded-2xl text-sm font-extrabold text-white"
+              onClick={() => { setJobIdx(0); setChosen(null); setResults({}); setAllDone(false); }}
+              className="mr-2 px-5 py-2 rounded-2xl text-sm font-extrabold text-white"
               style={{ background: B_BLUE }}
             >
               {t("lessons.tryAgain")}
             </button>
           )}
-          {correctCount === 4 && (
+          {finalScore >= PASS && (
             <button
               onClick={onComplete}
-              className="mt-3 px-4 py-2 rounded-2xl text-sm font-extrabold text-white"
+              className="px-5 py-2 rounded-2xl text-sm font-extrabold text-white"
               style={{ background: B_GREEN }}
             >
               {t("lessons.sectionComplete")} ✓
@@ -306,98 +351,127 @@ function ScenariosSection({ onComplete }) {
   }
 
   return (
-    <SectionCard
-      icon="🎯"
-      title={t("lessons.jobAssignment.section3Title")}
-      subtitle={t("lessons.jobAssignment.section3Subtitle")}
-    >
-      {/* Progress dots */}
-      <div className="flex items-center gap-2 mb-5">
-        {SCENARIOS.map((s, i) => (
-          <div
-            key={s}
-            className="h-2 rounded-full transition-all"
-            style={{
-              flex: i === idx ? 2 : 1,
-              background: i < idx
-                ? (answers[SCENARIOS[i]] === t(`lessons.jobAssignment.scenarios.${SCENARIOS[i]}.answer`) ? B_GREEN : B_ORANGE)
-                : i === idx ? B_BLUE : "#e2e8f0",
-            }}
-          />
+    <SectionCard icon="🎮" title={t("lessons.jobAssignment.section3Title")} subtitle={t("lessons.jobAssignment.section3Subtitle")}>
+
+      {/* Progress bar */}
+      <div className="flex items-center gap-1.5 mb-4">
+        {SIM_JOBS.map((j, i) => (
+          <div key={j.key} className="h-2.5 rounded-full transition-all" style={{
+            flex: i === jobIdx ? 2.5 : 1,
+            background: results[j.key] === "correct"
+              ? B_GREEN
+              : results[j.key] === "incorrect"
+              ? B_ORANGE
+              : i === jobIdx ? B_BLUE : "#e2e8f0",
+          }} />
         ))}
+        <span className="text-xs text-slate-500 font-bold ml-1 whitespace-nowrap">
+          {Object.keys(results).length} / {SIM_JOBS.length}
+        </span>
       </div>
 
-      {/* Scenario card */}
-      <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-5 mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-          {t(`lessons.jobAssignment.scenarios.${scenario}.title`)}
-        </p>
+      {/* Incoming job card */}
+      <div className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 mb-4">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            {t("lessons.jobAssignment.simulator.jobLabel")} {jobIdx + 1}
+          </span>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold"
+            style={{ background: B_BLUE + "18", color: B_BLUE }}>
+            {t(`lessons.jobAssignment.simulator.rules.${job.ruleKey}`)}
+          </span>
+        </div>
         <p className="text-sm font-semibold text-slate-800 leading-relaxed">
-          {t(`lessons.jobAssignment.scenarios.${scenario}.story`)}
+          {t(`lessons.jobAssignment.simulator.${job.key}.situation`)}
         </p>
+        {!chosen && (
+          <p className="text-xs font-bold mt-2" style={{ color: B_BLUE }}>
+            👇 {t("lessons.jobAssignment.simulator.clickToAssign")}
+          </p>
+        )}
       </div>
 
-      {/* Options */}
-      <div className="grid gap-2 mb-4">
-        {OPTIONS.map((opt) => {
-          const iChosen  = chosen === opt;
-          const isRight  = opt === correctKey;
-          let border = "#e2e8f0";
-          let bg     = "white";
-          let badge  = null;
-          if (iChosen) {
-            border = isCorrect ? B_GREEN : B_RED;
-            bg     = isCorrect ? "#f0fdf4" : "#fef2f2";
-            badge  = isCorrect
-              ? <span className="ml-2 text-xs font-extrabold text-green-700">✓ {t("lessons.jobAssignment.correct")}</span>
-              : <span className="ml-2 text-xs font-extrabold text-red-700">✗ {t("lessons.jobAssignment.incorrect")}</span>;
-          } else if (chosen && isRight) {
-            border = B_GREEN;
-            bg     = "#f0fdf4";
+      {/* Tech dispatch board — click to assign */}
+      <div className="grid grid-cols-5 gap-2 mb-4">
+        {TECHS.map((tech) => {
+          const state     = job.techStates[tech.key] ?? "free";
+          const cfg       = STATE_CFG[state];
+          const isAbsent  = state === "absent";
+          const isChosen  = chosen === tech.key;
+          const isCorrectTech = tech.key === job.correctTech;
+
+          // Border/bg after selection
+          let borderColor = cfg.border;
+          let bgColor     = cfg.bg;
+          if (chosen) {
+            if (isCorrectTech)       { borderColor = B_GREEN; bgColor = "#f0fdf4"; }
+            else if (isChosen)       { borderColor = B_RED;   bgColor = "#fef2f2"; }
+            else                     { borderColor = "#e2e8f0"; bgColor = "#f8fafc"; }
           }
+
           return (
             <button
-              key={opt}
-              onClick={() => !chosen && setAnswers((a) => ({ ...a, [scenario]: opt }))}
-              disabled={!!chosen}
-              className="text-left px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all disabled:cursor-default"
-              style={{ borderColor: border, background: bg }}
+              key={tech.key}
+              onClick={() => !isAbsent && handleAssign(tech.key)}
+              disabled={isAbsent || !!chosen}
+              className="flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all text-center disabled:cursor-default"
+              style={{ borderColor, background: bgColor }}
             >
-              <span className="text-slate-400 font-mono mr-2">{opt.toUpperCase()}.</span>
-              {t(`lessons.jobAssignment.scenarios.${scenario}.${opt}`)}
-              {badge}
+              {/* Number badge */}
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-extrabold flex-shrink-0"
+                style={{
+                  background: chosen
+                    ? (isCorrectTech ? B_GREEN : isChosen ? B_RED : "#94a3b8")
+                    : (isAbsent ? "#cbd5e1" : tech.color),
+                }}
+              >
+                {chosen && isCorrectTech ? "✓" : chosen && isChosen && !isCorrect ? "✗" : tech.num}
+              </div>
+
+              {/* Name */}
+              <p className="text-[10px] font-extrabold text-slate-700 capitalize leading-tight">
+                {t(`lessons.jobAssignment.techs.${tech.key}.name`)}
+              </p>
+
+              {/* State badge */}
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-tight"
+                style={{ background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>
+                {t(`lessons.jobAssignment.simulator.states.${state}`)}
+              </span>
             </button>
           );
         })}
       </div>
 
-      {/* Explanation */}
+      {/* Feedback */}
       {chosen && (
-        <div className="mb-4 rounded-xl bg-white border border-slate-200 px-4 py-3 text-xs text-slate-600">
-          <strong>{t("lessons.explanation")}:</strong>{" "}
-          {t(`lessons.jobAssignment.scenarios.${scenario}.explanation`)}
+        <div className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
+          isCorrect
+            ? "bg-green-50 border-green-200 text-green-800"
+            : "bg-red-50 border-red-200 text-red-700"
+        }`}>
+          <strong>
+            {isCorrect
+              ? `✓ ${t("lessons.jobAssignment.correct")}!`
+              : `✗ ${t("lessons.jobAssignment.incorrect")}`}
+          </strong>{" "}
+          {t(`lessons.jobAssignment.simulator.${job.key}.explanation`)}
         </div>
       )}
 
-      {/* Nav */}
-      <div className="flex justify-between items-center">
-        <button
-          onClick={() => { if (idx > 0) setIdx(idx - 1); }}
-          disabled={idx === 0}
-          className="px-5 py-2 rounded-2xl text-sm font-extrabold border-2 border-slate-200 text-slate-600 disabled:opacity-40"
-        >
-          {t("lessons.previous")}
-        </button>
-        {chosen && (
+      {/* Next / Finish button */}
+      {chosen && (
+        <div className="flex justify-end">
           <button
             onClick={handleNext}
             className="px-5 py-2 rounded-2xl text-sm font-extrabold text-white"
             style={{ background: B_BLUE }}
           >
-            {idx < SCENARIOS.length - 1 ? t("lessons.next") : t("lessons.finish")}
+            {jobIdx < SIM_JOBS.length - 1 ? t("lessons.next") : t("lessons.jobAssignment.simulator.seeResults")}
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </SectionCard>
   );
 }
@@ -621,9 +695,9 @@ export function JobAssignment() {
         <RulesSection onComplete={() => markSection("rules")} />
       </div>
 
-      {/* ── Section 3: Scenario Practice ── */}
+      {/* ── Section 3: Dispatch Simulator ── */}
       <div id="job-lesson-scenarios">
-        <ScenariosSection onComplete={() => markSection("scenarios")} />
+        <SimulatorSection onComplete={() => markSection("scenarios")} />
       </div>
 
       {/* ── Section 4: Quiz ── */}

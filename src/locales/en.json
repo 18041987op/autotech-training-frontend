@@ -1243,9 +1243,9 @@
       "section1Title": "The Priority Queue",
       "section1Subtitle": "Tap each technician to see their profile and dispatch number.",
       "section2Title": "Override Rules",
-      "section2Subtitle": "7 situations that change the normal dispatch order. Tap each rule to expand.",
-      "section3Title": "Scenario Practice",
-      "section3Subtitle": "4 real-world dispatch situations. Choose the correct action.",
+      "section2Subtitle": "8 situations that change the normal dispatch order. Tap each rule to expand.",
+      "section3Title": "Dispatch Simulator",
+      "section3Subtitle": "6 incoming jobs. Click directly on the technician to assign each job.",
       "section4Title": "Final Quiz",
       "section4Subtitle": "3 knowledge questions. Select the best answer for each.",
       "section1Tip": "Dispatch numbers are assigned by management based on technical knowledge and company tenure. They reflect overall capability and trust — not just seniority.",
@@ -1257,7 +1257,7 @@
       "navPills": {
         "queue":     "📋 Queue",
         "rules":     "⚠️ Rules",
-        "scenarios": "🎯 Scenarios",
+        "scenarios": "🎮 Simulator",
         "quiz":      "📝 Quiz"
       },
       "techs": {
@@ -1317,6 +1317,55 @@
           "label": "Return Vehicle",
           "short": "Repeat visit → always goes back to original technician",
           "detail": "A vehicle returning for follow-up work on a previous repair goes back to the same technician who performed the original job — regardless of queue position. Exception: if the original technician is absent or arrived late without excuse, the job follows normal queue order for that day."
+        },
+        "warrantyReturn": {
+          "label": "Warranty Return",
+          "short": "Returns within 30 days → original tech if still employed",
+          "detail": "If a vehicle returns within 30 days for a possible warranty claim on recent work, the job goes back to the same technician who performed the original repair — provided that technician is still employed at the shop. If the original technician is no longer on the team, the job follows normal queue order."
+        }
+      },
+      "simulator": {
+        "jobLabel": "Incoming Job",
+        "clickToAssign": "Click a technician to assign this job",
+        "seeResults": "See Results",
+        "rules": {
+          "normal": "Normal Queue",
+          "waitingCustomer": "Waiting Room Rule",
+          "returnVehicle": "Return Vehicle Rule",
+          "punctuality": "Punctuality Rule",
+          "committedTime": "Committed Time Rule",
+          "skillGap": "Skill Gap Rule"
+        },
+        "states": {
+          "free": "Available",
+          "busy": "Working",
+          "late": "Late — End of Queue",
+          "committed": "Committed",
+          "absent": "Absent"
+        },
+        "sim1": {
+          "situation": "New oil change just pulled in. All 5 technicians are available and no exceptions apply. Who gets the job?",
+          "explanation": "No override applies. All technicians are available, so normal queue order is followed. Romel is #1 in the dispatch queue and receives the assignment."
+        },
+        "sim2": {
+          "situation": "A customer is currently sitting in the waiting room. Romel and Juan are both finishing active jobs. Eluzahin just wrapped up and is free. Who gets this waiting-customer job?",
+          "explanation": "The Waiting Room Customer rule overrides queue order. Eluzahin is the next available technician, so he takes the job immediately to minimize the customer's wait time."
+        },
+        "sim3": {
+          "situation": "A vehicle is back for a follow-up on brake work Kevin performed last week. All technicians are currently available. Who handles the return?",
+          "explanation": "The Return Vehicle rule applies — follow-up work always goes back to the technician who did the original repair. Kevin performed the brake job, so he handles this return regardless of his queue position."
+        },
+        "sim4": {
+          "situation": "Kevin arrived 25 minutes late today without notice or excuse, moving him to the end of today's queue. Romel, Juan, and Eluzahin are all on active jobs. Ivan is free. A new job just came in — who gets it?",
+          "explanation": "Kevin's late arrival moved him to the end of today's queue (Punctuality rule). Romel, Juan, and Eluzahin are busy. Ivan is the next available technician in the revised queue and takes the assignment."
+        },
+        "sim5": {
+          "situation": "A new job just came in. Romel is already working. Juan is #2 in queue but has committed to a customer to deliver their car by noon — taking a new job now would risk that promise. Who gets this job?",
+          "explanation": "The Committed Time rule prevents Juan from accepting a new job that could conflict with his delivery promise. Romel is busy. Eluzahin is the next available technician and receives the assignment."
+        },
+        "sim6": {
+          "situation": "A complex transmission diagnostic just came in. Juan is absent today. Eluzahin, Kevin, and Ivan are not certified for transmission diagnostics. Romel is available. Who gets the job?",
+          "explanation": "The Skill Gap rule applies — the job passes to the next qualified technician. Juan is absent, and Eluzahin, Kevin, and Ivan lack the certification. Romel is the only available technician with the required skill and receives the assignment."
         }
       },
       "scenarios": {

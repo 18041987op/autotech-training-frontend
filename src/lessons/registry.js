@@ -256,7 +256,7 @@ Current dispatch order:
 - #4 Kevin: Developing technician. Handles routine services and is building diagnostic skills.
 - #5 Ivan: Newest team member. Focused on routine maintenance and basic repairs.
 
-SECTION 2: OVERRIDE RULES (7 rules that change the normal dispatch order)
+SECTION 2: OVERRIDE RULES (8 rules that change the normal dispatch order)
 1. Punctuality: A technician who arrives late without a valid excuse moves to the end of the queue for that day's assignments. Consistent unpunctuality affects the dispatch number long-term.
 2. Committed Time: If a technician has already committed to completing a job at a specific time for a customer, they should not receive a new assignment that would conflict with that deadline. Assign to the next available technician.
 3. Waiting Room Customer: A customer who is waiting in the waiting room takes priority over the normal queue. The next available technician — regardless of queue order — should take the job to minimize customer wait time.
@@ -264,12 +264,15 @@ SECTION 2: OVERRIDE RULES (7 rules that change the normal dispatch order)
 5. Skill Gap: If the next technician in queue clearly cannot perform the assigned job (lacks the skill), the job passes to the next technician who can. Assigning a job to someone without the skill wastes time for everyone.
 6. Rejection Limit: A technician may decline a job assignment. However, after 3 rejections in a single week, the technician moves to the end of the queue for the remainder of that week.
 7. Return Vehicle: A vehicle returning for a follow-up on a previous repair goes back to the same technician who did the original work — regardless of queue position. Exception: if that technician is absent or arrived late without excuse, the job follows normal queue order.
+8. Warranty Return: If a vehicle returns within 30 days for a possible warranty claim on recent work, the job goes back to the same technician who performed the original repair — provided that technician is still employed at the shop. If the original technician is no longer on the team, normal queue order applies.
 
-SECTION 3: SCENARIO PRACTICE
-Scenario 1 — Waiting Room Customer: Normal queue is Romel→Juan→Eluzahin. A new customer just arrived and is waiting in the waiting room. Eluzahin just finished a job. Who gets the next assignment? Answer: Eluzahin — waiting room rule overrides normal rotation; the next available technician takes it.
-Scenario 2 — Return Vehicle: A customer's car is back for a follow-up on brake work done last week by Kevin. Romel and Juan are next in queue. Who gets the job? Answer: Kevin — return vehicle rule means the original technician gets the follow-up regardless of queue.
-Scenario 3 — Late Arrival: Ivan arrived 45 minutes late this morning with no notification. He's normally #5. Where does he go in today's queue? Answer: End of queue after all present technicians — punctuality override applies.
-Scenario 4 — Abandoned Work: Juan is absent today. He had a half-finished transmission job from yesterday. Eluzahin is next in queue but is not certified for transmission. Kevin is also not certified. Who takes the job? Answer: Romel — skill gap rule means the job goes to the next technician with the required skill.
+SECTION 3: DISPATCH SIMULATOR
+Job 1 — Normal Queue: All 5 technicians are available, no exceptions apply. Who gets the job? Answer: Romel (#1 in queue) — normal queue order followed when no override applies.
+Job 2 — Waiting Room Customer: Customer is sitting in waiting room. Romel and Juan are on active jobs. Eluzahin just finished. Who gets it? Answer: Eluzahin — waiting room rule overrides queue; next available tech takes it immediately.
+Job 3 — Return Vehicle: Vehicle back for follow-up on brake work done by Kevin. All techs available. Who handles it? Answer: Kevin — return vehicle rule; original technician always handles the follow-up.
+Job 4 — Punctuality: Kevin arrived late today without excuse, moved to end of queue. Romel, Juan, Eluzahin are busy. Ivan is free. Who gets the job? Answer: Ivan — Kevin's punctuality violation moved him behind all on-time technicians.
+Job 5 — Committed Time: New job comes in. Romel is busy. Juan committed to delivering a car by noon — can't take new work. Who gets it? Answer: Eluzahin — committed time rule prevents Juan from taking a job that risks his delivery promise.
+Job 6 — Skill Gap: Complex transmission diagnostic. Juan is absent. Eluzahin, Kevin, Ivan not certified. Romel is available. Who gets it? Answer: Romel — skill gap rule; job passes to the next qualified technician.
 
 SECTION 4: QUIZ ANSWERS
 Q1: Dispatch numbers are assigned based on technical knowledge + company tenure (not seniority alone, not alphabetical, not hours billed).

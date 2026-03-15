@@ -1241,9 +1241,9 @@
       "section1Title": "La Cola de Prioridad",
       "section1Subtitle": "Toca cada técnico para ver su perfil y número de despacho.",
       "section2Title": "Reglas de Excepción",
-      "section2Subtitle": "7 situaciones que cambian el orden normal de despacho. Toca cada regla para expandirla.",
-      "section3Title": "Práctica de Escenarios",
-      "section3Subtitle": "4 situaciones reales de despacho. Elige la acción correcta.",
+      "section2Subtitle": "8 situaciones que cambian el orden normal de despacho. Toca cada regla para expandirla.",
+      "section3Title": "Simulador de Despacho",
+      "section3Subtitle": "6 trabajos entrantes. Haz clic directamente en el técnico para asignar cada trabajo.",
       "section4Title": "Evaluación Final",
       "section4Subtitle": "3 preguntas de conocimiento. Selecciona la mejor respuesta.",
       "section1Tip": "Los números de despacho los asigna la gerencia según el conocimiento técnico y el tiempo en la compañía. Reflejan la capacidad general y la confianza — no solo la antigüedad.",
@@ -1255,7 +1255,7 @@
       "navPills": {
         "queue":     "📋 Cola",
         "rules":     "⚠️ Reglas",
-        "scenarios": "🎯 Escenarios",
+        "scenarios": "🎮 Simulador",
         "quiz":      "📝 Evaluación"
       },
       "techs": {
@@ -1315,6 +1315,55 @@
           "label": "Vehículo de Regreso",
           "short": "Visita de seguimiento → siempre vuelve al técnico original",
           "detail": "Un vehículo que regresa para trabajo de seguimiento sobre una reparación anterior vuelve al mismo técnico que realizó el trabajo original — independientemente de la posición en la cola. Excepción: si el técnico original está ausente o llegó tarde sin excusa, el trabajo sigue el orden normal de la cola para ese día."
+        },
+        "warrantyReturn": {
+          "label": "Regreso por Garantía",
+          "short": "Regresa dentro de 30 días → técnico original si sigue en el taller",
+          "detail": "Si un vehículo regresa dentro de los 30 días por un posible reclamo de garantía sobre un trabajo reciente, el trabajo vuelve al mismo técnico que realizó la reparación original — siempre y cuando ese técnico siga trabajando en el taller. Si el técnico original ya no está en el equipo, el trabajo sigue el orden normal de la cola."
+        }
+      },
+      "simulator": {
+        "jobLabel": "Trabajo Entrante",
+        "clickToAssign": "Haz clic en un técnico para asignar este trabajo",
+        "seeResults": "Ver Resultados",
+        "rules": {
+          "normal": "Cola Normal",
+          "waitingCustomer": "Regla de Sala de Espera",
+          "returnVehicle": "Regla de Vehículo de Regreso",
+          "punctuality": "Regla de Puntualidad",
+          "committedTime": "Regla de Tiempo Comprometido",
+          "skillGap": "Regla de Brecha de Habilidad"
+        },
+        "states": {
+          "free": "Disponible",
+          "busy": "Trabajando",
+          "late": "Tarde — Final de Cola",
+          "committed": "Comprometido",
+          "absent": "Ausente"
+        },
+        "sim1": {
+          "situation": "Un cambio de aceite acaba de entrar. Los 5 técnicos están disponibles y no aplica ninguna excepción. ¿Quién recibe el trabajo?",
+          "explanation": "No aplica ninguna excepción. Todos los técnicos están disponibles, así que se sigue el orden normal de la cola. Romel es #1 en la cola de despacho y recibe la asignación."
+        },
+        "sim2": {
+          "situation": "Un cliente está esperando en la sala de espera en este momento. Romel y Juan están terminando trabajos activos. Eluzahin acaba de terminar y está libre. ¿Quién recibe este trabajo de cliente en espera?",
+          "explanation": "La regla de Cliente en Sala de Espera anula el orden de la cola. Eluzahin es el próximo técnico disponible, por lo que toma el trabajo de inmediato para minimizar el tiempo de espera del cliente."
+        },
+        "sim3": {
+          "situation": "Un vehículo regresa para seguimiento sobre un trabajo de frenos que Kevin realizó la semana pasada. Todos los técnicos están disponibles actualmente. ¿Quién atiende el regreso?",
+          "explanation": "Aplica la regla de Vehículo de Regreso — el trabajo de seguimiento siempre vuelve al técnico que realizó la reparación original. Kevin hizo el trabajo de frenos, así que él atiende este regreso independientemente de su posición en la cola."
+        },
+        "sim4": {
+          "situation": "Kevin llegó 25 minutos tarde hoy sin aviso ni excusa, pasándolo al final de la cola de hoy. Romel, Juan y Eluzahin están en trabajos activos. Ivan está libre. Acaba de entrar un trabajo nuevo — ¿quién lo recibe?",
+          "explanation": "La llegada tarde de Kevin lo movió al final de la cola de hoy (regla de Puntualidad). Romel, Juan y Eluzahin están ocupados. Ivan es el próximo técnico disponible en la cola revisada y toma la asignación."
+        },
+        "sim5": {
+          "situation": "Acaba de entrar un trabajo nuevo. Romel ya está trabajando. Juan es #2 en la cola pero se comprometió con un cliente a entregar su carro al mediodía — aceptar un trabajo nuevo ahora pondría en riesgo esa promesa. ¿Quién recibe este trabajo?",
+          "explanation": "La regla de Tiempo Comprometido impide que Juan acepte un trabajo nuevo que podría conflictuar con su promesa de entrega. Romel está ocupado. Eluzahin es el próximo técnico disponible y recibe la asignación."
+        },
+        "sim6": {
+          "situation": "Acaba de entrar un diagnóstico complejo de transmisión. Juan está ausente hoy. Eluzahin, Kevin e Ivan no están certificados para diagnósticos de transmisión. Romel está disponible. ¿Quién recibe el trabajo?",
+          "explanation": "Aplica la regla de Brecha de Habilidad — el trabajo pasa al próximo técnico calificado. Juan está ausente y Eluzahin, Kevin e Ivan no tienen la certificación. Romel es el único técnico disponible con la habilidad requerida y recibe la asignación."
         }
       },
       "scenarios": {
