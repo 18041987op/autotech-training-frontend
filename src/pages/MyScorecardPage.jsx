@@ -289,7 +289,8 @@ function CompensationPanel({ isTech, compensation, t }) {
 
   // ── SA compensation ──────────────────────────────────────────────────────
   const {
-    base_salary, base_rate, work_days,
+    base_salary, base_rate, work_days, hours_per_day,
+    commission: saCommission, gross_pay: saGrossPay,
     total_sold, car_count, actual_aro,
     at_proficient_sold, at_expert_sold, at_shop_goal_sold,
     shop_aro_target, shop_close_ratio_target,
@@ -319,26 +320,44 @@ function CompensationPanel({ isTech, compensation, t }) {
         </div>
       </div>
 
-      {/* Current pay + production */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 mb-0.5">
+      {/* Current pay breakdown: base salary + commission + gross */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-3 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">
             {t("scorecard.baseSalary")}
           </p>
-          <p className="text-xl font-extrabold text-emerald-700 dark:text-emerald-300">{fmt$(base_salary)}</p>
+          <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{fmt$(base_salary)}</p>
           {base_rate != null && work_days != null && (
-            <p className="text-[9px] text-emerald-600/70 dark:text-emerald-400/70">
-              ${base_rate}/day × {work_days} days
+            <p className="text-[9px] text-slate-400 dark:text-slate-500">
+              ${base_rate}/hr × {hours_per_day ?? 8}h × {work_days}d
             </p>
           )}
         </div>
-        <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-3">
+        <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-3 text-center">
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">
-            {t("scorecard.totalSold")}
+            {t("scorecard.commission")}
           </p>
-          <p className="text-xl font-extrabold text-slate-900 dark:text-slate-100">{fmt$(total_sold)}</p>
+          <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{fmt$(saCommission)}</p>
+          <p className="text-[9px] text-slate-400 dark:text-slate-500">{t("scorecard.thisperiod")}</p>
+        </div>
+        <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 p-3 text-center">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 mb-0.5">
+            {t("scorecard.grossPay")}
+          </p>
+          <p className="text-lg font-extrabold text-emerald-700 dark:text-emerald-300">{fmt$(saGrossPay)}</p>
+          <p className="text-[9px] text-emerald-600/70 dark:text-emerald-400/70">{t("scorecard.total")}</p>
+        </div>
+      </div>
+
+      {/* Production stats */}
+      <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">
+          {t("scorecard.totalSold")}
+        </p>
+        <div className="flex items-baseline gap-2">
+          <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{fmt$(total_sold)}</p>
           {car_count != null && (
-            <p className="text-[9px] text-slate-400 dark:text-slate-500">
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">
               {car_count} cars · ${actual_aro ?? 0} ARO
             </p>
           )}
@@ -874,36 +893,85 @@ export function MyScorecardPage() {
             <>
               {isTech ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: t("payroll.billedHours"), val: currentMetrics.billed_hours != null ? `${currentMetrics.billed_hours} hrs` : "—" },
-                    { label: t("payroll.laborSales"),  val: fmt$(currentMetrics.labor_sales) },
-                    { label: t("payroll.tier"),        val: currentMetrics.tier ?? "—" },
-                    { label: t("payroll.rank"),        val: latestRank ? `#${latestRank}` : "—" },
-                  ].map(({ label, val }) => (
-                    <div key={label} className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
-                      <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{label}</p>
-                      <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">{val}</p>
-                    </div>
-                  ))}
+                  {/* Billed Hours */}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{t("payroll.billedHours")}</p>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      {currentMetrics.billed_hours != null ? `${currentMetrics.billed_hours} hrs` : "—"}
+                    </p>
+                  </div>
+                  {/* Labor Sales */}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{t("payroll.laborSales")}</p>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">{fmt$(currentMetrics.labor_sales)}</p>
+                  </div>
+                  {/* Tier — colored by tier level */}
+                  <div className={`rounded-2xl p-2.5 text-center border ${
+                    currentMetrics.tier === "Expert"     ? "bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700" :
+                    currentMetrics.tier === "Proficient" ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700" :
+                    currentMetrics.tier === "Developing" ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700" :
+                    "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700"
+                  }`}>
+                    <p className="text-[9px] font-semibold uppercase tracking-wide mb-0.5" style={{
+                      color: TIER_RING[currentMetrics.tier] ?? TIER_RING.Entry,
+                      opacity: 0.7,
+                    }}>{t("payroll.tier")}</p>
+                    <p className="text-base font-extrabold" style={{ color: TIER_RING[currentMetrics.tier] ?? TIER_RING.Entry }}>
+                      {currentMetrics.tier ?? "—"}
+                    </p>
+                  </div>
+                  {/* Rank */}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{t("payroll.rank")}</p>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">{latestRank ? `#${latestRank}` : "—"}</p>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: t("payroll.closeRatio"), val: currentMetrics.close_ratio != null ? `${Math.round(currentMetrics.close_ratio)}%` : "—" },
-                    { label: t("payroll.aro"),        val: currentMetrics.aro != null ? `$${Math.round(currentMetrics.aro)}` : "—" },
-                    { label: t("payroll.totalSold"),  val: fmt$(currentMetrics.total_sold) },
-                    { label: t("payroll.carCount"),   val: currentMetrics.car_count ?? "—" },
-                  ].map(({ label, val }) => (
-                    <div key={label} className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
-                      <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{label}</p>
-                      <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">{val}</p>
-                    </div>
-                  ))}
+                  {/* Close Ratio */}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{t("payroll.closeRatio")}</p>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      {currentMetrics.close_ratio != null ? `${Math.round(currentMetrics.close_ratio)}%` : "—"}
+                    </p>
+                  </div>
+                  {/* ARO */}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{t("payroll.aro")}</p>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                      {currentMetrics.aro != null ? `$${Math.round(currentMetrics.aro)}` : "—"}
+                    </p>
+                  </div>
+                  {/* Tier — colored */}
+                  <div className={`rounded-2xl p-2.5 text-center border ${
+                    currentMetrics.tier === "Expert"     ? "bg-violet-50 dark:bg-violet-900/20 border-violet-200 dark:border-violet-700" :
+                    currentMetrics.tier === "Proficient" ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700" :
+                    currentMetrics.tier === "Developing" ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700" :
+                    "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700"
+                  }`}>
+                    <p className="text-[9px] font-semibold uppercase tracking-wide mb-0.5" style={{
+                      color: TIER_RING[currentMetrics.tier] ?? TIER_RING.Entry,
+                      opacity: 0.7,
+                    }}>{t("payroll.tier")}</p>
+                    <p className="text-base font-extrabold" style={{ color: TIER_RING[currentMetrics.tier] ?? TIER_RING.Entry }}>
+                      {currentMetrics.tier ?? "—"}
+                    </p>
+                  </div>
+                  {/* Cars */}
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/50 p-2.5 text-center">
+                    <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-0.5">{t("payroll.carCount")}</p>
+                    <p className="text-base font-extrabold text-slate-900 dark:text-slate-100">{currentMetrics.car_count ?? "—"}</p>
+                  </div>
                 </div>
               )}
 
+              {/* Motivation message — colored red/orange when below benchmark */}
               {currentMetrics.motivation && (
-                <p className="text-xs text-slate-600 dark:text-slate-400 italic border-l-2 border-[#1E6FAE] pl-3">
+                <p className={`text-xs italic pl-3 border-l-2 ${
+                  currentMetrics.tier === "Entry"
+                    ? "text-amber-700 dark:text-amber-400 border-amber-400"
+                    : "text-slate-600 dark:text-slate-400 border-[#1E6FAE]"
+                }`}>
                   {currentMetrics.motivation}
                 </p>
               )}
