@@ -71,6 +71,7 @@ export function usePayrollHistory() {
 }
 
 // ── Submit check-in response ──────────────────────────────────────────────────
+// Returns the full API response including recommended_module (if any).
 
 export function useSubmitCheckin() {
   const queryClient = useQueryClient();
@@ -83,5 +84,17 @@ export function useSubmitCheckin() {
       queryClient.invalidateQueries({ queryKey: ["checkin-pending"] });
       queryClient.invalidateQueries({ queryKey: ["payroll-metrics"] });
     },
+  });
+}
+
+// ── Fetch admin suggestions (check-in responses) ─────────────────────────────
+// Admin only — returns all weekly check-in responses with user names.
+
+export function useAdminSuggestions() {
+  return useQuery({
+    queryKey: ["admin-suggestions"],
+    queryFn: () => apiFetch("/api/admin/suggestions"),
+    staleTime: 2 * 60 * 1000,
+    retry: false,
   });
 }

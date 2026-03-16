@@ -287,9 +287,9 @@ function CompensationPanel({ isTech, compensation, t }) {
     );
   }
 
-  // ── SA compensation ──────────────────────────────────────────────────────
+  // ── SA / Admin / Coordinator compensation ────────────────────────────────
   const {
-    base_salary, base_rate, work_days, hours_per_day,
+    base_salary, base_rate, hours_worked, work_days, hours_per_day,
     commission: saCommission, gross_pay: saGrossPay,
     total_sold, car_count, actual_aro,
     at_proficient_sold, at_expert_sold, at_shop_goal_sold,
@@ -327,9 +327,11 @@ function CompensationPanel({ isTech, compensation, t }) {
             {t("scorecard.baseSalary")}
           </p>
           <p className="text-lg font-extrabold text-slate-900 dark:text-slate-100">{fmt$(base_salary)}</p>
-          {base_rate != null && work_days != null && (
+          {base_rate != null && (
             <p className="text-[9px] text-slate-400 dark:text-slate-500">
-              ${base_rate}/hr × {hours_per_day ?? 8}h × {work_days}d
+              {hours_worked != null
+                ? `$${base_rate}/hr × ${hours_worked}h`
+                : `$${base_rate}/hr × ${hours_per_day ?? 8}h × ${work_days}d`}
             </p>
           )}
         </div>

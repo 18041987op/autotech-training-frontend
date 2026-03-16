@@ -6,6 +6,7 @@ import {
   GraduationCap,
   Home as HomeIcon,
   Layers,
+  Lightbulb,
   MessageSquare,
   Settings as SettingsIcon,
   Shield,
@@ -60,8 +61,9 @@ export function Layout({ user, onSignOut }) {
   // Admin section
   const adminExtra = isAdmin
     ? [
-        { to: "/admin/progress", label: t("nav.dashboard"), icon: BarChart2 },
-        { to: "/settings",       label: t("nav.settings"),  icon: SettingsIcon },
+        { to: "/admin/progress",     label: t("nav.dashboard"),    icon: BarChart2  },
+        { to: "/admin/suggestions",  label: "Suggestions",         icon: Lightbulb  },
+        { to: "/settings",           label: t("nav.settings"),     icon: SettingsIcon },
       ]
     : [];
 

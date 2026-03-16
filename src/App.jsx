@@ -21,6 +21,7 @@ import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AdminModulesPage } from "./pages/AdminModulesPage";
 import { AdminProgressPage } from "./pages/AdminProgressPage";
+import { AdminSuggestionsPage } from "./pages/AdminSuggestionsPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
@@ -127,13 +128,11 @@ function AppRoutes() {
         {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />
 
-        {/* Admin modules management */}
+        {/* Admin pages */}
         <Route path="admin/modules" element={<AdminModulesPage />} />
-
-
-        {/* Keep admin placeholders for later */}
         <Route path="admin/users" element={<AdminUsersPage />} />
         <Route path="admin/progress" element={<AdminProgressPage />} />
+        <Route path="admin/suggestions" element={<AdminSuggestionsPage />} />
         <Route path="admin/content" element={<ModulesListPage pageType="admin-content-placeholder" />} />
       </Route>
 

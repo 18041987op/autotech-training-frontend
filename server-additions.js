@@ -133,9 +133,58 @@ app.get("/api/checkin/pending", authenticateToken, async (req, res) => {
 });
 
 
+// ── Category → module search keyword mapping ──────────────────────────────────
+const CATEGORY_MODULE_KEYWORDS = {
+  brakes:      ["brake", "brakes"],
+  suspension:  ["suspension", "steering", "alignment"],
+  diagnostics: ["diagnostic", "electronics", "electrical", "scan"],
+  engine:      ["engine", "performance", "oil", "coolant"],
+  maintenance: ["maintenance", "preventive", "inspection", "fluid"],
+  presenting:  ["sales", "advisor", "customer", "presentation"],
+  declined:    ["declined", "follow", "upsell", "sales"],
+  estimates:   ["estimate", "pricing", "quote"],
+  techComm:    ["communication", "teamwork"],
+};
+
+// Helper: find a relevant module from the DB matching a check-in category
+async function findRecommendedModule(category) {
+  // "other" or free-text → no specific recommendation
+  if (!category || category === "other" || category.startsWith("other:")) return null;
+
+  const keywords = CATEGORY_MODULE_KEYWORDS[category];
+  if (!keywords || keywords.length === 0) return null;
+
+  try {
+    // Try to find a module matching any keyword (case-insensitive in title or category)
+    for (const kw of keywords) {
+      const { data: modules } = await supabase
+        .from("modules")
+        .select("id, title, category")
+        .ilike("title", `%${kw}%`)
+        .limit(1);
+
+      if (modules && modules.length > 0) return modules[0];
+
+      // Also try category field
+      const { data: catModules } = await supabase
+        .from("modules")
+        .select("id, title, category")
+        .ilike("category", `%${kw}%`)
+        .limit(1);
+
+      if (catModules && catModules.length > 0) return catModules[0];
+    }
+  } catch (e) {
+    console.warn("[findRecommendedModule] error:", e.message);
+  }
+  return null;
+}
+
+
 // ── POST /api/checkin ─────────────────────────────────────────────────────────
 // Saves the employee's weekly check-in response.
 // Body: { category: string, is_tech: boolean, submitted_at: ISO string }
+// Returns: { checkin, recommended_module? }
 
 app.post("/api/checkin", authenticateToken, async (req, res) => {
   try {
@@ -169,10 +218,94 @@ app.post("/api/checkin", authenticateToken, async (req, res) => {
       return res.status(500).json({ error: error.message });
     }
 
-    return res.status(201).json({ checkin: data });
+    // Find a relevant module to recommend based on the selected category
+    const recommendedModule = await findRecommendedModule(category);
+
+    return res.status(201).json({
+      checkin: data,
+      ...(recommendedModule ? { recommended_module: recommendedModule } : {}),
+    });
   } catch (err) {
     console.error("[/api/checkin] error:", err.message);
     return res.status(500).json({ error: "Failed to save check-in" });
+  }
+});
+
+
+// ── GET /api/admin/suggestions ────────────────────────────────────────────────
+// Returns all check-in responses with user names for the admin Suggestions tab.
+// Admin only.
+
+app.get("/api/admin/suggestions", authenticateToken, async (req, res) => {
+  try {
+    // Only admins can access this endpoint
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    // Fetch checkin_responses joined with user names
+    // We use a join via the users table (user_id FK)
+    const { data: responses, error } = await supabase
+      .from("checkin_responses")
+      .select("id, user_id, email, category, is_tech, submitted_at, module_created")
+      .order("submitted_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error("[/api/admin/suggestions] supabase error:", error.message);
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Fetch user names for the user_ids
+    const userIds = [...new Set((responses ?? []).map((r) => r.user_id))];
+    let userMap = {};
+
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, name, email")
+        .in("id", userIds);
+
+      for (const u of users ?? []) {
+        userMap[u.id] = u.name || u.email;
+      }
+    }
+
+    // Merge names into responses
+    const suggestions = (responses ?? []).map((r) => ({
+      ...r,
+      user_name: userMap[r.user_id] ?? r.email,
+    }));
+
+    return res.json({ suggestions, total: suggestions.length });
+  } catch (err) {
+    console.error("[/api/admin/suggestions] error:", err.message);
+    return res.status(500).json({ error: "Failed to fetch suggestions" });
+  }
+});
+
+
+// ── PATCH /api/admin/suggestions/:id/mark-created ────────────────────────────
+// Marks a suggestion as "module created" so it shows as resolved in the UI.
+
+app.patch("/api/admin/suggestions/:id/mark-created", authenticateToken, async (req, res) => {
+  try {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from("checkin_responses")
+      .update({ module_created: true })
+      .eq("id", id);
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    return res.json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
   }
 });
 
