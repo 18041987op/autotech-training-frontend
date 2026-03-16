@@ -315,7 +315,7 @@ function SimulatorSection({ onComplete }) {
   }
 
   if (allDone) {
-    const finalScore = Object.values(results).filter((r) => r === "correct").length;
+    const finalScore = correct;
     return (
       <SectionCard icon="🎮" title={t("lessons.jobAssignment.section3Title")} subtitle={t("lessons.jobAssignment.section3Subtitle")}>
         <div className="rounded-2xl border-2 p-6 text-center" style={{
