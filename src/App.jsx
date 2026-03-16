@@ -16,6 +16,7 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { ModulesListPage } from "./pages/ModulesListPage";
 import { ModuleDetailPage } from "./pages/ModuleDetailPage";
 import { MyProgressPage } from "./pages/MyProgressPage";
+import { MyScorecardPage } from "./pages/MyScorecardPage";
 import { AssessmentRunnerPage } from "./pages/AssessmentRunnerPage";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { AdminModulesPage } from "./pages/AdminModulesPage";
@@ -108,6 +109,7 @@ function AppRoutes() {
         <Route path="training" element={<ModulesListPage pageType="training" />} />
         <Route path="assessments" element={<AssessmentsPage />} />
         <Route path="progress" element={<MyProgressPage />} />
+        <Route path="scorecard" element={<MyScorecardPage />} />
         <Route path="culture" element={<ModulesListPage pageType="culture" />} />
 
         {/* Module detail (Drive resources) */}

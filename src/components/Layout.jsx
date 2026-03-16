@@ -6,7 +6,6 @@ import {
   GraduationCap,
   Home as HomeIcon,
   Layers,
-  LineChart,
   MessageSquare,
   Settings as SettingsIcon,
   Shield,
@@ -17,7 +16,7 @@ import {
   X,
   ExternalLink,
   BarChart2,
-  Trophy,
+  Gauge,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -48,13 +47,12 @@ export function Layout({ user, onSignOut }) {
 
   const baseNav = [
     { to: "/",            label: t("nav.home"),        icon: HomeIcon,       end: true },
-    { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
     { to: "/training",    label: t("nav.training"),    icon: GraduationCap },
     { to: "/assessments", label: t("nav.assessments"), icon: Layers },
     { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
-    { to: "/progress",    label: t("nav.myProgress"),  icon: LineChart },
-    { to: "/production",  label: t("nav.production"),  icon: Trophy },
+    { to: "/scorecard",   label: t("nav.myScorecard"), icon: Gauge },
     { to: "/culture",     label: t("nav.culture"),     icon: Shield },
+    { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
     // Non-admin users see Settings in the main nav
     ...(!isAdmin ? [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] : []),
   ];
