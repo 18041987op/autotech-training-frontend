@@ -60,18 +60,75 @@ function timerColor(ms, colId) {
   return { bg: "#dcfce7", text: "#166534" };
 }
 
+/**
+ * Parse a deadline string like "9 AM", "2 PM", "3:30 PM", "14:00" into today's Date.
+ * Returns null if unparseable.
+ */
+function parseDeadline(str) {
+  if (!str) return null;
+  const s = str.trim();
+  // Match "9 AM", "2:30 PM", "14:00", "9:00 AM"
+  const m = s.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?$/);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2] || "0", 10);
+  const ampm = (m[3] || "").toUpperCase();
+  if (ampm === "PM" && h !== 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  if (h < 0 || h > 23 || min < 0 || min > 59) return null;
+  const d = new Date();
+  d.setHours(h, min, 0, 0);
+  return d;
+}
+
+/**
+ * Returns urgency level for a deadline string relative to right now:
+ *   "overdue"  — deadline has passed
+ *   "critical" — ≤ 30 minutes away
+ *   "warning"  — ≤ 60 minutes away
+ *   "ok"       — more than 60 minutes away
+ *   null       — no deadline / unparseable
+ */
+function deadlineUrgency(str) {
+  const d = parseDeadline(str);
+  if (!d) return null;
+  const diffMin = (d - Date.now()) / 60000;
+  if (diffMin < 0)  return "overdue";
+  if (diffMin <= 30) return "critical";
+  if (diffMin <= 60) return "warning";
+  return "ok";
+}
+
+/** Urgency-to-style map used in cards and the tech panel */
+const URGENCY_STYLE = {
+  overdue:  { color: "#ef4444", bg: "#450a0a", label: "🔴 OVERDUE"  },
+  critical: { color: "#f97316", bg: "#431407", label: "⚠️ < 30 MIN" },
+  warning:  { color: "#eab308", bg: "#422006", label: "⏰ < 1 HR"   },
+  ok:       { color: "#22c55e", bg: "#14532d", label: "✅ On Track"  },
+};
+
 // ─── Dispatch logic ───────────────────────────────────────────────────────────
+
+// Urgency rank: higher = more urgent (used to find "worst" across jobs)
+const URGENCY_RANK = { overdue: 4, critical: 3, warning: 2, ok: 1 };
 
 function computeTechLoad(cards) {
   const load = {};
-  TECHS.forEach(t => load[t.key] = { hours: 0, jobs: [], hasDeadline: false });
+  TECHS.forEach(t => load[t.key] = { hours: 0, jobs: [], hasDeadline: false, worstUrgency: null });
   cards
     .filter(c => c.tech && c.col !== "ready" && c.col !== "shop")
     .forEach(c => {
       if (!load[c.tech]) return;
       load[c.tech].hours += c.hours || 0;
       load[c.tech].jobs.push(c);
-      if (c.deadline) load[c.tech].hasDeadline = true;
+      if (c.deadline) {
+        load[c.tech].hasDeadline = true;
+        const u = deadlineUrgency(c.deadline);
+        const prev = load[c.tech].worstUrgency;
+        if (u && (!prev || URGENCY_RANK[u] > URGENCY_RANK[prev])) {
+          load[c.tech].worstUrgency = u;
+        }
+      }
     });
   return load;
 }
@@ -79,13 +136,31 @@ function computeTechLoad(cards) {
 function buildTechResult(tech, l) {
   const available = MAX_HOURS - l.hours;
   const isFull = available <= 0;
+  const u = l.worstUrgency; // "overdue" | "critical" | "warning" | "ok" | null
   let tag, tier;
-  if (isFull)                                  { tag = "full";       tier = 5; }
-  else if (l.jobs.length === 0)                { tag = "free";       tier = 1; }
-  else if (l.jobs.length === 1 && !l.hasDeadline) { tag = "busy";   tier = 2; }
-  else if (l.jobs.length === 1 && l.hasDeadline)  { tag = "deadline"; tier = 3; }
-  else                                         { tag = "overloaded"; tier = 4; }
-  return { tech, tag, tier, hours: l.hours, available: Math.max(0, available), jobs: l.jobs };
+
+  if (l.jobs.length === 0) {
+    tag = "free"; tier = 1;                             // Tier 1 — no jobs
+  } else if (u === "critical" || u === "overdue") {
+    // Deadline is very close or past → tech is finishing up / almost free
+    // "overdue" means the car should be done → they're wrapping up or already done
+    tag = u === "overdue" ? "finishing" : "finishing";
+    tier = 2;                                           // Tier 2 — finishing up, recommend next
+  } else if (l.jobs.length === 1 && !l.hasDeadline) {
+    tag = "busy"; tier = 3;                             // Tier 3 — one job, no deadline pressure
+  } else if (u === "warning") {
+    tag = "warning"; tier = 4;                          // Tier 4 — deadline within the hour
+  } else if (l.hasDeadline) {
+    tag = "deadline"; tier = 4;                         // Tier 4 — has deadline but ok
+  } else if (l.jobs.length >= 2) {
+    tag = "overloaded"; tier = 5;                       // Tier 5 — 2+ jobs
+  } else if (isFull) {
+    tag = "full"; tier = 6;                             // Tier 6 — at capacity
+  } else {
+    tag = "busy"; tier = 3;
+  }
+
+  return { tech, tag, tier, hours: l.hours, available: Math.max(0, available), jobs: l.jobs, worstUrgency: u };
 }
 
 function dispatchAnalysis(cards, { isWaiting = false, returningTechKey = null } = {}) {
@@ -113,14 +188,25 @@ function getRecommendationText(analysis, isWaiting) {
 
   if (best.tag === "return")
     return { title: "🔁 Rule: Return Vehicle", body: `Must go back to ${best.tech.name} who did the original work.`, accent: "#f59e0b" };
-  if (best.tier === 5)
+  if (best.tier >= 6)
     return { title: "⚠️ All Technicians Full", body: "Consider asking the customer to drop off or come back later.", accent: "#dc2626" };
+
+  // Finishing up (critical or overdue deadline)
+  if (best.tag === "finishing") {
+    const urgLabel = best.worstUrgency === "overdue" ? "finishing up (deadline passed)" : "deadline in < 30 min";
+    if (isWaiting)
+      return { title: "🛋️ Customer Waiting — Techs Finishing Up", body: `${best.tech.name} (#${best.tech.num}) is ${urgLabel}. Assign once current car is done, or override if urgent.`, accent: "#f97316" };
+    return { title: "⏰ Finishing Up — Next in Queue", body: `${best.tech.name} (#${best.tech.num}) is ${urgLabel}. Will be free soon — assign next car.`, accent: "#f97316" };
+  }
+
   if (isWaiting && best.tag === "free")
     return { title: "🛋️ Rule: Customer Waiting", body: `${best.tech.name} (#${best.tech.num}) is the first free tech in the queue — no active jobs.`, accent: "#f59e0b" };
   if (isWaiting)
     return { title: "🛋️ Customer Waiting — No Free Techs", body: `${best.tech.name} (#${best.tech.num}) has the lightest load (${best.hours}h). Check committed times before assigning.`, accent: "#f59e0b" };
   if (best.tag === "free")
     return { title: "📋 Next in Queue", body: `${best.tech.name} (#${best.tech.num}) is next and has no active jobs.`, accent: "#22c55e" };
+  if (best.tag === "warning")
+    return { title: "⚠️ Deadline Warning — Next in Queue", body: `${best.tech.name} (#${best.tech.num}) has a deadline within the hour. Confirm they can fit another job.`, accent: "#eab308" };
   return { title: "📋 Next in Queue", body: `${best.tech.name} (#${best.tech.num}) — ${best.hours}h assigned, ${best.available.toFixed(1)}h remaining.`, accent: "#22c55e" };
 }
 
@@ -150,9 +236,22 @@ function TechPanel({ cards }) {
           const isSuggested = tech.key === suggestedKey && result.tier < 5;
           const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
           const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
-          const pillBg = result.tag === "free" ? "#14532d" : result.tag === "full" || result.tag === "overloaded" ? "#450a0a" : "#451a03";
-          const pillText = result.tag === "free" ? "#86efac" : result.tag === "full" || result.tag === "overloaded" ? "#fca5a5" : "#fed7aa";
-          const pillLabel = result.tag === "free" ? "Free" : result.tag === "full" ? "Full" : result.tag === "overloaded" ? "2+ jobs" : "Busy";
+          const pillBg =
+            result.tag === "free"      ? "#14532d" :
+            result.tag === "finishing" ? "#431407" :
+            result.tag === "warning"   ? "#422006" :
+            result.tag === "full" || result.tag === "overloaded" ? "#450a0a" : "#1e3a5f";
+          const pillText =
+            result.tag === "free"      ? "#86efac" :
+            result.tag === "finishing" ? "#fb923c" :
+            result.tag === "warning"   ? "#fde047" :
+            result.tag === "full" || result.tag === "overloaded" ? "#fca5a5" : "#93c5fd";
+          const pillLabel =
+            result.tag === "free"       ? "FREE" :
+            result.tag === "finishing"  ? (result.worstUrgency === "overdue" ? "⏰ DONE?" : "⏰ FINISHING") :
+            result.tag === "warning"    ? "⚠️ DUE SOON" :
+            result.tag === "full"       ? "FULL" :
+            result.tag === "overloaded" ? "2+ JOBS" : "BUSY";
 
           return (
             <div key={tech.key} style={{
@@ -184,16 +283,52 @@ function TechPanel({ cards }) {
               {/* Jobs */}
               {l.jobs.length === 0
                 ? <div style={{ fontSize: "0.6rem", color: "#475569", marginTop: 3 }}>No active jobs</div>
-                : l.jobs.map((j, i) => (
-                  <div key={i} style={{ fontSize: "0.6rem", color: "#94a3b8", marginTop: 3, display: "flex", alignItems: "center", gap: 4 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#475569", flexShrink: 0 }} />
-                    {j.name} · {j.hours || "?"}h
-                    {j.deadline && <span style={{ color: "#f59e0b", fontWeight: 700 }}> ⏱️ {j.deadline}</span>}
-                  </div>
-                ))
+                : l.jobs.map((j, i) => {
+                  const ju = deadlineUrgency(j.deadline);
+                  const jus = ju ? URGENCY_STYLE[ju] : null;
+                  return (
+                    <div key={i} style={{ fontSize: "0.6rem", color: "#94a3b8", marginTop: 3, display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ width: 5, height: 5, borderRadius: "50%",
+                        background: jus ? jus.color : "#475569", flexShrink: 0 }} />
+                      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {j.name} · {j.hours || "?"}h
+                      </span>
+                      {j.deadline && (
+                        <span style={{
+                          color: jus ? jus.color : "#f59e0b", fontWeight: 700,
+                          fontSize: "0.55rem", flexShrink: 0,
+                        }}>⏱️ {j.deadline}</span>
+                      )}
+                    </div>
+                  );
+                })
               }
+              {/* Finishing-up banner */}
+              {result.tag === "finishing" && (
+                <div style={{
+                  marginTop: 5, padding: "3px 6px", borderRadius: 5,
+                  background: result.worstUrgency === "overdue" ? "#450a0a" : "#431407",
+                  fontSize: "0.58rem", fontWeight: 800,
+                  color: result.worstUrgency === "overdue" ? "#fca5a5" : "#fb923c",
+                  textAlign: "center",
+                }}>
+                  {result.worstUrgency === "overdue" ? "🔴 DEADLINE PASSED — wrapping up?" : "⏰ FINISHING UP — ready soon"}
+                </div>
+              )}
+              {result.tag === "warning" && (
+                <div style={{
+                  marginTop: 5, padding: "3px 6px", borderRadius: 5,
+                  background: "#422006", fontSize: "0.58rem", fontWeight: 700,
+                  color: "#fde047", textAlign: "center",
+                }}>
+                  ⚠️ Deadline within 1 hour
+                </div>
+              )}
               {isSuggested && (
-                <div style={{ fontSize: "0.58rem", fontWeight: 800, color: "#22c55e", marginTop: 4 }}>▶ NEXT UP</div>
+                <div style={{ fontSize: "0.58rem", fontWeight: 800,
+                  color: result.tag === "finishing" ? "#fb923c" : "#22c55e", marginTop: 4 }}>
+                  {result.tag === "finishing" ? "▶ ASSIGN NEXT" : "▶ NEXT UP"}
+                </div>
               )}
             </div>
           );
@@ -257,11 +392,23 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete }) {
           ⏳ {card.hours}h est.
         </div>
       )}
-      {card.deadline && (
-        <div style={{ fontSize: "0.6rem", color: "#d97706", fontWeight: 700 }}>
-          ⏱️ {card.deadline}
-        </div>
-      )}
+      {card.deadline && (() => {
+        const u = deadlineUrgency(card.deadline);
+        const us = u ? URGENCY_STYLE[u] : null;
+        return (
+          <div style={{
+            fontSize: "0.6rem", fontWeight: 700,
+            color: us ? us.color : "#d97706",
+            marginTop: 2,
+            ...(u === "overdue" || u === "critical" ? {
+              background: us.bg, padding: "1px 5px",
+              borderRadius: 4, display: "inline-block",
+            } : {}),
+          }}>
+            ⏱️ {card.deadline}{u === "overdue" ? " — OVERDUE" : u === "critical" ? " — SOON" : ""}
+          </div>
+        );
+      })()}
       {/* Tech tag or unassigned warning */}
       {tech ? (
         <span style={{
