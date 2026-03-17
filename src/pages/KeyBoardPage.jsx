@@ -6,15 +6,18 @@
  * Technicians see a read-only view of the board.
  *
  * Columns:
- *   🔴 Customer Waiting  — client in waiting room, highest priority
- *   🟠 Drop Off          — client dropped off, needs to be assigned
- *   🟠 Repair in Progress— job active, tech assigned
- *   🟡 Waiting (Hold)    — paused waiting for parts or approval
- *   🟢 Ready for Pick Up — repair done, call customer
- *   ⚪ Shop / Employee   — internal vehicles
+ *   🔴 Customer Waiting — client in waiting room, highest priority
+ *   🟠 Drop Off         — client dropped off, needs to be assigned
+ *   🟡 In Progress      — job active (repairing) or paused (on hold for parts/approval)
+ *   🟢 Ready for Pick Up— repair done, call customer
+ *   ⚪ Shop / Employee  — internal vehicles
+ *
+ * Data is stored in Supabase via the training backend API so all
+ * devices see the same live board. Refreshes every 15 seconds.
  */
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
+import { apiFetch } from "../lib/api";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -27,18 +30,17 @@ const TECHS = [
 ];
 
 const COLS = [
-  { id: "waiting", label: "Customer\nWaiting",            color: "#dc2626", darkColor: "#7f1d1d", needsDispatch: true  },
-  { id: "dropoff", label: "Drop Off",                     color: "#ea580c", darkColor: "#7c2d12", needsDispatch: true  },
-  { id: "repair",  label: "Repair in\nProgress",          color: "#b45309", darkColor: "#78350f", needsDispatch: true  },
-  { id: "hold",    label: "Waiting for\nParts / Approval",color: "#ca8a04", darkColor: "#713f12", needsDispatch: false },
-  { id: "ready",   label: "Ready for\nPick Up",           color: "#16a34a", darkColor: "#14532d", needsDispatch: false },
-  { id: "shop",    label: "Shop /\nEmployee Cars",        color: "#475569", darkColor: "#1e293b", needsDispatch: false },
+  { id: "waiting", label: "Customer\nWaiting",      color: "#dc2626", darkColor: "#7f1d1d", needsDispatch: true  },
+  { id: "dropoff", label: "Drop Off",                color: "#ea580c", darkColor: "#7c2d12", needsDispatch: true  },
+  { id: "repair",  label: "In Progress",             color: "#b45309", darkColor: "#78350f", needsDispatch: true  },
+  { id: "ready",   label: "Ready for\nPick Up",      color: "#16a34a", darkColor: "#14532d", needsDispatch: false },
+  { id: "shop",    label: "Shop /\nEmployee Cars",   color: "#475569", darkColor: "#1e293b", needsDispatch: false },
 ];
 
 const MAX_HOURS = 8;
-const STORAGE_KEY = "autorx_keyboard_v1";
 
-const CAN_EDIT_ROLES = ["admin", "service advisor", "sa", "serviceadvisor"];
+// Roles stored in DB that can edit the board (SA stored as "service_advisor")
+const CAN_EDIT_ROLES = ["admin", "service_advisor", "service advisor", "sa", "serviceadvisor"];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -106,6 +108,40 @@ const URGENCY_STYLE = {
   warning:  { color: "#eab308", bg: "#422006", label: "⏰ < 1 HR"   },
   ok:       { color: "#22c55e", bg: "#14532d", label: "✅ On Track"  },
 };
+
+/** Convert a frontend card (camelCase) to a DB row (snake_case) */
+function toDbRow(card) {
+  return {
+    id:            card.id,
+    col:           card.col,
+    status:        card.status        || "repairing",
+    name:          card.name          || "",
+    vehicle:       card.vehicle       || "",
+    ro:            card.ro            || "",
+    hours:         card.hours         || 0,
+    deadline:      card.deadline      || "",
+    tech:          card.tech          || "",
+    original_tech: card.originalTech  || "",
+    added_at:      card.addedAt       || Date.now(),
+  };
+}
+
+/** Convert a DB row (snake_case) to a frontend card (camelCase) */
+function fromDbRow(row) {
+  return {
+    id:           row.id,
+    col:          row.col,
+    status:       row.status        || "repairing",
+    name:         row.name          || "",
+    vehicle:      row.vehicle       || "",
+    ro:           row.ro            || "",
+    hours:        row.hours         || 0,
+    deadline:     row.deadline      || "",
+    tech:         row.tech          || "",
+    originalTech: row.original_tech || "",
+    addedAt:      row.added_at      || Date.now(),
+  };
+}
 
 // ─── Dispatch logic ───────────────────────────────────────────────────────────
 
@@ -352,21 +388,22 @@ function TechPanel({ cards }) {
   );
 }
 
-function KeyCard({ card, col, canEdit, onEdit, onDelete }) {
+function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   const tech = TECHS.find(t => t.key === card.tech);
   const ms = Date.now() - card.addedAt;
   const tc = timerColor(ms, col.id);
   const isUrgent = col.id === "waiting";
+  const isOnHold = card.col === "repair" && card.status === "onhold";
 
   return (
     <div
       onClick={() => canEdit && onEdit(card)}
       style={{
-        background: "rgba(255,255,255,0.97)",
+        background: isOnHold ? "rgba(254,243,199,0.97)" : "rgba(255,255,255,0.97)",
         borderRadius: 9, padding: "7px 8px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
         position: "relative", userSelect: "none",
-        borderLeft: `3px solid ${tech ? tech.color : isUrgent ? "#dc2626" : "transparent"}`,
+        borderLeft: `3px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "transparent"}`,
         cursor: canEdit ? "pointer" : "default",
         transition: "transform 0.12s",
       }}
@@ -423,6 +460,14 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete }) {
           background: "#fef3c7", padding: "2px 7px", borderRadius: 20, cursor: "pointer",
         }}>⚠️ Assign tech</span>
       ) : null}
+      {/* On-hold status badge */}
+      {isOnHold && (
+        <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "#92400e",
+          background: "#fde68a", padding: "1px 6px", borderRadius: 4,
+          display: "inline-block", marginTop: 3 }}>
+          ⏸ Waiting for parts / approval
+        </div>
+      )}
       {/* Footer: RO + elapsed time on board */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
         <span style={{ fontSize: "0.58rem", color: "#94a3b8", fontWeight: 600 }}>
@@ -434,6 +479,36 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete }) {
           🕐 {elapsedLabel(ms)}
         </span>
       </div>
+      {/* Quick action buttons (repair column only, SA/admin) */}
+      {canEdit && card.col === "repair" && (
+        <div style={{ display: "flex", gap: 4, marginTop: 5 }}
+          onClick={e => e.stopPropagation()}>
+          {isOnHold ? (
+            <button
+              onClick={() => onQuickAction(card.id, "resume")}
+              style={{ flex: 1, fontSize: "0.58rem", fontWeight: 700, padding: "3px 0",
+                borderRadius: 5, border: "none", cursor: "pointer",
+                background: "#dcfce7", color: "#166534" }}>
+              ▶ Resume
+            </button>
+          ) : (
+            <button
+              onClick={() => onQuickAction(card.id, "hold")}
+              style={{ flex: 1, fontSize: "0.58rem", fontWeight: 700, padding: "3px 0",
+                borderRadius: 5, border: "none", cursor: "pointer",
+                background: "#fef9c3", color: "#854d0e" }}>
+              ⏸ On Hold
+            </button>
+          )}
+          <button
+            onClick={() => onQuickAction(card.id, "done")}
+            style={{ flex: 1, fontSize: "0.58rem", fontWeight: 700, padding: "3px 0",
+              borderRadius: 5, border: "none", cursor: "pointer",
+              background: "#bbf7d0", color: "#14532d" }}>
+            ✅ Done
+          </button>
+        </div>
+      )}
       {/* Delete button */}
       {canEdit && (
         <button
@@ -450,7 +525,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete }) {
   );
 }
 
-function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard }) {
+function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard, onQuickAction }) {
   const colCards = cards.filter(c => c.col === col.id);
 
   return (
@@ -487,6 +562,7 @@ function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard }) {
             canEdit={canEdit}
             onEdit={onEditCard}
             onDelete={onDeleteCard}
+            onQuickAction={onQuickAction}
           />
         ))}
       </div>
@@ -540,6 +616,7 @@ function CardModal({ colId, card, cards, onSave, onClose }) {
       ...(card || {}),
       id:           card?.id || uid(),
       col:          colId,
+      status:       card?.status || "repairing",
       name:         name.trim(),
       vehicle:      vehicle.trim(),
       ro:           ro.trim(),
@@ -647,19 +724,25 @@ function CardModal({ colId, card, cards, onSave, onClose }) {
                 const barColor = tHours >= MAX_HOURS ? "#ef4444" : tHours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
 
                 const tagBg   = tag === "full" || tag === "overloaded" ? "#fee2e2"
+                              : tag === "finishing" ? "#ffedd5"
+                              : tag === "warning"   ? "#fef9c3"
                               : isSuggested ? "#dcfce7"
                               : tag === "deadline" || tag === "busy" ? "#fef9c3"
                               : "#dcfce7";
                 const tagText = tag === "full" || tag === "overloaded" ? "#991b1b"
+                              : tag === "finishing" ? "#9a3412"
+                              : tag === "warning"   ? "#854d0e"
                               : isSuggested ? "#166534"
                               : tag === "deadline" || tag === "busy" ? "#854d0e"
                               : "#166534";
                 const tagLabel = isSuggested ? "✓ Best match"
-                               : tag === "free" ? "Free"
-                               : tag === "full" ? "Full"
+                               : tag === "free"       ? "Free"
+                               : tag === "finishing"  ? "⏰ Finishing"
+                               : tag === "warning"    ? "⚠️ Due soon"
+                               : tag === "full"       ? "Full"
                                : tag === "overloaded" ? "2+ jobs"
-                               : tag === "deadline" ? "Has deadline"
-                               : tag === "busy" ? `${jobs.length} job`
+                               : tag === "deadline"   ? "Has deadline"
+                               : tag === "busy"       ? `${jobs.length} job`
                                : "Available";
 
                 const jobSummary = jobs.length > 0
@@ -735,22 +818,40 @@ function CardModal({ colId, card, cards, onSave, onClose }) {
 
 export function KeyBoardPage() {
   const { user } = useOutletContext() || {};
-  const role = (user?.role || "").toLowerCase().replace(/\s/g, "");
-  const canEdit = CAN_EDIT_ROLES.includes(role) || role === "admin";
+  // Normalize role: lowercase + replace spaces/underscores for consistent matching
+  const rawRole = (user?.role || "").toLowerCase();
+  const canEdit = CAN_EDIT_ROLES.includes(rawRole) ||
+                  CAN_EDIT_ROLES.includes(rawRole.replace(/\s/g, "")) ||
+                  rawRole === "admin";
 
-  const [cards, setCards]     = useState(() => {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { return []; }
-  });
-  const [modal,   setModal]   = useState(null);  // { colId, card? }
+  const [cards,   setCards]   = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [syncErr, setSyncErr] = useState(null);
+  const [modal,   setModal]   = useState(null);
   const [clock,   setClock]   = useState("");
+  const pollRef = useRef(null);
 
-  // Persist to localStorage
+  // Load cards from API
+  const fetchCards = useCallback(async () => {
+    try {
+      const data = await apiFetch("/api/keyboard/cards");
+      setCards((data || []).map(fromDbRow));
+      setSyncErr(null);
+    } catch (e) {
+      setSyncErr("Board sync error — " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial load + poll every 15 s
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
-  }, [cards]);
+    fetchCards();
+    pollRef.current = setInterval(fetchCards, 15000);
+    return () => clearInterval(pollRef.current);
+  }, [fetchCards]);
 
-  // Clock + timer refresh
+  // Clock refresh every minute
   useEffect(() => {
     function update() {
       const n = new Date();
@@ -765,19 +866,56 @@ export function KeyBoardPage() {
     return () => clearInterval(id);
   }, []);
 
-  const handleSaveCard = useCallback((cardData) => {
-    setCards(prev => {
-      const exists = prev.find(c => c.id === cardData.id);
-      return exists
+  // Save (create or update) a card via API
+  const handleSaveCard = useCallback(async (cardData) => {
+    const exists = cards.find(c => c.id === cardData.id);
+    try {
+      if (exists) {
+        await apiFetch(`/api/keyboard/cards/${cardData.id}`, { method: "PATCH", body: toDbRow(cardData) });
+      } else {
+        await apiFetch("/api/keyboard/cards", { method: "POST", body: toDbRow(cardData) });
+      }
+      // Optimistic update
+      setCards(prev => exists
         ? prev.map(c => c.id === cardData.id ? cardData : c)
-        : [...prev, cardData];
-    });
+        : [...prev, cardData]
+      );
+    } catch (e) {
+      setSyncErr("Save failed — " + e.message);
+    }
     setModal(null);
-  }, []);
+  }, [cards]);
 
-  const handleDeleteCard = useCallback((id) => {
-    setCards(prev => prev.filter(c => c.id !== id));
-  }, []);
+  // Delete a card via API
+  const handleDeleteCard = useCallback(async (id) => {
+    setCards(prev => prev.filter(c => c.id !== id)); // optimistic
+    try {
+      await apiFetch(`/api/keyboard/cards/${id}`, { method: "DELETE" });
+    } catch (e) {
+      setSyncErr("Delete failed — " + e.message);
+      fetchCards(); // rollback
+    }
+  }, [fetchCards]);
+
+  // Quick actions: done → move to ready; hold → pause; resume → un-pause
+  const handleQuickAction = useCallback(async (id, action) => {
+    const card = cards.find(c => c.id === id);
+    if (!card) return;
+    let patch;
+    if (action === "done")   patch = { col: "ready", status: "repairing" };
+    if (action === "hold")   patch = { status: "onhold" };
+    if (action === "resume") patch = { status: "repairing" };
+    if (!patch) return;
+
+    const updated = { ...card, ...patch };
+    setCards(prev => prev.map(c => c.id === id ? updated : c)); // optimistic
+    try {
+      await apiFetch(`/api/keyboard/cards/${id}`, { method: "PATCH", body: patch });
+    } catch (e) {
+      setSyncErr("Action failed — " + e.message);
+      fetchCards(); // rollback
+    }
+  }, [cards, fetchCards]);
 
   return (
     <div style={{
@@ -795,7 +933,16 @@ export function KeyBoardPage() {
         <h1 style={{ color: "#f1f5f9", fontSize: "1rem", fontWeight: 800, margin: 0 }}>
           🔑 Key Board
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {syncErr && (
+            <span style={{ fontSize: "0.6rem", color: "#fca5a5", background: "#450a0a",
+              border: "1px solid #7f1d1d", padding: "2px 8px", borderRadius: 20 }}>
+              ⚠️ {syncErr}
+            </span>
+          )}
+          {loading && (
+            <span style={{ fontSize: "0.6rem", color: "#94a3b8" }}>Loading…</span>
+          )}
           {!canEdit && (
             <span style={{ fontSize: "0.65rem", color: "#64748b", background: "#1e293b",
               border: "1px solid #334155", padding: "2px 8px", borderRadius: 20 }}>
@@ -815,9 +962,9 @@ export function KeyBoardPage() {
         <div style={{ flex: 1, overflowX: "auto", overflowY: "hidden" }}>
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(6, minmax(155px, 1fr))",
+          gridTemplateColumns: "repeat(5, minmax(160px, 1fr))",
           gap: 8, padding: 10,
-          minWidth: 960, height: "100%",
+          minWidth: 830, height: "100%",
           boxSizing: "border-box",
         }}>
           {COLS.map(col => (
@@ -829,6 +976,7 @@ export function KeyBoardPage() {
               onAddClick={(colId) => setModal({ colId, card: null })}
               onEditCard={(card)  => setModal({ colId: card.col, card })}
               onDeleteCard={handleDeleteCard}
+              onQuickAction={handleQuickAction}
             />
           ))}
         </div>
