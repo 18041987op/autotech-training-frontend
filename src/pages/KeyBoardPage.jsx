@@ -66,7 +66,7 @@ function computeTechLoad(cards) {
   const load = {};
   TECHS.forEach(t => load[t.key] = { hours: 0, jobs: [], hasDeadline: false });
   cards
-    .filter(c => (c.col === "repair" || c.col === "hold") && c.tech)
+    .filter(c => c.tech && c.col !== "ready" && c.col !== "shop")
     .forEach(c => {
       if (!load[c.tech]) return;
       load[c.tech].hours += c.hours || 0;
