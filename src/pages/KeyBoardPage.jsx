@@ -659,15 +659,18 @@ export function KeyBoardPage() {
       </div>
 
       {/* Workspace */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", minWidth: 0 }}>
         {/* Tech Panel */}
         <TechPanel cards={cards} />
 
-        {/* Board */}
+        {/* Board — scrolls horizontally when viewport is too narrow */}
+        <div style={{ flex: 1, overflowX: "auto", overflowY: "hidden" }}>
         <div style={{
-          flex: 1, display: "grid",
-          gridTemplateColumns: "repeat(6, 1fr)",
-          gap: 8, padding: 10, overflow: "hidden",
+          display: "grid",
+          gridTemplateColumns: "repeat(6, minmax(155px, 1fr))",
+          gap: 8, padding: 10,
+          minWidth: 960, height: "100%",
+          boxSizing: "border-box",
         }}>
           {COLS.map(col => (
             <Column
@@ -680,6 +683,7 @@ export function KeyBoardPage() {
               onDeleteCard={handleDeleteCard}
             />
           ))}
+        </div>
         </div>
       </div>
 
