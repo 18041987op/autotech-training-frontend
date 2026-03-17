@@ -13,10 +13,16 @@
  * Designed for large-screen display — readable from 10+ feet.
  * Dark theme with high-contrast column colors.
  * Data synced to Supabase; polls every 15 s.
+ * Bilingual: English / Spanish via react-i18next.
  */
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
+
+// ─── i18n context (avoids prop-drilling t() into every sub-component) ─────────
+const TCtx = React.createContext((k) => k);
+const useT = () => React.useContext(TCtx);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -29,11 +35,11 @@ const TECHS = [
 ];
 
 const COLS = [
-  { id: "waiting", label: "Customer\nWaiting",    color: "#dc2626", darkColor: "#7f1d1d", needsDispatch: true  },
-  { id: "dropoff", label: "Drop Off",              color: "#ea580c", darkColor: "#7c2d12", needsDispatch: true  },
-  { id: "repair",  label: "In Progress",           color: "#ca8a04", darkColor: "#78350f", needsDispatch: true  },
-  { id: "ready",   label: "Ready for\nPick Up",    color: "#16a34a", darkColor: "#14532d", needsDispatch: false },
-  { id: "shop",    label: "Shop /\nEmployee Cars", color: "#475569", darkColor: "#1e293b", needsDispatch: false },
+  { id: "waiting", color: "#dc2626", darkColor: "#7f1d1d", needsDispatch: true  },
+  { id: "dropoff", color: "#ea580c", darkColor: "#7c2d12", needsDispatch: true  },
+  { id: "repair",  color: "#ca8a04", darkColor: "#78350f", needsDispatch: true  },
+  { id: "ready",   color: "#16a34a", darkColor: "#14532d", needsDispatch: false },
+  { id: "shop",    color: "#475569", darkColor: "#1e293b", needsDispatch: false },
 ];
 
 // "Active" columns where Done/Hold/Resume buttons are relevant
@@ -109,8 +115,8 @@ function parseDeadline(str) {
   return d;
 }
 
-/** Human-readable deadline label: "Today 9:00 AM", "Mon Dec 15 2:00 PM", etc. */
-function formatDeadline(str) {
+/** Human-readable deadline label — uses t() for "Tomorrow" translation */
+function formatDeadline(str, t) {
   if (!str) return "";
   const d = parseDeadline(str);
   if (!d) return str; // fallback: show raw string
@@ -120,7 +126,7 @@ function formatDeadline(str) {
   const isTomorrow = d.toDateString() === tomorrow.toDateString();
   const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
   if (isToday)    return time;           // same day → just show time
-  if (isTomorrow) return `Tomorrow ${time}`;
+  if (isTomorrow) return `${t ? t("keyboard.tomorrow") : "Tomorrow"} ${time}`;
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) + " " + time;
 }
 
@@ -244,35 +250,63 @@ function dispatchAnalysis(cards, { isWaiting = false, returningTechKey = null, u
     .sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : a.tech.num - b.tech.num);
 }
 
-function getRecommendationText(analysis, isWaiting) {
+function getRecommendationText(analysis, isWaiting, t) {
   const eligible = analysis.filter(a => a.tag !== "unavailable");
   const best = eligible[0];
-  if (!best) return { title: "⚠️ All Techs Unavailable", body: "No available technicians. Mark someone as available first.", accent: D.danger };
-  if (best.tag === "return")
-    return { title: "🔁 R3: Return Vehicle", body: `Must go back to ${best.tech.name} who did the original work.`, accent: D.warn };
-  if (best.tier >= 6)
-    return { title: "⚠️ R6: All Technicians Full", body: "Consider asking the customer to drop off or come back later.", accent: D.danger };
+  if (!best) return {
+    title: t("keyboard.dispatch.allUnavailableTitle"),
+    body:  t("keyboard.dispatch.allUnavailableBody"),
+    accent: D.danger,
+  };
+  if (best.tag === "return") return {
+    title: t("keyboard.dispatch.returnTitle"),
+    body:  t("keyboard.dispatch.returnBody", { name: best.tech.name }),
+    accent: D.warn,
+  };
+  if (best.tier >= 6) return {
+    title: t("keyboard.dispatch.allFullTitle"),
+    body:  t("keyboard.dispatch.allFullBody"),
+    accent: D.danger,
+  };
   if (best.tag === "finishing") {
-    const lbl = best.worstUrgency === "overdue" ? "finishing up (deadline passed)" : "deadline in < 30 min";
+    const status = best.worstUrgency === "overdue"
+      ? t("keyboard.dispatch.finishingOverdueLabel")
+      : t("keyboard.dispatch.finishingCriticalLabel");
     return isWaiting
-      ? { title: "🛋️ R1+R2: Waiting — Finishing Up", body: `${best.tech.name} (#${best.tech.num}) is ${lbl}. Override if urgent.`, accent: "#f97316" }
-      : { title: "⏰ Finishing Up — Next in Queue",   body: `${best.tech.name} (#${best.tech.num}) is ${lbl}. Assign next car.`, accent: "#f97316" };
+      ? { title: t("keyboard.dispatch.waitingFinishingTitle"), body: t("keyboard.dispatch.waitingFinishingBody", { name: best.tech.name, num: best.tech.num, status }), accent: "#f97316" }
+      : { title: t("keyboard.dispatch.finishingTitle"),        body: t("keyboard.dispatch.finishingBody",        { name: best.tech.name, num: best.tech.num, status }), accent: "#f97316" };
   }
-  if (isWaiting && best.tag === "free")
-    return { title: "🛋️ R1+R2: Customer Waiting", body: `${best.tech.name} (#${best.tech.num}) is first free tech — no active jobs.`, accent: D.warn };
-  if (isWaiting)
-    return { title: "🛋️ R1: Waiting — No Free Techs", body: `${best.tech.name} (#${best.tech.num}) has lightest load (${best.hours}h). Verify committed times.`, accent: D.warn };
-  if (best.tag === "free")
-    return { title: "📋 R2: Next in Queue", body: `${best.tech.name} (#${best.tech.num}) is next and has no active jobs.`, accent: D.success };
-  if (best.tag === "warning")
-    return { title: "⚠️ R4: Deadline Warning", body: `${best.tech.name} (#${best.tech.num}) has a deadline within the hour. Confirm capacity.`, accent: D.warn };
-  return { title: "📋 R2: Next in Queue", body: `${best.tech.name} (#${best.tech.num}) — ${best.hours}h assigned, ${best.available.toFixed(1)}h remaining.`, accent: D.success };
+  if (isWaiting && best.tag === "free") return {
+    title: t("keyboard.dispatch.waitingFreeTitle"),
+    body:  t("keyboard.dispatch.waitingFreeBody", { name: best.tech.name, num: best.tech.num }),
+    accent: D.warn,
+  };
+  if (isWaiting) return {
+    title: t("keyboard.dispatch.waitingBusyTitle"),
+    body:  t("keyboard.dispatch.waitingBusyBody", { name: best.tech.name, num: best.tech.num, hours: best.hours }),
+    accent: D.warn,
+  };
+  if (best.tag === "free") return {
+    title: t("keyboard.dispatch.nextFreeTitle"),
+    body:  t("keyboard.dispatch.nextFreeBody", { name: best.tech.name, num: best.tech.num }),
+    accent: D.success,
+  };
+  if (best.tag === "warning") return {
+    title: t("keyboard.dispatch.warningTitle"),
+    body:  t("keyboard.dispatch.warningBody", { name: best.tech.name, num: best.tech.num }),
+    accent: D.warn,
+  };
+  return {
+    title: t("keyboard.dispatch.nextBusyTitle"),
+    body:  t("keyboard.dispatch.nextBusyBody", { name: best.tech.name, num: best.tech.num, hours: best.hours, available: best.available.toFixed(1) }),
+    accent: D.success,
+  };
 }
 
 /** R4 + R6 + R7: detect rule violations when assigning newCard to techKey */
-function detectConflicts(newCard, techKey, cards) {
+function detectConflicts(newCard, techKey, cards, t) {
   if (!techKey) return [];
-  const tech = TECHS.find(t => t.key === techKey);
+  const tech = TECHS.find(te => te.key === techKey);
   if (!tech) return [];
   const techJobs = cards.filter(c =>
     c.tech === techKey && c.col !== "ready" && c.col !== "shop" && c.id !== newCard.id
@@ -286,7 +320,12 @@ function detectConflicts(newCard, techKey, cards) {
   if (totalHours > MAX_HOURS) {
     conflicts.push({
       rule: 6, severity: "danger", icon: "⚠️",
-      message: `R6 Overload: ${tech.name} would be at ${totalHours.toFixed(1)}h total (limit ${MAX_HOURS}h). ${(totalHours - MAX_HOURS).toFixed(1)}h over capacity.`,
+      message: t("keyboard.dispatch.r6Overload", {
+        name: tech.name,
+        total: totalHours.toFixed(1),
+        max: MAX_HOURS,
+        over: (totalHours - MAX_HOURS).toFixed(1),
+      }),
     });
   }
 
@@ -299,7 +338,14 @@ function detectConflicts(newCard, techKey, cards) {
     if (hoursUntilDeadline > 0 && totalHours > hoursUntilDeadline) {
       conflicts.push({
         rule: 4, severity: "danger", icon: "⏱️",
-        message: `R4 Deadline: Adding ${newHours}h puts ${tech.name} at ${totalHours.toFixed(1)}h — "${existing.name}" deadline is at ${formatDeadline(existing.deadline)} (${hoursUntilDeadline.toFixed(1)}h away).`,
+        message: t("keyboard.dispatch.r4Deadline", {
+          new: newHours,
+          name: tech.name,
+          total: totalHours.toFixed(1),
+          job: existing.name,
+          dl: formatDeadline(existing.deadline, t),
+          away: hoursUntilDeadline.toFixed(1),
+        }),
         conflictingCard: existing,
       });
     }
@@ -309,7 +355,7 @@ function detectConflicts(newCard, techKey, cards) {
   if (newCard.skill && newCard.skill.trim()) {
     conflicts.push({
       rule: 7, severity: "warning", icon: "🔧",
-      message: `R7 Skill Check: This job requires "${newCard.skill}". Confirm ${tech.name} has this skill.`,
+      message: t("keyboard.dispatch.r7Skill", { skill: newCard.skill, name: tech.name }),
     });
   }
 
@@ -319,6 +365,7 @@ function detectConflicts(newCard, techKey, cards) {
 // ─── TechPanel ────────────────────────────────────────────────────────────────
 
 function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
+  const t = useT();
   const load = computeTechLoad(cards, unavailableTechs);
   const analysis = dispatchAnalysis(cards, { unavailableTechs });
   const suggestedKey = analysis.find(a => a.tag !== "unavailable")?.tech.key;
@@ -330,7 +377,7 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
       display: "flex", flexDirection: "column", overflow: "hidden",
     }}>
       <div style={{ padding: "8px 12px", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: D.textLight, borderBottom: `1px solid ${D.border}`, flexShrink: 0, background: D.bg }}>
-        👷 Tech Queue & Load
+        {t("keyboard.techPanel.title")}
       </div>
 
       <div style={{ flex: 1, overflowY: "auto" }}>
@@ -342,13 +389,13 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
           const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
           const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
 
-          const pill = isOff ? { bg: D.surface2, text: D.textLight, label: "OFF" }
-            : result.tag === "free"      ? { bg: D.successBg, text: D.success,  label: "FREE"        }
-            : result.tag === "finishing" ? { bg: "#431407",   text: "#fb923c",  label: "⏰ FINISHING" }
-            : result.tag === "warning"   ? { bg: D.warnBg,    text: D.warn,     label: "⚠️ DUE SOON"  }
-            : result.tag === "full"      ? { bg: D.dangerBg,  text: D.danger,   label: "FULL"         }
-            : result.tag === "overloaded"? { bg: D.dangerBg,  text: D.danger,   label: "2+ JOBS"      }
-            :                              { bg: D.primaryBg,  text: D.primary,  label: "BUSY"         };
+          const pill = isOff ? { bg: D.surface2, text: D.textLight, label: t("keyboard.techPanel.off") }
+            : result.tag === "free"      ? { bg: D.successBg, text: D.success,  label: t("keyboard.techPanel.free")      }
+            : result.tag === "finishing" ? { bg: "#431407",   text: "#fb923c",  label: t("keyboard.techPanel.finishing")  }
+            : result.tag === "warning"   ? { bg: D.warnBg,    text: D.warn,     label: t("keyboard.techPanel.dueSoon")    }
+            : result.tag === "full"      ? { bg: D.dangerBg,  text: D.danger,   label: t("keyboard.techPanel.full")       }
+            : result.tag === "overloaded"? { bg: D.dangerBg,  text: D.danger,   label: t("keyboard.techPanel.manyJobs")   }
+            :                              { bg: D.primaryBg,  text: D.primary,  label: t("keyboard.techPanel.busy")       };
 
           return (
             <div key={tech.key} style={{
@@ -371,14 +418,14 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
               {!isOff && (
                 <>
                   <div style={{ fontSize: "0.62rem", color: D.textLight, display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                    <span>{l.hours}h / {MAX_HOURS}h</span>
-                    <span>{Math.max(0, MAX_HOURS - l.hours).toFixed(1)}h free</span>
+                    <span>{l.hours}{t("keyboard.techPanel.hOf")}{MAX_HOURS}h</span>
+                    <span>{Math.max(0, MAX_HOURS - l.hours).toFixed(1)}{t("keyboard.techPanel.hFree")}</span>
                   </div>
                   <div style={{ height: 5, background: D.border, borderRadius: 5, overflow: "hidden", marginBottom: 4 }}>
                     <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 5, transition: "width 0.4s" }} />
                   </div>
                   {l.jobs.length === 0
-                    ? <div style={{ fontSize: "0.65rem", color: D.textLight }}>No active jobs</div>
+                    ? <div style={{ fontSize: "0.65rem", color: D.textLight }}>{t("keyboard.techPanel.noJobs")}</div>
                     : l.jobs.map((j, i) => {
                       const ju = deadlineUrgency(j.deadline);
                       const jus = ju ? URGENCY_STYLE[ju] : null;
@@ -390,7 +437,7 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
                           </span>
                           {j.deadline && (
                             <span style={{ color: jus ? jus.color : D.warn, fontWeight: 700, fontSize: "0.58rem", flexShrink: 0 }}>
-                              ⏱️ {formatDeadline(j.deadline)}
+                              ⏱️ {formatDeadline(j.deadline, t)}
                             </span>
                           )}
                         </div>
@@ -399,17 +446,17 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
                   }
                   {result.tag === "finishing" && (
                     <div style={{ marginTop: 5, padding: "3px 7px", borderRadius: 5, background: "#431407", fontSize: "0.6rem", fontWeight: 700, color: "#fb923c" }}>
-                      {result.worstUrgency === "overdue" ? "🔴 DEADLINE PASSED — wrapping up?" : "⏰ FINISHING UP — ready soon"}
+                      {result.worstUrgency === "overdue" ? t("keyboard.techPanel.deadlinePassed") : t("keyboard.techPanel.finishingUp")}
                     </div>
                   )}
                   {result.tag === "warning" && (
                     <div style={{ marginTop: 5, padding: "3px 7px", borderRadius: 5, background: D.warnBg, fontSize: "0.6rem", fontWeight: 700, color: D.warn }}>
-                      ⚠️ Deadline within 1 hour
+                      {t("keyboard.techPanel.deadlineHour")}
                     </div>
                   )}
                   {isSuggested && (
                     <div style={{ fontSize: "0.62rem", fontWeight: 800, color: "#22c55e", marginTop: 4 }}>
-                      {result.tag === "finishing" ? "▶ ASSIGN NEXT" : "▶ NEXT UP"}
+                      {result.tag === "finishing" ? t("keyboard.techPanel.assignNext") : t("keyboard.techPanel.nextUp")}
                     </div>
                   )}
                 </>
@@ -419,7 +466,7 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
               {canEdit && (
                 <button onClick={() => onToggleUnavailable(tech.key)}
                   style={{ marginTop: 5, width: "100%", padding: "3px 0", border: `1px solid ${isOff ? "#22c55e" : D.border}`, borderRadius: 5, cursor: "pointer", background: isOff ? D.successBg : D.bg, color: isOff ? D.success : D.textLight, fontSize: "0.6rem", fontWeight: 700 }}>
-                  {isOff ? "✓ Marcar disponible" : "🕐 Marcar ausente"}
+                  {isOff ? t("keyboard.techPanel.markAvailable") : t("keyboard.techPanel.markAbsent")}
                 </button>
               )}
             </div>
@@ -429,16 +476,16 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
 
       {/* Rules legend */}
       <div style={{ padding: "8px 10px", borderTop: `1px solid ${D.border}`, flexShrink: 0, background: D.bg }}>
-        <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: D.textLight, marginBottom: 4 }}>Override Rules</div>
+        <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: D.textLight, marginBottom: 4 }}>{t("keyboard.rules.title")}</div>
         <div style={{ fontSize: "0.62rem", color: D.textMed, lineHeight: 1.9 }}>
-          R1 🔴 Waiting = highest priority<br />
-          R2 🛋️ Waiting → first free tech<br />
-          R3 🔁 Return → original tech<br />
-          R4 ⏱️ Deadline conflict → warn<br />
-          R5 🕐 Absent → skip tech<br />
-          R6 ⚠️ Over 8h → overload warn<br />
-          R7 🔧 Skill gap → confirm<br />
-          R8 📝 Override → write reason
+          {t("keyboard.rules.r1")}<br />
+          {t("keyboard.rules.r2")}<br />
+          {t("keyboard.rules.r3")}<br />
+          {t("keyboard.rules.r4")}<br />
+          {t("keyboard.rules.r5")}<br />
+          {t("keyboard.rules.r6")}<br />
+          {t("keyboard.rules.r7")}<br />
+          {t("keyboard.rules.r8")}
         </div>
       </div>
     </div>
@@ -448,8 +495,9 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
 // ─── Key Card ─────────────────────────────────────────────────────────────────
 
 function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
+  const t = useT();
   const [confirmAction, setConfirmAction] = useState(null);
-  const tech   = TECHS.find(t => t.key === card.tech);
+  const tech   = TECHS.find(te => te.key === card.tech);
   const ms     = Date.now() - card.addedAt;
   const tc     = timerColor(ms, col.id);
   const isUrgent  = col.id === "waiting";
@@ -465,9 +513,9 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   }
 
   // Deadline display
-  const dlLabel  = card.deadline ? formatDeadline(card.deadline) : null;
+  const dlLabel   = card.deadline ? formatDeadline(card.deadline, t) : null;
   const dlUrgency = card.deadline ? deadlineUrgency(card.deadline) : null;
-  const dlStyle  = dlUrgency ? URGENCY_STYLE[dlUrgency] : null;
+  const dlStyle   = dlUrgency ? URGENCY_STYLE[dlUrgency] : null;
 
   return (
     <div
@@ -488,17 +536,17 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
       {confirmAction && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.94)", borderRadius: 10, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 8, gap: 6 }}
           onClick={e => e.stopPropagation()}>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#f1f5f9", textAlign: "center", lineHeight: 1.5 }}>
-            ⚠️ No tienes rol SA/Admin.<br />¿Confirmar acción?
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#f1f5f9", textAlign: "center", lineHeight: 1.5, whiteSpace: "pre-line" }}>
+            {t("keyboard.card.confirmWarning")}
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             <button onClick={() => setConfirmAction(null)}
               style={{ fontSize: "0.7rem", padding: "4px 10px", border: `1px solid ${D.border}`, borderRadius: 6, cursor: "pointer", background: D.surface, color: D.textMed }}>
-              Cancelar
+              {t("keyboard.card.cancel")}
             </button>
             <button onClick={() => { onQuickAction(card.id, confirmAction); setConfirmAction(null); }}
               style={{ fontSize: "0.7rem", padding: "4px 10px", border: "none", borderRadius: 6, cursor: "pointer", background: D.primary, color: "#fff", fontWeight: 700 }}>
-              Confirmar
+              {t("keyboard.card.confirm")}
             </button>
           </div>
         </div>
@@ -533,7 +581,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
             ? { background: dlStyle.bg, padding: "2px 6px", borderRadius: 5, display: "inline-block" }
             : {}),
         }}>
-          ⏱️ {dlLabel}{dlUrgency === "overdue" ? " — OVERDUE" : dlUrgency === "critical" ? " — SOON" : ""}
+          ⏱️ {dlLabel}{dlUrgency === "overdue" ? ` ${t("keyboard.card.overdue")}` : dlUrgency === "critical" ? ` ${t("keyboard.card.soon")}` : ""}
         </div>
       )}
 
@@ -551,27 +599,27 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         </div>
       ) : col.needsDispatch ? (
         <div style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, fontSize: "0.72rem", fontWeight: 700, color: "#b45309", background: "#fef3c7", padding: "3px 8px", borderRadius: 20 }}>
-          ⚠️ Assign tech
+          {t("keyboard.card.assignTech")}
         </div>
       ) : null}
 
       {/* On-hold badge */}
       {isOnHold && (
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fbbf24", background: "#451a03", padding: "2px 7px", borderRadius: 5, display: "inline-block", marginTop: 4 }}>
-          ⏸ Waiting for parts / approval
+          {t("keyboard.card.onHold")}
         </div>
       )}
 
       {/* Override note (R8) */}
       {card.overrideNote && (
         <div style={{ fontSize: "0.65rem", color: "#92400e", background: "#fef3c7", border: "1px solid #fde68a", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
-          📝 Override: {card.overrideNote}
+          {t("keyboard.card.override")} {card.overrideNote}
         </div>
       )}
 
       {/* Footer: RO + elapsed */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5 }}>
-        <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>{card.ro ? `RO #${card.ro}` : ""}</span>
+        <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>{card.ro ? `${t("keyboard.modal.roLabel")} ${card.ro}` : ""}</span>
         <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: tc.bg, color: tc.text }} title="Time on board">
           🕐 {elapsedLabel(ms)}
         </span>
@@ -582,10 +630,10 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         <div style={{ display: "flex", gap: 5, marginTop: 6 }} onClick={e => e.stopPropagation()}>
           {card.col === "repair" && (
             isOnHold
-              ? <button onClick={() => handleAction("resume")} style={btnStyle("#14532d", "#4ade80")}>▶ Resume</button>
-              : <button onClick={() => handleAction("hold")}   style={btnStyle("#451a03", "#fbbf24")}>⏸ On Hold</button>
+              ? <button onClick={() => handleAction("resume")} style={btnStyle("#14532d", "#4ade80")}>{t("keyboard.card.resume")}</button>
+              : <button onClick={() => handleAction("hold")}   style={btnStyle("#451a03", "#fbbf24")}>{t("keyboard.card.onHoldBtn")}</button>
           )}
-          <button onClick={() => handleAction("done")} style={btnStyle("#14532d", "#bbf7d0", true)}>✅ Done</button>
+          <button onClick={() => handleAction("done")} style={btnStyle("#14532d", "#bbf7d0", true)}>{t("keyboard.card.done")}</button>
         </div>
       )}
 
@@ -614,14 +662,16 @@ function btnStyle(bg, color, flex1 = false) {
 // ─── Column ───────────────────────────────────────────────────────────────────
 
 function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard, onQuickAction }) {
+  const t = useT();
   const colCards = cards.filter(c => c.col === col.id);
+  const colLabel = t(`keyboard.cols.${col.id}`);
   return (
     <div style={{ borderRadius: 14, padding: "10px 8px", background: `linear-gradient(160deg, ${col.color}, ${col.darkColor})`, display: "flex", flexDirection: "column", minHeight: 0 }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 8, flexShrink: 0 }}>
         <div style={{ color: "#fff", fontWeight: 900, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: 0.8, textShadow: "0 1px 4px rgba(0,0,0,0.5)", lineHeight: 1.3 }}>
-          {col.label.split("\n").map((line, i) => (
-            <span key={i}>{line}{i === 0 && col.label.includes("\n") ? <br /> : null}</span>
+          {colLabel.split("\n").map((line, i) => (
+            <span key={i}>{line}{i === 0 && colLabel.includes("\n") ? <br /> : null}</span>
           ))}
         </div>
         <span style={{ display: "inline-block", marginTop: 4, background: "rgba(0,0,0,0.3)", color: "#fff", fontSize: "0.75rem", fontWeight: 700, padding: "1px 9px", borderRadius: 20 }}>
@@ -640,7 +690,7 @@ function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard, onQ
           style={{ marginTop: 6, flexShrink: 0, background: "rgba(255,255,255,0.15)", border: "2px dashed rgba(255,255,255,0.5)", borderRadius: 8, color: "rgba(255,255,255,0.9)", fontSize: "0.8rem", fontWeight: 700, padding: 6, cursor: "pointer", transition: "background 0.15s" }}
           onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.28)")}
           onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}>
-          + Add
+          {t("keyboard.cols.add")}
         </button>
       )}
     </div>
@@ -650,12 +700,13 @@ function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard, onQ
 // ─── Card Modal ───────────────────────────────────────────────────────────────
 
 function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
+  const t = useT();
   const col = COLS.find(c => c.id === colId);
   const isWaiting = colId === "waiting";
   const returningTechKey = card?.originalTech || null;
   const analysis = dispatchAnalysis(cards, { isWaiting, returningTechKey, unavailableTechs });
   const suggestedKey = analysis.find(a => a.tag !== "unavailable")?.tech.key;
-  const rec = getRecommendationText(analysis, isWaiting);
+  const rec = getRecommendationText(analysis, isWaiting, t);
 
   const [name,         setName]         = useState(card?.name     || "");
   const [vehicle,      setVehicle]      = useState(card?.vehicle  || "");
@@ -668,7 +719,7 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
   const [errors,       setErrors]       = useState({});
 
   const conflicts = col.needsDispatch && selTech
-    ? detectConflicts({ ...card, hours: parseFloat(hours) || 0, skill, id: card?.id || "__new__" }, selTech, cards)
+    ? detectConflicts({ ...card, hours: parseFloat(hours) || 0, skill, id: card?.id || "__new__" }, selTech, cards, t)
     : [];
   const hasConflict = conflicts.length > 0;
 
@@ -696,34 +747,38 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
     outline: "none", boxSizing: "border-box",
   });
 
+  const colLabel = t(`keyboard.cols.${col.id}`).replace("\n", " ");
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 12 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={{ background: "#fff", borderRadius: 18, padding: 24, width: 460, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 24px 70px rgba(0,0,0,0.5)", color: "#0f172a" }}>
 
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 2 }}>{card ? "Edit Vehicle" : "Add Vehicle"}</div>
-        <div style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: 16 }}>{col.label.replace("\n", " ")}</div>
+        <div style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 2 }}>
+          {card ? t("keyboard.modal.editTitle") : t("keyboard.modal.addTitle")}
+        </div>
+        <div style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: 16 }}>{colLabel}</div>
 
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 4px" }}>Customer Last Name *</label>
+        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 4px" }}>{t("keyboard.modal.customerLabel")}</label>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Martinez" style={inp(errors.name)} maxLength={20} onKeyDown={e => e.key === "Enter" && handleSave()} />
 
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>Vehicle *</label>
+        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>{t("keyboard.modal.vehicleLabel")}</label>
         <input value={vehicle} onChange={e => setVehicle(e.target.value)} placeholder="e.g. 2019 Honda Civic" style={inp(errors.vehicle)} maxLength={30} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           <div>
-            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>RO #</label>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>{t("keyboard.modal.roLabel")}</label>
             <input value={ro} onChange={e => setRo(e.target.value)} placeholder="4821" style={inp(false)} maxLength={10} />
           </div>
           <div>
-            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>Est. Hours</label>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>{t("keyboard.modal.hoursLabel")}</label>
             <input value={hours} onChange={e => setHours(e.target.value)} placeholder="2.5" type="number" min={0.5} max={12} step={0.5} style={inp(false)} />
           </div>
         </div>
 
         {/* Deadline — datetime-local for multi-day support */}
         <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>
-          Committed Deadline (date + time)
+          {t("keyboard.modal.deadlineLabel")}
         </label>
         <input
           type="datetime-local"
@@ -732,12 +787,12 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
           style={{ ...inp(false), colorScheme: "light" }}
         />
         <div style={{ fontSize: "0.65rem", color: "#94a3b8", marginTop: 3 }}>
-          Pick a date and time — even days or weeks away.
+          {t("keyboard.modal.deadlineHint")}
         </div>
 
         {/* Skill (R7) */}
         <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>
-          Required Skill — R7 (optional)
+          {t("keyboard.modal.skillLabel")}
         </label>
         <input value={skill} onChange={e => setSkill(e.target.value)} placeholder='e.g. "alignment", "diagnostic"' style={inp(false)} maxLength={30} />
 
@@ -751,7 +806,7 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
               <div style={{ fontSize: "0.78rem", color: "#374151", lineHeight: 1.5 }}>{rec.body}</div>
             </div>
 
-            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 8px" }}>Select Technician</label>
+            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 8px" }}>{t("keyboard.modal.selectTech")}</label>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {analysis.map(({ tech, tag, tier, hours: tH, available, jobs }) => {
@@ -771,20 +826,20 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
                   : tag === "finishing" ? "#9a3412"
                   : tag === "warning"   ? "#854d0e"
                   : isSuggested ? "#166534" : "#4338ca";
-                const tagLabel = isUnavail ? "OFF"
-                  : isSuggested ? "✓ Best match"
-                  : tag === "free"       ? "Free"
-                  : tag === "finishing"  ? "⏰ Finishing"
-                  : tag === "warning"    ? "⚠️ Due soon"
-                  : tag === "full"       ? "Full"
-                  : tag === "overloaded" ? "2+ jobs"
-                  : tag === "deadline"   ? "Has deadline"
-                  : tag === "busy"       ? `${jobs.length} job`
-                  : "Available";
+                const tagLabel = isUnavail ? t("keyboard.techPanel.off")
+                  : isSuggested ? t("keyboard.modal.tagBestMatch")
+                  : tag === "free"       ? t("keyboard.modal.tagFree")
+                  : tag === "finishing"  ? t("keyboard.modal.tagFinishing")
+                  : tag === "warning"    ? t("keyboard.modal.tagDueSoon")
+                  : tag === "full"       ? t("keyboard.modal.tagFull")
+                  : tag === "overloaded" ? t("keyboard.modal.tagManyJobs")
+                  : tag === "deadline"   ? t("keyboard.modal.tagDeadline")
+                  : tag === "busy"       ? t("keyboard.modal.tagBusy", { n: jobs.length })
+                  : t("keyboard.modal.tagAvailable");
 
                 const jobSummary = jobs.length > 0
-                  ? jobs.map(j => `${j.name}${j.hours ? ` (${j.hours}h)` : ""}${j.deadline ? ` ⏱️${formatDeadline(j.deadline)}` : ""}`).join(", ")
-                  : isUnavail ? "Marked as absent (R5)" : "No active jobs";
+                  ? jobs.map(j => `${j.name}${j.hours ? ` (${j.hours}h)` : ""}${j.deadline ? ` ⏱️${formatDeadline(j.deadline, t)}` : ""}`).join(", ")
+                  : isUnavail ? t("keyboard.modal.markedAbsent") : t("keyboard.techPanel.noJobs");
 
                 return (
                   <div key={tech.key}
@@ -794,7 +849,7 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#0f172a" }}>{tech.name}</span>
-                        <span style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{tH > 0 ? `${tH}h / ${MAX_HOURS}h` : "Free"}</span>
+                        <span style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{tH > 0 ? `${tH}h / ${MAX_HOURS}h` : t("keyboard.modal.free")}</span>
                       </div>
                       <div style={{ fontSize: "0.67rem", color: "#64748b", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{jobSummary}</div>
                       <div style={{ height: 3, background: "#e2e8f0", borderRadius: 3, marginTop: 3, overflow: "hidden" }}>
@@ -822,23 +877,23 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             {hasConflict && (
               <div style={{ marginTop: 8 }}>
                 <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#92400e", margin: "0 0 4px" }}>
-                  📝 R8: Override Reason * (will show on card)
+                  {t("keyboard.modal.overrideLabel")}
                 </label>
                 <textarea value={overrideNote} onChange={e => setOverrideNote(e.target.value)}
-                  placeholder="Explain why you are overriding the dispatch rule..."
+                  placeholder={t("keyboard.modal.overridePlaceholder")}
                   rows={2}
                   style={{ width: "100%", border: `1.5px solid ${errors.overrideNote ? "#ef4444" : "#fbbf24"}`, borderRadius: 8, padding: "8px 10px", fontSize: "0.82rem", color: "#0f172a", outline: "none", boxSizing: "border-box", resize: "vertical", background: "#fffbeb" }}
                 />
-                {errors.overrideNote && <div style={{ fontSize: "0.68rem", color: "#dc2626", marginTop: 2 }}>Required when overriding rules.</div>}
+                {errors.overrideNote && <div style={{ fontSize: "0.68rem", color: "#dc2626", marginTop: 2 }}>{t("keyboard.modal.overrideRequired")}</div>}
               </div>
             )}
           </>
         )}
 
         <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: 10, border: "1.5px solid #e2e8f0", borderRadius: 8, background: "#fff", color: "#64748b", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem" }}>Cancel</button>
+          <button onClick={onClose} style={{ flex: 1, padding: 10, border: "1.5px solid #e2e8f0", borderRadius: 8, background: "#fff", color: "#64748b", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem" }}>{t("keyboard.modal.cancel")}</button>
           <button onClick={handleSave} style={{ flex: 2, padding: 10, border: "none", borderRadius: 8, background: hasConflict ? "#f59e0b" : "#6366f1", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: "0.9rem" }}>
-            {hasConflict ? "⚠️ Override & Save" : "Save"}
+            {hasConflict ? t("keyboard.modal.overrideSave") : t("keyboard.modal.save")}
           </button>
         </div>
       </div>
@@ -849,6 +904,7 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function KeyBoardPage() {
+  const { t } = useTranslation();
   const { user } = useOutletContext() || {};
   const rawRole = (user?.role || "").toLowerCase();
   const canEdit = CAN_EDIT_ROLES.includes(rawRole) ||
@@ -947,62 +1003,64 @@ export function KeyBoardPage() {
   }, [cards, fetchCards]);
 
   return (
-    <div style={{
-      display: "flex", flexDirection: "column",
-      background: D.bg, color: D.text,
-      // Fill layout's content area; cancel its padding (px-4 py-6 = 16px/24px)
-      margin: "-24px -16px",
-      minHeight: "calc(100vh - 60px)",
-    }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: D.surface, borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
-        <h1 style={{ color: D.text, fontSize: "1.1rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
-          🔑 Key Board
-        </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {syncErr && <span style={{ fontSize: "0.65rem", color: D.danger, background: D.dangerBg, border: `1px solid #7f1d1d`, padding: "2px 8px", borderRadius: 20 }}>⚠️ {syncErr}</span>}
-          {loading && <span style={{ fontSize: "0.65rem", color: D.textLight }}>Loading…</span>}
-          {!canEdit && <span style={{ fontSize: "0.68rem", color: D.textLight, background: D.surface2, border: `1px solid ${D.border}`, padding: "2px 8px", borderRadius: 20 }}>👁 View only</span>}
-          <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 600 }}>{clock}</span>
-        </div>
-      </div>
-
-      {/* Workspace */}
-      <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0 }}>
-        {/* Tech Panel */}
-        <div style={{ flexShrink: 0, overflowY: "auto" }}>
-          <TechPanel cards={cards} unavailableTechs={unavailableTechs} canEdit={canEdit} onToggleUnavailable={handleToggleUnavailable} />
-        </div>
-
-        {/* Board — horizontal scroll when narrow */}
-        <div style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(5, minmax(180px, 1fr))",
-            gap: 10, padding: 12,
-            minWidth: 920,
-            minHeight: "100%",
-            boxSizing: "border-box",
-            alignContent: "start",
-          }}>
-            {COLS.map(col => (
-              <Column key={col.id} col={col} cards={cards} canEdit={canEdit}
-                onAddClick={(colId) => setModal({ colId, card: null })}
-                onEditCard={(card)  => setModal({ colId: card.col, card })}
-                onDeleteCard={handleDeleteCard}
-                onQuickAction={handleQuickAction}
-              />
-            ))}
+    <TCtx.Provider value={t}>
+      <div style={{
+        display: "flex", flexDirection: "column",
+        background: D.bg, color: D.text,
+        // Fill layout's content area; cancel its padding (px-4 py-6 = 16px/24px)
+        margin: "-24px -16px",
+        minHeight: "calc(100vh - 60px)",
+      }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: D.surface, borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
+          <h1 style={{ color: D.text, fontSize: "1.1rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
+            🔑 {t("keyboard.title")}
+          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {syncErr && <span style={{ fontSize: "0.65rem", color: D.danger, background: D.dangerBg, border: `1px solid #7f1d1d`, padding: "2px 8px", borderRadius: 20 }}>⚠️ {syncErr}</span>}
+            {loading && <span style={{ fontSize: "0.65rem", color: D.textLight }}>{t("keyboard.loading")}</span>}
+            {!canEdit && <span style={{ fontSize: "0.68rem", color: D.textLight, background: D.surface2, border: `1px solid ${D.border}`, padding: "2px 8px", borderRadius: 20 }}>{t("keyboard.viewOnly")}</span>}
+            <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 600 }}>{clock}</span>
           </div>
         </div>
-      </div>
 
-      {/* Modal */}
-      {modal && (
-        <CardModal colId={modal.colId} card={modal.card} cards={cards}
-          onSave={handleSaveCard} onClose={() => setModal(null)}
-          unavailableTechs={unavailableTechs} />
-      )}
-    </div>
+        {/* Workspace */}
+        <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0 }}>
+          {/* Tech Panel */}
+          <div style={{ flexShrink: 0, overflowY: "auto" }}>
+            <TechPanel cards={cards} unavailableTechs={unavailableTechs} canEdit={canEdit} onToggleUnavailable={handleToggleUnavailable} />
+          </div>
+
+          {/* Board — horizontal scroll when narrow */}
+          <div style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, minmax(180px, 1fr))",
+              gap: 10, padding: 12,
+              minWidth: 920,
+              minHeight: "100%",
+              boxSizing: "border-box",
+              alignContent: "start",
+            }}>
+              {COLS.map(col => (
+                <Column key={col.id} col={col} cards={cards} canEdit={canEdit}
+                  onAddClick={(colId) => setModal({ colId, card: null })}
+                  onEditCard={(card)  => setModal({ colId: card.col, card })}
+                  onDeleteCard={handleDeleteCard}
+                  onQuickAction={handleQuickAction}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Modal */}
+        {modal && (
+          <CardModal colId={modal.colId} card={modal.card} cards={cards}
+            onSave={handleSaveCard} onClose={() => setModal(null)}
+            unavailableTechs={unavailableTechs} />
+        )}
+      </div>
+    </TCtx.Provider>
   );
 }
