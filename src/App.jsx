@@ -25,6 +25,7 @@ import { AdminSuggestionsPage } from "./pages/AdminSuggestionsPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
+import { KeyBoardPage } from "./pages/KeyBoardPage";
 
 
 
@@ -124,6 +125,9 @@ function AppRoutes() {
         
         {/* Production history page */}
         <Route path="production" element={<PayHistoryPage />} />
+
+        {/* Key Board — visible to all employees */}
+        <Route path="keyboard" element={<KeyBoardPage />} />
 
         {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />

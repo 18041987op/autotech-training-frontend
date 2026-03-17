@@ -5,6 +5,7 @@ import {
   BookOpen,
   GraduationCap,
   Home as HomeIcon,
+  KeyRound,
   Layers,
   Lightbulb,
   MessageSquare,
@@ -54,6 +55,7 @@ export function Layout({ user, onSignOut }) {
     { to: "/scorecard",   label: t("nav.myScorecard"), icon: Gauge },
     { to: "/culture",     label: t("nav.culture"),     icon: Shield },
     { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
+    { to: "/keyboard",    label: "Key Board",          icon: KeyRound },
     // Non-admin users see Settings in the main nav
     ...(!isAdmin ? [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] : []),
   ];
