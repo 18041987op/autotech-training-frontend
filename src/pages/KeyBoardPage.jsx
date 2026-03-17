@@ -595,7 +595,6 @@ export function KeyBoardPage() {
     catch { return []; }
   });
   const [modal,   setModal]   = useState(null);  // { colId, card? }
-  const [tick,    setTick]    = useState(0);      // force re-render every minute for timers
   const [clock,   setClock]   = useState("");
 
   // Persist to localStorage
@@ -612,7 +611,6 @@ export function KeyBoardPage() {
         "  " +
         n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
       );
-      setTick(t => t + 1);
     }
     update();
     const id = setInterval(update, 60000);
