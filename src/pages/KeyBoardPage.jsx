@@ -423,14 +423,15 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete }) {
           background: "#fef3c7", padding: "2px 7px", borderRadius: 20, cursor: "pointer",
         }}>⚠️ Assign tech</span>
       ) : null}
-      {/* Footer: RO + timer */}
+      {/* Footer: RO + elapsed time on board */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
         <span style={{ fontSize: "0.58rem", color: "#94a3b8", fontWeight: 600 }}>
           {card.ro ? `RO #${card.ro}` : ""}
         </span>
         <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "1px 5px", borderRadius: 4,
-          background: tc.bg, color: tc.text }}>
-          {elapsedLabel(ms)}
+          background: tc.bg, color: tc.text }}
+          title="Time this card has been on the board">
+          🕐 {elapsedLabel(ms)}
         </span>
       </div>
       {/* Delete button */}
