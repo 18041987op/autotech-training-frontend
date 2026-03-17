@@ -1615,6 +1615,9 @@
       "onHoldBtn": "⏸ On Hold",
       "done": "✅ Done",
       "confirmWarning": "⚠️ Not SA/Admin role.\nConfirm action?",
+      "confirmDone": "✅ Mark this job as Done?\nMoves to Ready for Pick Up.",
+      "confirmHold": "⏸ Put on Hold?\nMarked as waiting for parts / approval.",
+      "confirmResume": "▶ Resume this job?",
       "cancel": "Cancel",
       "confirm": "Confirm"
     },

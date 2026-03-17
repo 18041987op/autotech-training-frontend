@@ -1613,6 +1613,9 @@
       "onHoldBtn": "⏸ En Espera",
       "done": "✅ Listo",
       "confirmWarning": "⚠️ No tienes rol SA/Admin.\n¿Confirmar acción?",
+      "confirmDone": "✅ ¿Marcar como terminado?\nSe mueve a Listo para Recoger.",
+      "confirmHold": "⏸ ¿Poner en espera?\nSe marcará como esperando partes / aprobación.",
+      "confirmResume": "▶ ¿Reanudar este trabajo?",
       "cancel": "Cancelar",
       "confirm": "Confirmar"
     },

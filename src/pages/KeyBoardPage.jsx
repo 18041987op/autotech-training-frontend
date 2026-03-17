@@ -501,11 +501,13 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   const ms     = Date.now() - card.addedAt;
   const tc     = timerColor(ms, col.id);
   const isUrgent  = col.id === "waiting";
-  const isOnHold  = card.col === "repair" && card.status === "onhold";
+  const isOnHold  = ACTIVE_COLS.has(card.col) && card.status === "onhold";
   const isActive  = ACTIVE_COLS.has(card.col);
 
   function handleAction(action) {
-    if (!canEdit) {
+    // Always confirm Done and Hold to prevent accidental taps on large screen.
+    // Resume is fine to execute instantly for SA/admin (reversible).
+    if (!canEdit || action === "done" || action === "hold") {
       setConfirmAction(action);
     } else {
       onQuickAction(card.id, action);
@@ -532,20 +534,27 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 5px 14px rgba(0,0,0,0.5)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)"; }}
     >
-      {/* Confirmation overlay for non-SA/admin */}
+      {/* Confirmation overlay — shown for all users on Done/Hold, and for non-SA on all actions */}
       {confirmAction && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.94)", borderRadius: 10, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 8, gap: 6 }}
           onClick={e => e.stopPropagation()}>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#f1f5f9", textAlign: "center", lineHeight: 1.5, whiteSpace: "pre-line" }}>
-            {t("keyboard.card.confirmWarning")}
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#f1f5f9", textAlign: "center", lineHeight: 1.6, whiteSpace: "pre-line" }}>
+            {!canEdit
+              ? t("keyboard.card.confirmWarning")
+              : confirmAction === "done"   ? t("keyboard.card.confirmDone")
+              : confirmAction === "hold"   ? t("keyboard.card.confirmHold")
+              :                              t("keyboard.card.confirmResume")}
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", gap: 6, marginTop: 2 }}>
             <button onClick={() => setConfirmAction(null)}
-              style={{ fontSize: "0.7rem", padding: "4px 10px", border: `1px solid ${D.border}`, borderRadius: 6, cursor: "pointer", background: D.surface, color: D.textMed }}>
+              style={{ fontSize: "0.7rem", padding: "5px 12px", border: `1px solid ${D.border}`, borderRadius: 6, cursor: "pointer", background: D.surface, color: D.textMed, fontWeight: 600 }}>
               {t("keyboard.card.cancel")}
             </button>
             <button onClick={() => { onQuickAction(card.id, confirmAction); setConfirmAction(null); }}
-              style={{ fontSize: "0.7rem", padding: "4px 10px", border: "none", borderRadius: 6, cursor: "pointer", background: D.primary, color: "#fff", fontWeight: 700 }}>
+              style={{ fontSize: "0.7rem", padding: "5px 12px", border: "none", borderRadius: 6, cursor: "pointer",
+                background: confirmAction === "done" ? "#14532d" : confirmAction === "hold" ? "#451a03" : "#1e1b4b",
+                color: confirmAction === "done" ? "#bbf7d0" : confirmAction === "hold" ? "#fbbf24" : D.primary,
+                fontWeight: 800 }}>
               {t("keyboard.card.confirm")}
             </button>
           </div>
@@ -628,11 +637,11 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
       {/* Quick action buttons — ALL active columns, ALL users */}
       {isActive && (
         <div style={{ display: "flex", gap: 5, marginTop: 6 }} onClick={e => e.stopPropagation()}>
-          {card.col === "repair" && (
-            isOnHold
-              ? <button onClick={() => handleAction("resume")} style={btnStyle("#14532d", "#4ade80")}>{t("keyboard.card.resume")}</button>
-              : <button onClick={() => handleAction("hold")}   style={btnStyle("#451a03", "#fbbf24")}>{t("keyboard.card.onHoldBtn")}</button>
-          )}
+          {/* On Hold / Resume available on ALL active columns */}
+          {isOnHold
+            ? <button onClick={() => handleAction("resume")} style={btnStyle("#14532d", "#4ade80")}>{t("keyboard.card.resume")}</button>
+            : <button onClick={() => handleAction("hold")}   style={btnStyle("#451a03", "#fbbf24")}>{t("keyboard.card.onHoldBtn")}</button>
+          }
           <button onClick={() => handleAction("done")} style={btnStyle("#14532d", "#bbf7d0", true)}>{t("keyboard.card.done")}</button>
         </div>
       )}
@@ -1007,9 +1016,8 @@ export function KeyBoardPage() {
       <div style={{
         display: "flex", flexDirection: "column",
         background: D.bg, color: D.text,
-        // Fill layout's content area; cancel its padding (px-4 py-6 = 16px/24px)
-        margin: "-24px -16px",
-        minHeight: "calc(100vh - 60px)",
+        flex: 1,          // fills the flex-1 container Layout provides for the keyboard route
+        overflow: "hidden",
       }}>
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: D.surface, borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>

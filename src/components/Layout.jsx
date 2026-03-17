@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, Link } from "react-router-dom";
+import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   BookOpen,
@@ -44,6 +44,8 @@ const FOOTER_LINKS = [
 // ─── Layout ─────────────────────────────────────────────────────────────────
 export function Layout({ user, onSignOut }) {
   const { t } = useTranslation();
+  const location = useLocation();
+  const isKeyboard = location.pathname.startsWith("/keyboard");
   const isAdmin = user?.role === "admin";
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -85,19 +87,28 @@ export function Layout({ user, onSignOut }) {
         </aside>
 
         {/* ── Main content area (scrolls independently) ── */}
-        <main className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+        <main className={cx("flex-1 flex flex-col min-h-0", isKeyboard ? "overflow-hidden" : "overflow-y-auto")}>
           <TopBar
             onSignOut={onSignOut}
             onOpenMobileMenu={() => setMobileOpen(true)}
           />
 
-          <div className="flex-1 w-full px-4 py-6">
-            <Breadcrumbs />
-            <Outlet context={{ user }} />
-          </div>
+          {isKeyboard ? (
+            /* Keyboard board: fills remaining height, no breadcrumbs, no footer, no padding */
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <Outlet context={{ user }} />
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 w-full px-4 py-6">
+                <Breadcrumbs />
+                <Outlet context={{ user }} />
+              </div>
 
-          {/* ── Page footer ── */}
-          <AppFooter />
+              {/* ── Page footer ── */}
+              <AppFooter />
+            </>
+          )}
         </main>
 
       {/* ── Mobile Drawer ── */}
