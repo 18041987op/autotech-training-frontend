@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { Lightbulb, ArrowRight, RefreshCw, PlusCircle, User, Calendar } from "lucide-react";
 import { apiFetch } from "../lib/api";
 
@@ -55,7 +54,6 @@ const CATEGORY_TO_MODULE = {
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export function AdminSuggestionsPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all"); // "all" | "tech" | "sa"
 
