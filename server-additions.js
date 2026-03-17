@@ -317,7 +317,7 @@ app.patch("/api/admin/suggestions/:id/mark-created", authenticateToken, async (r
 // -- Create checkin_responses table
 // CREATE TABLE IF NOT EXISTS checkin_responses (
 //   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-//   user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+//   user_id      UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 //   email        TEXT NOT NULL,
 //   category     TEXT NOT NULL,
 //   is_tech      BOOLEAN NOT NULL DEFAULT true,
