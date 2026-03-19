@@ -35,6 +35,10 @@ const LOGO_SRC = "/logo.png";
 // ─── App brand constants ────────────────────────────────────────────────────
 const COMPANY_NAME    = "AutoRx Training";
 const COMPANY_TAGLINE = "Built for your shop";
+
+// ─── Cross-app URLs ─────────────────────────────────────────────────────────
+const TOOLS_URL      = "https://autorx-tools.netlify.app/";
+const MANAGEMENT_URL = "https://management.autorxcenter.com/";
 const FOOTER_LINKS = [
   { label: "Privacy",  href: "#" },
   { label: "Terms",    href: "#" },
@@ -84,6 +88,7 @@ export function Layout({ user, onSignOut }) {
             adminExtra={adminExtra}
             showAdmin={adminExtra.length > 0}
           />
+          <CrossAppNav isAdmin={isAdmin} />
         </aside>
 
         {/* ── Main content area (scrolls independently) ── */}
@@ -147,6 +152,7 @@ export function Layout({ user, onSignOut }) {
                   showAdmin={adminExtra.length > 0}
                 />
               </div>
+              <CrossAppNav isAdmin={isAdmin} />
             </div>
 
             {/* Drawer footer: sign out */}
@@ -283,6 +289,48 @@ function SideItem({ to, label, icon: Icon, end }) {
       <Icon className="h-4 w-4" />
       {label}
     </NavLink>
+  );
+}
+
+// ─── CrossAppNav ─────────────────────────────────────────────────────────────
+function CrossAppNav({ isAdmin }) {
+  return (
+    <div className="border-t border-slate-200 pt-3 mt-3">
+      <p className="mb-2 px-3 text-xs font-semibold uppercase text-slate-400 tracking-wider">
+        Other Apps
+      </p>
+      <div className="flex flex-col gap-1.5">
+        {/* Tools — visible to all users */}
+        <a
+          href={TOOLS_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100"
+        >
+          <span className="w-6 h-6 bg-sky-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Wrench className="w-3.5 h-3.5 text-white" />
+          </span>
+          <span className="flex-1 text-left">Tool Management</span>
+          <ExternalLink className="w-3 h-3 opacity-50" />
+        </a>
+
+        {/* Management — admin only */}
+        {isAdmin && (
+          <a
+            href={MANAGEMENT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+          >
+            <span className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+              <BarChart2 className="w-3.5 h-3.5 text-white" />
+            </span>
+            <span className="flex-1 text-left">Management</span>
+            <ExternalLink className="w-3 h-3 opacity-50" />
+          </a>
+        )}
+      </div>
+    </div>
   );
 }
 
