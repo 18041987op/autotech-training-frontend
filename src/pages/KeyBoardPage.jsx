@@ -506,6 +506,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   const isUrgent  = col.id === "waiting";
   const isOnHold  = ACTIVE_COLS.has(card.col) && card.status === "onhold";
   const isActive  = ACTIVE_COLS.has(card.col);
+  const isDone    = card.col === "ready";
 
   function handleAction(action) {
     // Always confirm Done and Hold to prevent accidental taps on large screen.
@@ -528,12 +529,12 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
     <div
       onClick={() => canEdit && !confirmAction && onEdit(card)}
       style={{
-        background: isOnHold ? "#1c1a07" : "#ffffff",
+        background: isDone ? "#052e16" : isOnHold ? "#1c1a07" : "#ffffff",
         borderRadius: 10, padding: "9px 10px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+        boxShadow: isDone ? "0 2px 8px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.4)",
         position: "relative", userSelect: "none",
-        border: isUnassigned ? `2px solid #fbbf24` : undefined,
-        borderLeft: isUnassigned ? `4px solid #fbbf24` : `4px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "#334155"}`,
+        border: isDone ? `2px solid #16a34a` : isUnassigned ? `2px solid #fbbf24` : undefined,
+        borderLeft: isDone ? `4px solid #22c55e` : isUnassigned ? `4px solid #fbbf24` : `4px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "#334155"}`,
         animation: isUnassigned ? "blinkAmber 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none",
         cursor: canEdit ? "pointer" : "default",
         transition: "transform 0.12s, box-shadow 0.12s",
@@ -573,22 +574,29 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         </div>
       )}
 
+      {/* Done badge */}
+      {isDone && (
+        <div style={{ fontSize: "0.62rem", fontWeight: 800, color: "#4ade80", background: "#14532d", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4, letterSpacing: 0.5 }}>
+          ✅ DONE — READY FOR PICK UP
+        </div>
+      )}
+
       {/* Customer name */}
       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-        <span style={{ fontSize: "1.0rem" }}>🔑</span>
-        <span style={{ fontWeight: 800, fontSize: "0.95rem", color: isOnHold ? "#fbbf24" : "#0f172a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span style={{ fontSize: "1.0rem" }}>{isDone ? "✅" : "🔑"}</span>
+        <span style={{ fontWeight: 800, fontSize: "0.95rem", color: isDone ? "#bbf7d0" : isOnHold ? "#fbbf24" : "#0f172a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {card.name}
         </span>
       </div>
 
       {/* Vehicle */}
-      <div style={{ fontSize: "0.8rem", color: "#475569", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: "0.8rem", color: isDone ? "#86efac" : "#475569", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {card.vehicle}
       </div>
 
       {/* Hours */}
       {card.hours > 0 && (
-        <div style={{ fontSize: "0.75rem", color: "#6366f1", fontWeight: 700, marginTop: 3 }}>
+        <div style={{ fontSize: "0.75rem", color: isDone ? "#4ade80" : "#6366f1", fontWeight: 700, marginTop: 3 }}>
           ⏳ {card.hours}h est.
         </div>
       )}
@@ -640,7 +648,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
 
       {/* Footer: RO + elapsed */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5 }}>
-        <span style={{ fontSize: "0.68rem", color: "#94a3b8", fontWeight: 600 }}>{card.ro ? `${t("keyboard.modal.roLabel")} ${card.ro}` : ""}</span>
+        <span style={{ fontSize: "0.68rem", color: isDone ? "#86efac" : "#94a3b8", fontWeight: 600 }}>{card.ro ? `${t("keyboard.modal.roLabel")} ${card.ro}` : ""}</span>
         <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: tc.bg, color: tc.text }} title="Time on board">
           🕐 {elapsedLabel(ms)}
         </span>
