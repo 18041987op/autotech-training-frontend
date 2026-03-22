@@ -29,23 +29,35 @@ const useT = () => React.useContext(TCtx);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
+// Employee data sourced from Management app (EMPLOYEE_MASTER).
+// Emails must match work_email in Supabase employees table AND Tekmetric employee email.
+// TODO: Load dynamically from /api/tekmetric/employees when Tekmetric is active.
 const TECHS = [
-  { key: "romel",    num: 1, name: "Romel",    email: "romel@autorx.com",    color: "#7c3aed" },
-  { key: "juan",     num: 2, name: "Juan",     email: "juan@autorx.com",     color: "#1d4ed8" },
-  { key: "eluzahin", num: 3, name: "Eluzahin", email: "eluzahin@autorx.com", color: "#0369a1" },
-  { key: "kevin",    num: 4, name: "Kevin",    email: "kevin@autorx.com",    color: "#ea580c" },
-  { key: "ivan",     num: 5, name: "Ivan",     email: "ivan@autorx.com",     color: "#475569" },
+  { key: "romel",    empId: "TECH001", num: 1, name: "Romel",    fullName: "Romel Perez",     email: "romel@autorxcenter.com",    color: "#7c3aed" },
+  { key: "juan",     empId: "TECH002", num: 2, name: "Juan",     fullName: "Juan Perez",      email: "juan@autorxcenter.com",     color: "#1d4ed8" },
+  { key: "walter",   empId: "TECH003", num: 3, name: "Walter",   fullName: "Walter Villeda",  email: "walter@autorxcenter.com",   color: "#0369a1" },
+  { key: "eluzahin", empId: "TECH004", num: 4, name: "Eluzahin", fullName: "Eluzahin Torres", email: "eluzahin@autorxcenter.com", color: "#059669" },
+  { key: "kevin",    empId: "TECH005", num: 5, name: "Kevin",    fullName: "Kevin Murillo",   email: "kevin@autorxcenter.com",    color: "#ea580c" },
+  { key: "ivan",     empId: "TECH006", num: 6, name: "Ivan",     fullName: "Ivan Alarcon",    email: "ivan@autorxcenter.com",     color: "#475569" },
 ];
 
-/** Match a technician by email (primary) or name (fallback). Email is the source of truth. */
+/**
+ * Match a technician by email (primary), full name, or first name (fallback).
+ * Email is the source of truth — handles duplicate first names.
+ */
 function matchTech(email, name) {
   if (email) {
     const byEmail = TECHS.find(t => t.email.toLowerCase() === email.toLowerCase());
     if (byEmail) return byEmail;
   }
   if (name) {
-    const byName = TECHS.find(t => t.name.toLowerCase() === name.toLowerCase());
-    if (byName) return byName;
+    const lName = name.toLowerCase().trim();
+    // Try full name match first (e.g. "Kevin Murillo")
+    const byFull = TECHS.find(t => t.fullName.toLowerCase() === lName);
+    if (byFull) return byFull;
+    // Then first name match (e.g. "Kevin")
+    const byFirst = TECHS.find(t => t.name.toLowerCase() === lName);
+    if (byFirst) return byFirst;
   }
   return null;
 }
