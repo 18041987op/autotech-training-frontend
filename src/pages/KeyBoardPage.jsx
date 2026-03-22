@@ -1134,51 +1134,6 @@ export function KeyBoardPage() {
   // Unassigned cards (no tech selected)
   const unassignedCards = cards.filter(c => !c.tech);
 
-  const handleToggleUnavailable = useCallback(async (techKey) => {
-    if (!canEdit) return;
-    setUnavailableTechs(prev => {
-      const next = new Set(prev);
-      if (next.has(techKey)) next.delete(techKey); else next.add(techKey);
-      apiFetch("/api/keyboard/config/tech_status", { method: "PUT", body: { unavailable: [...next] } }).catch(() => {});
-      return next;
-    });
-  }, [canEdit]);
-
-  const handleSaveCard = useCallback(async (cardData) => {
-    const exists = cards.find(c => c.id === cardData.id);
-    setCards(prev => exists ? prev.map(c => c.id === cardData.id ? cardData : c) : [...prev, cardData]);
-    setModal(null);
-    try {
-      if (exists) {
-        await apiFetch(`/api/keyboard/cards/${cardData.id}`, { method: "PATCH", body: toDbRow(cardData) });
-      } else {
-        await apiFetch("/api/keyboard/cards", { method: "POST", body: toDbRow(cardData) });
-      }
-    } catch (e) {
-      setSyncErr("Save failed — " + e.message);
-      fetchCards();
-    }
-  }, [cards, fetchCards]);
-
-  const handleDeleteCard = useCallback(async (id) => {
-    setCards(prev => prev.filter(c => c.id !== id));
-    try { await apiFetch(`/api/keyboard/cards/${id}`, { method: "DELETE" }); }
-    catch (e) { setSyncErr("Delete failed — " + e.message); fetchCards(); }
-  }, [fetchCards]);
-
-  const handleQuickAction = useCallback(async (id, action) => {
-    const card = cards.find(c => c.id === id);
-    if (!card) return;
-    const patch = action === "done"   ? { col: "ready", status: "repairing" }
-                : action === "hold"   ? { status: "onhold" }
-                : action === "resume" ? { status: "repairing" }
-                : null;
-    if (!patch) return;
-    setCards(prev => prev.map(c => c.id === id ? { ...c, ...patch } : c));
-    try { await apiFetch(`/api/keyboard/cards/${id}`, { method: "PATCH", body: patch }); }
-    catch (e) { setSyncErr("Action failed — " + e.message); fetchCards(); }
-  }, [cards, fetchCards]);
-
   return (
     <TCtx.Provider value={t}>
       <div style={{
