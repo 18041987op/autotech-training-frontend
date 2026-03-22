@@ -1332,7 +1332,7 @@ export function KeyBoardPage() {
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [shopHours]);
 
   // Toast auto-dismiss
   useEffect(() => {
