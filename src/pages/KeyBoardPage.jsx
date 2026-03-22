@@ -603,7 +603,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
       {/* Done badge */}
       {isDone && (
         <div style={{ fontSize: "0.62rem", fontWeight: 800, color: "#4ade80", background: "#14532d", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4, letterSpacing: 0.5 }}>
-          ✅ DONE — READY FOR PICK UP
+          ✅ {t("keyboard.board.doneReady")}
         </div>
       )}
 
@@ -794,7 +794,13 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             {COLS.map(c => {
               const active = selCol === c.id;
               const icons = { waiting: "⏳", dropoff: "🚗", repair: "⚙️", ready: "✅", shop: "🏪" };
-              const labels = { waiting: "Waiting", dropoff: "Drop Off", repair: "In Progress", ready: "Ready", shop: "Shop" };
+              const labels = {
+                waiting: t("keyboard.modal.statusWaiting"),
+                dropoff: t("keyboard.modal.statusDropoff"),
+                repair: t("keyboard.modal.statusRepair"),
+                ready: t("keyboard.modal.statusReady"),
+                shop: t("keyboard.modal.statusShop")
+              };
               return (
                 <button key={c.id} onClick={() => setSelCol(c.id)}
                   style={{
@@ -839,11 +845,11 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
           <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 700, color: "#475569", margin: "8px 0 3px" }}>{t("keyboard.modal.deadlineLabel")}</label>
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
             {[
-              { label: "1h", mins: 60 },
-              { label: "2h", mins: 120 },
-              { label: "3h", mins: 180 },
-              { label: "EOD", mins: null },
-              { label: "Tom", mins: -1 },
+              { label: t("keyboard.deadline.1h"), mins: 60 },
+              { label: t("keyboard.deadline.2h"), mins: 120 },
+              { label: t("keyboard.deadline.3h"), mins: 180 },
+              { label: t("keyboard.deadline.eod"), mins: null },
+              { label: t("keyboard.deadline.tomorrow"), mins: -1 },
             ].map(p => {
               let targetISO = "";
               if (p.mins === null) {
@@ -883,7 +889,8 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             />
             {deadline && (
               <button onClick={() => setDeadline("")} type="button"
-                style={{ padding: "3px 6px", borderRadius: 6, fontSize: "0.6rem", fontWeight: 700, cursor: "pointer", border: "1.5px solid #fca5a5", background: "#fef2f2", color: "#dc2626" }}>
+                style={{ padding: "3px 6px", borderRadius: 6, fontSize: "0.6rem", fontWeight: 700, cursor: "pointer", border: "1.5px solid #fca5a5", background: "#fef2f2", color: "#dc2626" }}
+                title={t("keyboard.deadline.clear")}>
                 ✕
               </button>
             )}
@@ -902,8 +909,8 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             {/* Override warning */}
             {isOverride && card && (
               <div style={{ padding: "8px 12px", borderRadius: 10, border: "2px solid #ef4444", background: "#fef2f2", marginBottom: 8, fontSize: "0.72rem", color: "#7f1d1d", lineHeight: 1.4 }}>
-                <strong style={{ color: "#dc2626" }}>⚠️ OVERRIDE:</strong> Assigned to {TECHS.find(te => te.key === card.tech)?.name}, rules say {TECHS.find(te => te.key === suggestedKey)?.name}.
-                {card.overrideNote ? ` Reason: "${card.overrideNote}"` : " No reason given."}
+                <strong style={{ color: "#dc2626" }}>⚠️ {t("keyboard.dispatch.overrideDetected")}:</strong> {t("keyboard.dispatch.overrideAssignedTo", { current: TECHS.find(te => te.key === card.tech)?.name, suggested: TECHS.find(te => te.key === suggestedKey)?.name })}
+                {card.overrideNote ? ` ${t("keyboard.card.override")} "${card.overrideNote}"` : ` ${t("keyboard.dispatch.noReasonGiven")}`}
               </div>
             )}
 
@@ -939,8 +946,8 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
                     <div style={{ height: 3, background: "#e2e8f0", borderRadius: 3, marginTop: 3, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
                     </div>
-                    {isSuggested && !isSelected && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#166534", marginTop: 3 }}>✓ BEST</div>}
-                    {isSelected && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#4338ca", marginTop: 3 }}>● SELECTED</div>}
+                    {isSuggested && !isSelected && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#166534", marginTop: 3 }}>✓ {t("keyboard.modal.best")}</div>}
+                    {isSelected && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#4338ca", marginTop: 3 }}>● {t("keyboard.modal.selected")}</div>}
                     {isUnavail && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#94a3b8", marginTop: 3 }}>OFF</div>}
                   </div>
                 );
@@ -1031,7 +1038,7 @@ function AppointmentCard({ appt }) {
       <div style={{ display: "flex", gap: 4, marginTop: 5, flexWrap: "wrap" }}>
         {isStateInspection && (
           <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#dc2626", color: "#fff" }}>
-            🔍 STATE INSPECTION
+            🔍 {t("keyboard.board.stateInspection")}
           </span>
         )}
         <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: isStateInspection ? "#991b1b" : "#0369a1", color: "#fff" }}>
@@ -1212,7 +1219,7 @@ export function KeyBoardPage() {
 
   function showPermissionWarning(techName) {
     setToast({
-      message: `⛔ You can only modify your own cards. This card is assigned to ${techName || "another technician"}.`,
+      message: t("keyboard.permissions.cannotModify", { name: techName || "another technician" }),
       type: "error",
     });
   }
@@ -1521,15 +1528,15 @@ export function KeyBoardPage() {
                       </div>
                     </div>
                     <div style={{ flex: 1, overflowY: "auto", padding: "4px 6px", display: "flex", flexDirection: "column", gap: 3 }}>
-                      {techAppts.length > 0 && (<>{divider("#60a5fa", "📅 Appts", techAppts.length)}{techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}</>)}
-                      {divider("#ef4444", "⏳ Waiting", techWaiting.length)}
+                      {techAppts.length > 0 && (<>{divider("#60a5fa", `📅 ${t("keyboard.board.appts")}`, techAppts.length)}{techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}</>)}
+                      {divider("#ef4444", `⏳ ${t("keyboard.modal.statusWaiting")}`, techWaiting.length)}
                       {techWaiting.map(card => (<KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
-                      {divider("#f97316", "🚗 Drop Off", techDropoff.length + techRepair.length)}
+                      {divider("#f97316", `🚗 ${t("keyboard.board.dropOff")}`, techDropoff.length + techRepair.length)}
                       {techDropoff.map(card => (<KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
-                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} /><div style={{ position: "absolute", top: 6, right: 24, fontSize: "0.6rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "1px 5px", borderRadius: 3 }}>⚙️ WORKING</div></div>))}
-                      {divider("#22c55e", "✅ Ready", techReady.length)}
+                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} /><div style={{ position: "absolute", top: 6, right: 24, fontSize: "0.6rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "1px 5px", borderRadius: 3 }}>⚙️ {t("keyboard.board.working")}</div></div>))}
+                      {divider("#22c55e", `✅ ${t("keyboard.modal.statusReady")}`, techReady.length)}
                       {techReady.map(card => (<KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
-                      {techShop.length > 0 && (<>{divider("#64748b", "🏪 Shop", techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}</>)}
+                      {techShop.length > 0 && (<>{divider("#64748b", `🏪 ${t("keyboard.board.shopLabel")}`, techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}</>)}
                     </div>
                   </div>
                 );
@@ -1544,12 +1551,12 @@ export function KeyBoardPage() {
                   order: 3,
                 }}>
                   <div style={{ padding: "8px 10px", background: unassignedCards.length > 0 ? "#7c2d12" : D.surface2, textAlign: "center", flexShrink: 0, borderBottom: `1px solid ${D.border}` }}>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>⚠️ UNASSIGNED</div>
-                    <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>{unassignedCards.length} cards</div>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>⚠️ {t("keyboard.board.unassigned")}</div>
+                    <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>{unassignedCards.length} {t("keyboard.board.unassignedCards")}</div>
                   </div>
                   <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                     {unassignedCards.length === 0 ? (
-                      <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>All assigned</div>
+                      <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>{t("keyboard.board.allAssigned")}</div>
                     ) : unassignedCards.map(card => (
                       <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
                     ))}
@@ -1569,12 +1576,12 @@ export function KeyBoardPage() {
                   textAlign: "center", flexShrink: 0,
                   borderBottom: `1px solid ${D.border}`,
                 }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#93c5fd" }}>📅 APPOINTMENTS</div>
-                  <div style={{ fontSize: "0.65rem", color: "#60a5fa", marginTop: 2 }}>{appointments.length} today</div>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#93c5fd" }}>📅 {t("keyboard.board.appointments")}</div>
+                  <div style={{ fontSize: "0.65rem", color: "#60a5fa", marginTop: 2 }}>{appointments.length} {t("keyboard.board.appointmentsToday")}</div>
                 </div>
                 <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                   {appointments.length === 0 ? (
-                    <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>No appointments</div>
+                    <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>{t("keyboard.board.noAppointments")}</div>
                   ) : (
                     appointments
                       .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
@@ -1659,13 +1666,13 @@ export function KeyBoardPage() {
                       {/* Appointments for this tech */}
                       {techAppts.length > 0 && (
                         <>
-                          {divider("#60a5fa", "📅 Appts", techAppts.length)}
+                          {divider("#60a5fa", `📅 ${t("keyboard.board.appts")}`, techAppts.length)}
                           {techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}
                         </>
                       )}
 
                       {/* Customer Waiting */}
-                      {divider("#ef4444", "⏳ Waiting", techWaiting.length)}
+                      {divider("#ef4444", `⏳ ${t("keyboard.modal.statusWaiting")}`, techWaiting.length)}
                       {techWaiting.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
                           onEdit={guardedEdit}
@@ -1673,7 +1680,7 @@ export function KeyBoardPage() {
                       ))}
 
                       {/* Drop Off + In Progress */}
-                      {divider("#f97316", "🚗 Drop Off", techDropoff.length + techRepair.length)}
+                      {divider("#f97316", `🚗 ${t("keyboard.board.dropOff")}`, techDropoff.length + techRepair.length)}
                       {techDropoff.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
                           onEdit={guardedEdit}
@@ -1689,12 +1696,12 @@ export function KeyBoardPage() {
                             fontSize: "0.6rem", fontWeight: 800,
                             background: "#ca8a04", color: "#000",
                             padding: "1px 5px", borderRadius: 3,
-                          }}>⚙️ WORKING</div>
+                          }}>⚙️ {t("keyboard.board.working")}</div>
                         </div>
                       ))}
 
                       {/* Ready for Pick Up */}
-                      {divider("#22c55e", "✅ Ready", techReady.length)}
+                      {divider("#22c55e", `✅ ${t("keyboard.modal.statusReady")}`, techReady.length)}
                       {techReady.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
                           onEdit={guardedEdit}
@@ -1704,7 +1711,7 @@ export function KeyBoardPage() {
                       {/* Shop cars for this tech */}
                       {techShop.length > 0 && (
                         <>
-                          {divider("#64748b", "🏪 Shop", techShop.length)}
+                          {divider("#64748b", `🏪 ${t("keyboard.board.shopLabel")}`, techShop.length)}
                           {techShop.map(card => (
                             <KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit}
                               onEdit={(c) => setModal({ colId: c.col, card: c })}
@@ -1730,15 +1737,15 @@ export function KeyBoardPage() {
                   borderBottom: `1px solid ${D.border}`,
                 }}>
                   <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>
-                    ⚠️ UNASSIGNED
+                    ⚠️ {t("keyboard.board.unassigned")}
                   </div>
                   <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>
-                    {unassignedCards.length} cards
+                    {unassignedCards.length} {t("keyboard.board.unassignedCards")}
                   </div>
                 </div>
                 <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                   {unassignedCards.length === 0 ? (
-                    <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>All assigned</div>
+                    <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>{t("keyboard.board.allAssigned")}</div>
                   ) : (
                     <>
                       {/* Also include shop cars with no tech */}

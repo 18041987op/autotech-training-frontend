@@ -1621,6 +1621,23 @@
       "cancel": "Cancel",
       "confirm": "Confirm"
     },
+    "board": {
+      "appointments": "APPOINTMENTS",
+      "appointmentsToday": "today",
+      "noAppointments": "No appointments",
+      "unassigned": "UNASSIGNED",
+      "unassignedCards": "cards",
+      "allAssigned": "All assigned",
+      "stateInspection": "STATE INSPECTION",
+      "working": "WORKING",
+      "doneReady": "DONE — READY FOR PICK UP",
+      "appts": "Appts",
+      "dropOff": "Drop Off",
+      "shopLabel": "Shop"
+    },
+    "permissions": {
+      "cannotModify": "You can only modify your own cards. This card is assigned to {{name}}."
+    },
     "modal": {
       "addTitle": "Add Vehicle",
       "editTitle": "Edit Vehicle",
@@ -1648,7 +1665,24 @@
       "tagManyJobs": "2+ jobs",
       "tagDeadline": "Has deadline",
       "tagBusy": "{{n}} job",
-      "tagAvailable": "Available"
+      "tagAvailable": "Available",
+      "statusLabel": "Status",
+      "statusWaiting": "Waiting",
+      "statusDropoff": "Drop Off",
+      "statusRepair": "In Progress",
+      "statusReady": "Ready",
+      "statusShop": "Shop",
+      "new": "New",
+      "selected": "SELECTED",
+      "best": "BEST"
+    },
+    "deadline": {
+      "1h": "1h",
+      "2h": "2h",
+      "3h": "3h",
+      "eod": "EOD",
+      "tomorrow": "Tom",
+      "clear": "Clear"
     },
     "dispatch": {
       "allUnavailableTitle": "⚠️ All Techs Unavailable",
@@ -1675,7 +1709,11 @@
       "nextBusyBody": "{{name}} (#{{num}}) — {{hours}}h assigned, {{available}}h remaining.",
       "r6Overload": "R6 Overload: {{name}} would be at {{total}}h total (limit {{max}}h). {{over}}h over capacity.",
       "r4Deadline": "R4 Deadline: Adding {{new}}h puts {{name}} at {{total}}h — \"{{job}}\" deadline is at {{dl}} ({{away}}h away).",
-      "r7Skill": "R7 Skill Check: This job requires \"{{skill}}\". Confirm {{name}} has this skill."
+      "r7Skill": "R7 Skill Check: This job requires \"{{skill}}\". Confirm {{name}} has this skill.",
+      "r9NotRecommended": "Not the recommended tech. Rules suggest {{suggested}} — you are assigning to {{selected}}. Provide a reason.",
+      "overrideDetected": "OVERRIDE DETECTED",
+      "overrideAssignedTo": "Assigned to {{current}}, rules say {{suggested}}.",
+      "noReasonGiven": "No reason given."
     }
   }
 }

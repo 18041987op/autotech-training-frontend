@@ -1619,6 +1619,23 @@
       "cancel": "Cancelar",
       "confirm": "Confirmar"
     },
+    "board": {
+      "appointments": "CITAS",
+      "appointmentsToday": "hoy",
+      "noAppointments": "Sin citas",
+      "unassigned": "SIN ASIGNAR",
+      "unassignedCards": "tarjetas",
+      "allAssigned": "Todas asignadas",
+      "stateInspection": "INSPECCIÓN ESTATAL",
+      "working": "TRABAJANDO",
+      "doneReady": "LISTO — PARA RECOGER",
+      "appts": "Citas",
+      "dropOff": "Entrega",
+      "shopLabel": "Taller"
+    },
+    "permissions": {
+      "cannotModify": "Solo puedes modificar tus tarjetas. Esta tarjeta está asignada a {{name}}."
+    },
     "modal": {
       "addTitle": "Agregar Vehículo",
       "editTitle": "Editar Vehículo",
@@ -1646,7 +1663,24 @@
       "tagManyJobs": "2+ trabajos",
       "tagDeadline": "Tiene plazo",
       "tagBusy": "{{n}} trabajo",
-      "tagAvailable": "Disponible"
+      "tagAvailable": "Disponible",
+      "statusLabel": "Estado",
+      "statusWaiting": "Esperando",
+      "statusDropoff": "Entrega",
+      "statusRepair": "En Progreso",
+      "statusReady": "Listo",
+      "statusShop": "Taller",
+      "new": "Nuevo",
+      "selected": "ELEGIDO",
+      "best": "MEJOR"
+    },
+    "deadline": {
+      "1h": "1h",
+      "2h": "2h",
+      "3h": "3h",
+      "eod": "Fin día",
+      "tomorrow": "Mañ",
+      "clear": "Limpiar"
     },
     "dispatch": {
       "allUnavailableTitle": "⚠️ Todos los Técnicos No Disponibles",
@@ -1673,7 +1707,11 @@
       "nextBusyBody": "{{name}} (#{{num}}) — {{hours}}h asignadas, {{available}}h restantes.",
       "r6Overload": "R6 Sobrecarga: {{name}} quedaría en {{total}}h total (límite {{max}}h). {{over}}h por encima.",
       "r4Deadline": "R4 Plazo: Agregar {{new}}h pone a {{name}} en {{total}}h — \"{{job}}\" vence a las {{dl}} ({{away}}h de distancia).",
-      "r7Skill": "R7 Habilidad: Este trabajo requiere \"{{skill}}\". Confirma que {{name}} tiene esta habilidad."
+      "r7Skill": "R7 Habilidad: Este trabajo requiere \"{{skill}}\". Confirma que {{name}} tiene esta habilidad.",
+      "r9NotRecommended": "No es el técnico recomendado. Las reglas sugieren {{suggested}} — estás asignando a {{selected}}. Proporciona una razón.",
+      "overrideDetected": "OVERRIDE DETECTADO",
+      "overrideAssignedTo": "Asignado a {{current}}, las reglas dicen {{suggested}}.",
+      "noReasonGiven": "Sin razón proporcionada."
     }
   }
 }
