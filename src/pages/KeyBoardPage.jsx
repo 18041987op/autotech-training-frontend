@@ -1136,6 +1136,9 @@ export function KeyBoardPage() {
 
   // Dynamic tech list — loaded from Management app, falls back to hardcoded
   const [techs, setTechs] = useState(FALLBACK_TECHS);
+  // Shop hours — loaded from Management app settings
+  const [shopHours, setShopHours] = useState(null); // { hours: { mon: { open, close }, ... }, shopName }
+  const [shopTimeLeft, setShopTimeLeft] = useState(""); // "3h 25m left"
 
   // Identify if the logged-in user is a technician (by email match)
   const isSA = canEdit; // SA/admin can edit everything
@@ -1186,6 +1189,14 @@ export function KeyBoardPage() {
     } catch (e) {
       console.warn("[KeyBoard] Could not load technicians from Management app, using fallback:", e.message);
     }
+  }, []);
+
+  // Fetch shop hours from Management app
+  const fetchShopHours = useCallback(async () => {
+    try {
+      const data = await apiFetch("/api/shop/hours");
+      if (data?.hours) setShopHours(data);
+    } catch { /* ignore — will use defaults */ }
   }, []);
 
   const fetchAppointments = useCallback(async () => {
@@ -1276,15 +1287,15 @@ export function KeyBoardPage() {
   }, [tekmetricROs]);
 
   useEffect(() => {
-    fetchTechnicians(); // Load techs from Management app on mount
+    fetchTechnicians(); fetchShopHours(); // Load from Management app on mount
     fetchCards(); fetchConfig(); fetchAppointments(); fetchActiveROs();
     pollRef.current = setInterval(() => {
       fetchCards(); fetchConfig(); fetchAppointments(); fetchActiveROs();
     }, 15000);
-    // Refresh technicians every 5 minutes (skills/config changes are less frequent)
-    const techPoll = setInterval(fetchTechnicians, 300000);
+    // Refresh technicians + shop hours every 5 minutes
+    const techPoll = setInterval(() => { fetchTechnicians(); fetchShopHours(); }, 300000);
     return () => { clearInterval(pollRef.current); clearInterval(techPoll); };
-  }, [fetchCards, fetchConfig, fetchAppointments, fetchActiveROs, fetchTechnicians]);
+  }, [fetchCards, fetchConfig, fetchAppointments, fetchActiveROs, fetchTechnicians, fetchShopHours]);
 
   useEffect(() => {
     function update() {
@@ -1296,6 +1307,27 @@ export function KeyBoardPage() {
       setClockHM(`${h}:${String(m).padStart(2, "0")}`);
       setClockSec(String(n.getSeconds()).padStart(2, "0"));
       setClockAMPM(ampm);
+      // Calculate remaining shop time
+      if (shopHours?.hours) {
+        const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+        const todayKey = days[n.getDay()];
+        const todayHours = shopHours.hours[todayKey];
+        if (todayHours?.close) {
+          const [closeH, closeM] = todayHours.close.split(":").map(Number);
+          const closeMin = closeH * 60 + closeM;
+          const nowMin = n.getHours() * 60 + n.getMinutes();
+          const diff = closeMin - nowMin;
+          if (diff > 0) {
+            const rh = Math.floor(diff / 60);
+            const rm = diff % 60;
+            setShopTimeLeft(rh > 0 ? `${rh}h ${rm}m` : `${rm}m`);
+          } else {
+            setShopTimeLeft("CLOSED");
+          }
+        } else {
+          setShopTimeLeft("CLOSED");
+        }
+      }
     }
     update();
     const id = setInterval(update, 1000);
@@ -1447,6 +1479,18 @@ export function KeyBoardPage() {
               <span style={{ color: "#818cf8", fontSize: "1.8rem", fontWeight: 800, fontVariantNumeric: "tabular-nums", minWidth: "2.5ch", display: "inline-block", textShadow: "0 0 12px rgba(129,140,248,0.5)" }}>:{clockSec}</span>
               <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 700, marginLeft: 4 }}>{clockAMPM}</span>
             </div>
+            {/* Shop time remaining */}
+            {shopTimeLeft && (
+              <span style={{
+                fontSize: "0.75rem", fontWeight: 700,
+                padding: "3px 10px", borderRadius: 8,
+                background: shopTimeLeft === "CLOSED" ? "#450a0a" : shopTimeLeft.includes("0h") || (!shopTimeLeft.includes("h")) ? "#451a03" : "#14532d",
+                color: shopTimeLeft === "CLOSED" ? "#f87171" : shopTimeLeft.includes("0h") || (!shopTimeLeft.includes("h")) ? "#fbbf24" : "#4ade80",
+                border: `1px solid ${shopTimeLeft === "CLOSED" ? "#7f1d1d" : shopTimeLeft.includes("0h") || (!shopTimeLeft.includes("h")) ? "#78350f" : "#166534"}`,
+              }}>
+                {shopTimeLeft === "CLOSED" ? "🔴 CLOSED" : `⏱ ${shopTimeLeft} left`}
+              </span>
+            )}
             {canEdit && (
               <button
                 onClick={() => setModal({ colId: "waiting", card: null })}
