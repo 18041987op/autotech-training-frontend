@@ -994,10 +994,7 @@ export function KeyBoardPage() {
   const [clock,            setClock]            = useState("");
   const [unavailableTechs, setUnavailableTechs] = useState(new Set());
   const [panelOpen,        setPanelOpen]        = useState(false);
-  const [headerVisible,    setHeaderVisible]    = useState(true);
   const pollRef = useRef(null);
-  const headerHideTimeoutRef = useRef(null);
-  const headerHoverTimeoutRef = useRef(null);
 
   const fetchCards = useCallback(async () => {
     try {
@@ -1119,32 +1116,6 @@ export function KeyBoardPage() {
     return () => clearInterval(id);
   }, []);
 
-  // Auto-hide header after 3 seconds, show on top hover, hide on leave
-  useEffect(() => {
-    const hideAfterDelay = () => {
-      headerHideTimeoutRef.current = setTimeout(() => {
-        setHeaderVisible(false);
-      }, 3000);
-    };
-
-    hideAfterDelay();
-
-    const handleTopHover = (e) => {
-      if (e.clientY < 40) {
-        clearTimeout(headerHideTimeoutRef.current);
-        clearTimeout(headerHoverTimeoutRef.current);
-        setHeaderVisible(true);
-      }
-    };
-
-    window.addEventListener("mousemove", handleTopHover);
-    return () => {
-      clearTimeout(headerHideTimeoutRef.current);
-      clearTimeout(headerHoverTimeoutRef.current);
-      window.removeEventListener("mousemove", handleTopHover);
-    };
-  }, []);
-
   const handleToggleUnavailable = useCallback(async (techKey) => {
     if (!canEdit) return;
     setUnavailableTechs(prev => {
@@ -1211,88 +1182,37 @@ export function KeyBoardPage() {
         flex: 1,
         overflow: "hidden",
       }}>
-        {/* Header — with auto-hide */}
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "10px 18px",
-            background: D.surface,
-            borderBottom: `1px solid ${D.border}`,
-            zIndex: 100,
-            transition: "transform 0.3s ease",
-            transform: headerVisible ? "translateY(0)" : "translateY(-100%)",
-            height: 52,
-          }}
-          onMouseEnter={() => {
-            clearTimeout(headerHoverTimeoutRef.current);
-            setHeaderVisible(true);
-          }}
-          onMouseLeave={() => {
-            headerHoverTimeoutRef.current = setTimeout(() => {
-              setHeaderVisible(false);
-            }, 1000);
-          }}
-        >
-          <h1 style={{ color: D.text, fontSize: "1.1rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
-            🔑 {t("keyboard.title")}
-          </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {syncErr && <span style={{ fontSize: "0.65rem", color: D.danger, background: D.dangerBg, border: `1px solid #7f1d1d`, padding: "2px 8px", borderRadius: 20 }}>⚠️ {syncErr}</span>}
-            {loading && <span style={{ fontSize: "0.65rem", color: D.textLight }}>{t("keyboard.loading")}</span>}
-            {!canEdit && <span style={{ fontSize: "0.68rem", color: D.textLight, background: D.surface2, border: `1px solid ${D.border}`, padding: "2px 8px", borderRadius: 20 }}>{t("keyboard.viewOnly")}</span>}
-            <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 600 }}>{clock}</span>
+        {/* Header — slim strip */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "4px 12px", background: D.surface,
+          borderBottom: `1px solid ${D.border}`, flexShrink: 0,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: "0.9rem" }}>🔑</span>
+            <span style={{ color: D.text, fontSize: "0.85rem", fontWeight: 800 }}>{t("keyboard.title")}</span>
+            {syncErr && <span style={{ fontSize: "0.6rem", color: D.danger, background: D.dangerBg, padding: "1px 6px", borderRadius: 10 }}>⚠️</span>}
+            {loading && <span style={{ fontSize: "0.6rem", color: D.textLight }}>⟳</span>}
+            {!canEdit && <span style={{ fontSize: "0.6rem", color: D.textLight, background: D.surface2, padding: "1px 6px", borderRadius: 10 }}>{t("keyboard.viewOnly")}</span>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: D.textMed, fontSize: "0.75rem", fontWeight: 600 }}>{clock}</span>
             {canEdit && (
               <button
                 onClick={() => setModal({ colId: "waiting", card: null })}
                 style={{
-                  background: D.primary, color: "#fff", border: "none", borderRadius: 6,
-                  padding: "5px 12px", fontSize: "0.85rem", fontWeight: 700,
-                  cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                  background: D.primary, color: "#fff", border: "none", borderRadius: 5,
+                  padding: "3px 10px", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer",
                 }}
               >
-                + {t("keyboard.cols.add")}
+                + New
               </button>
             )}
           </div>
         </div>
 
-        {/* Top bar indicator (hidden header) */}
-        {!headerVisible && (
-          <div style={{
-            height: 3,
-            background: D.surface,
-            borderBottom: `3px solid ${D.primary}`,
-            flexShrink: 0,
-          }} />
-        )}
-
-        {/* Floating clock badge (when header hidden) */}
-        {!headerVisible && (
-          <div style={{
-            position: "fixed",
-            top: 8,
-            right: 18,
-            background: D.surface,
-            border: `1px solid ${D.border}`,
-            borderRadius: 20,
-            padding: "4px 10px",
-            fontSize: "0.75rem",
-            fontWeight: 600,
-            color: D.textMed,
-            zIndex: 99,
-          }}>
-            🕐 {clock}
-          </div>
-        )}
-
-        {/* Workspace — adjusted for fixed header */}
-        <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0, marginTop: headerVisible ? 52 : 3 }}>
+        {/* Workspace */}
+        <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0 }}>
           {/* Tech Panel — Collapsible */}
           <div style={{
             flexShrink: 0,

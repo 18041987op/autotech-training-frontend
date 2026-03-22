@@ -79,27 +79,31 @@ export function Layout({ user, onSignOut }) {
 
   return (
     <div className="h-screen bg-slate-50 text-slate-900 flex overflow-hidden">
-        {/* ── Desktop Sidebar ── */}
-        <aside className="hidden md:flex md:flex-shrink-0 md:w-64 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5 md:h-full md:overflow-y-auto">
-          <Brand />
-          <UserCard user={user} />
-          <NavSection
-            baseNav={baseNav}
-            adminExtra={adminExtra}
-            showAdmin={adminExtra.length > 0}
-          />
-          <CrossAppNav isAdmin={isAdmin} />
-        </aside>
+        {/* ── Desktop Sidebar — hidden on keyboard route ── */}
+        {!isKeyboard && (
+          <aside className="hidden md:flex md:flex-shrink-0 md:w-64 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5 md:h-full md:overflow-y-auto">
+            <Brand />
+            <UserCard user={user} />
+            <NavSection
+              baseNav={baseNav}
+              adminExtra={adminExtra}
+              showAdmin={adminExtra.length > 0}
+            />
+            <CrossAppNav isAdmin={isAdmin} />
+          </aside>
+        )}
 
-        {/* ── Main content area (scrolls independently) ── */}
+        {/* ── Main content area ── */}
         <main className={cx("flex-1 flex flex-col min-h-0", isKeyboard ? "overflow-hidden" : "overflow-y-auto")}>
-          <TopBar
-            onSignOut={onSignOut}
-            onOpenMobileMenu={() => setMobileOpen(true)}
-          />
+          {/* TopBar hidden on keyboard — the board has its own header */}
+          {!isKeyboard && (
+            <TopBar
+              onSignOut={onSignOut}
+              onOpenMobileMenu={() => setMobileOpen(true)}
+            />
+          )}
 
           {isKeyboard ? (
-            /* Keyboard board: fills remaining height, no breadcrumbs, no footer, no padding */
             <div className="flex-1 flex flex-col overflow-hidden">
               <Outlet context={{ user }} />
             </div>
@@ -109,8 +113,6 @@ export function Layout({ user, onSignOut }) {
                 <Breadcrumbs />
                 <Outlet context={{ user }} />
               </div>
-
-              {/* ── Page footer ── */}
               <AppFooter />
             </>
           )}
