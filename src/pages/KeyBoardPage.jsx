@@ -1539,7 +1539,7 @@ export function KeyBoardPage() {
                 background: D.surface, borderRadius: 10,
                 border: `1px solid ${D.border}`,
                 display: "flex", flexDirection: "column", overflow: "hidden",
-                order: 1,
+                order: isTech ? 1 : undefined,
               }}>
                 <div style={{
                   padding: "8px 10px", background: "#1e3a5f",
