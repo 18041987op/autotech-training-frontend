@@ -836,8 +836,59 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             </div>
           </div>
 
+          {/* Deadline — quick-pick buttons */}
           <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "8px 0 3px" }}>{t("keyboard.modal.deadlineLabel")}</label>
-          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ ...inp(false), colorScheme: "light" }} />
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 4 }}>
+            {/* Quick presets */}
+            {[
+              { label: "1h", mins: 60 },
+              { label: "2h", mins: 120 },
+              { label: "3h", mins: 180 },
+              { label: "4h", mins: 240 },
+              { label: "EOD", mins: null },
+              { label: "Tomorrow", mins: -1 },
+            ].map(p => {
+              let targetISO = "";
+              if (p.mins === null) {
+                // End of day = today 5:00 PM
+                const eod = new Date(); eod.setHours(17, 0, 0, 0);
+                targetISO = eod.toISOString().slice(0, 16);
+              } else if (p.mins === -1) {
+                // Tomorrow 9:00 AM
+                const tom = new Date(); tom.setDate(tom.getDate() + 1); tom.setHours(9, 0, 0, 0);
+                targetISO = tom.toISOString().slice(0, 16);
+              } else {
+                const d = new Date(Date.now() + p.mins * 60000);
+                // Round to nearest 15 min
+                d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0);
+                targetISO = d.toISOString().slice(0, 16);
+              }
+              const isActive = deadline === targetISO;
+              return (
+                <button key={p.label} onClick={() => setDeadline(targetISO)} type="button"
+                  style={{
+                    padding: "4px 10px", borderRadius: 6, fontSize: "0.7rem", fontWeight: 700, cursor: "pointer",
+                    border: isActive ? "2px solid #6366f1" : "1.5px solid #e2e8f0",
+                    background: isActive ? "#eef2ff" : "#fff",
+                    color: isActive ? "#4338ca" : "#64748b",
+                  }}>
+                  {p.label}
+                </button>
+              );
+            })}
+            {deadline && (
+              <button onClick={() => setDeadline("")} type="button"
+                style={{ padding: "4px 8px", borderRadius: 6, fontSize: "0.65rem", fontWeight: 700, cursor: "pointer", border: "1.5px solid #fca5a5", background: "#fef2f2", color: "#dc2626" }}>
+                ✕ Clear
+              </button>
+            )}
+          </div>
+          {/* Show selected deadline */}
+          {deadline && (
+            <div style={{ fontSize: "0.72rem", color: "#6366f1", fontWeight: 600 }}>
+              ⏱️ {formatDeadline(deadline, t)}
+            </div>
+          )}
         </div>
 
         {/* Dispatch section */}
