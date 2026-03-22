@@ -29,17 +29,18 @@ const useT = () => React.useContext(TCtx);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-// Employee data sourced from Management app (EMPLOYEE_MASTER).
+// Employee data sourced from Management app (EMPLOYEE_MASTER + Employee Settings page).
 // Emails must match work_email in Supabase employees table AND Tekmetric employee email.
+// Skills must match the "skills" field in the employees table (comma-separated).
 // TODO: Load dynamically from /api/tekmetric/employees when Tekmetric is active.
 // Dispatch order (num) comes from Management app Employee Settings page (tech_order).
 const TECHS = [
-  { key: "romel",    empId: "TECH001", num: 1, name: "Romel",    fullName: "Romel Perez",     email: "romelptryonauto@gmail.com",    color: "#7c3aed" },
-  { key: "juan",     empId: "TECH002", num: 2, name: "Juan",     fullName: "Juan Perez",      email: "juantryonauto@gmail.com",      color: "#1d4ed8" },
-  { key: "eluzahin", empId: "TECH004", num: 3, name: "Eluzahin", fullName: "Eluzahin Torres", email: "calebtorres221@gmail.com",      color: "#059669" },
-  { key: "kevin",    empId: "TECH005", num: 4, name: "Kevin",    fullName: "Kevin Murillo",   email: "kevin.autorxcenter@gmail.com",  color: "#ea580c" },
-  { key: "ivan",     empId: "TECH006", num: 5, name: "Ivan",     fullName: "Ivan Alarcon",    email: "ivan.a.autorxcenter@gmail.com", color: "#475569" },
-  { key: "walter",   empId: "TECH003", num: 6, name: "Walter",   fullName: "Walter Villeda",  email: "walter.autorxcenter@gmail.com", color: "#0369a1" },
+  { key: "romel",    empId: "TECH001", num: 1, name: "Romel",    fullName: "Romel Perez",     email: "romelptryonauto@gmail.com",    color: "#7c3aed", skills: [] },
+  { key: "juan",     empId: "TECH002", num: 2, name: "Juan",     fullName: "Juan Perez",      email: "juantryonauto@gmail.com",      color: "#1d4ed8", skills: [] },
+  { key: "eluzahin", empId: "TECH004", num: 3, name: "Eluzahin", fullName: "Eluzahin Torres", email: "calebtorres221@gmail.com",      color: "#059669", skills: [] },
+  { key: "kevin",    empId: "TECH005", num: 4, name: "Kevin",    fullName: "Kevin Murillo",   email: "kevin.autorxcenter@gmail.com",  color: "#ea580c", skills: ["state inspection", "oil change", "transmission service", "replace transmission"] },
+  { key: "ivan",     empId: "TECH006", num: 5, name: "Ivan",     fullName: "Ivan Alarcon",    email: "ivan.a.autorxcenter@gmail.com", color: "#475569", skills: [] },
+  { key: "walter",   empId: "TECH003", num: 6, name: "Walter",   fullName: "Walter Villeda",  email: "walter.autorxcenter@gmail.com", color: "#0369a1", skills: [] },
 ];
 
 /**
@@ -380,12 +381,25 @@ function detectConflicts(newCard, techKey, cards, t) {
     }
   });
 
-  // R7: Skill gap
+  // R7: Skill gap — check if tech actually has the required skill
   if (newCard.skill && newCard.skill.trim()) {
-    conflicts.push({
-      rule: 7, severity: "warning", icon: "🔧",
-      message: t("keyboard.dispatch.r7Skill", { skill: newCard.skill, name: tech.name }),
-    });
+    const requiredSkill = newCard.skill.trim().toLowerCase();
+    const techSkills = (tech.skills || []).map(s => s.toLowerCase());
+    const hasSkill = techSkills.some(s => requiredSkill.includes(s) || s.includes(requiredSkill));
+
+    if (hasSkill) {
+      // Tech has the skill — no conflict, just show green confirmation
+      conflicts.push({
+        rule: 7, severity: "success", icon: "✅",
+        message: t("keyboard.dispatch.r7SkillMatch", { skill: newCard.skill, name: tech.name }),
+      });
+    } else {
+      // Tech does NOT have the skill — warning
+      conflicts.push({
+        rule: 7, severity: "danger", icon: "🔧",
+        message: t("keyboard.dispatch.r7Skill", { skill: newCard.skill, name: tech.name }),
+      });
+    }
   }
 
   return conflicts;
@@ -752,7 +766,8 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
         message: `Not the recommended tech. Rules suggest ${TECHS.find(te => te.key === suggestedKey)?.name || suggestedKey} — you are assigning to ${TECHS.find(te => te.key === selTech)?.name || selTech}. Provide a reason.`,
       }]
     : ruleConflicts;
-  const hasConflict = conflicts.length > 0;
+  // Only real conflicts require override — "success" severity (like skill match) doesn't count
+  const hasConflict = conflicts.some(c => c.severity === "danger" || c.severity === "warning");
 
   function handleSave() {
     const errs = {};
@@ -958,7 +973,7 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             {conflicts.length > 0 && (
               <div style={{ marginTop: 8 }}>
                 {conflicts.map((c, i) => (
-                  <div key={i} style={{ padding: "6px 10px", borderRadius: 8, marginBottom: 4, background: c.severity === "danger" ? "#fee2e2" : "#fef9c3", border: `1px solid ${c.severity === "danger" ? "#fca5a5" : "#fde68a"}`, fontSize: "0.7rem", color: c.severity === "danger" ? "#7f1d1d" : "#78350f", lineHeight: 1.4 }}>
+                  <div key={i} style={{ padding: "6px 10px", borderRadius: 8, marginBottom: 4, background: c.severity === "success" ? "#dcfce7" : c.severity === "danger" ? "#fee2e2" : "#fef9c3", border: `1px solid ${c.severity === "success" ? "#86efac" : c.severity === "danger" ? "#fca5a5" : "#fde68a"}`, fontSize: "0.7rem", color: c.severity === "success" ? "#166534" : c.severity === "danger" ? "#7f1d1d" : "#78350f", lineHeight: 1.4 }}>
                     {c.icon} {c.message}
                   </div>
                 ))}
