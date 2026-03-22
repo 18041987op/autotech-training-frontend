@@ -994,9 +994,10 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
 // ─── Appointment Card ────────────────────────────────────────────────────────
 
 function AppointmentCard({ appt }) {
+  const t = useT();
   const isStateInspection = /inspection|state inspection/i.test(appt.title);
   const startTime = appt.start_time ? new Date(appt.start_time).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "TBD";
-  const typeLabel = appt.appointment_type === "DROP_OFF" ? "Drop Off" : "Customer Waiting";
+  const typeLabel = appt.appointment_type === "DROP_OFF" ? t("keyboard.board.dropOff") : t("keyboard.cols.waiting");
 
   return (
     <div
