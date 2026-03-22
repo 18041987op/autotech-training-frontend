@@ -29,12 +29,10 @@ const useT = () => React.useContext(TCtx);
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-// Employee data sourced from Management app (EMPLOYEE_MASTER + Employee Settings page).
-// Emails must match work_email in Supabase employees table AND Tekmetric employee email.
-// Skills must match the "skills" field in the employees table (comma-separated).
-// TODO: Load dynamically from /api/tekmetric/employees when Tekmetric is active.
-// Dispatch order (num) comes from Management app Employee Settings page (tech_order).
-const TECHS = [
+// Fallback tech list — used ONLY if the API call to /api/shop/technicians fails.
+// The real data comes from Management app Employee Settings page, loaded dynamically.
+const TECH_COLORS = ["#7c3aed", "#1d4ed8", "#059669", "#ea580c", "#475569", "#0369a1", "#d946ef", "#0891b2"];
+const FALLBACK_TECHS = [
   { key: "romel",    empId: "TECH001", num: 1, name: "Romel",    fullName: "Romel Perez",     email: "romelptryonauto@gmail.com",    color: "#7c3aed", skills: [] },
   { key: "juan",     empId: "TECH002", num: 2, name: "Juan",     fullName: "Juan Perez",      email: "juantryonauto@gmail.com",      color: "#1d4ed8", skills: [] },
   { key: "eluzahin", empId: "TECH004", num: 3, name: "Eluzahin", fullName: "Eluzahin Torres", email: "calebtorres221@gmail.com",      color: "#059669", skills: [] },
@@ -43,22 +41,27 @@ const TECHS = [
   { key: "walter",   empId: "TECH003", num: 6, name: "Walter",   fullName: "Walter Villeda",  email: "walter.autorxcenter@gmail.com", color: "#0369a1", skills: [] },
 ];
 
+// TECHS is now a mutable reference — updated when API data arrives
+let TECHS = FALLBACK_TECHS;
+
 /**
  * Match a technician by email (primary), full name, or first name (fallback).
  * Email is the source of truth — handles duplicate first names.
+ * @param {string} email
+ * @param {string} name
+ * @param {Array} techList - optional, defaults to TECHS module-level var
  */
-function matchTech(email, name) {
+function matchTech(email, name, techList) {
+  const list = techList || TECHS;
   if (email) {
-    const byEmail = TECHS.find(t => t.email.toLowerCase() === email.toLowerCase());
+    const byEmail = list.find(t => t.email.toLowerCase() === email.toLowerCase());
     if (byEmail) return byEmail;
   }
   if (name) {
     const lName = name.toLowerCase().trim();
-    // Try full name match first (e.g. "Kevin Murillo")
-    const byFull = TECHS.find(t => t.fullName.toLowerCase() === lName);
+    const byFull = list.find(t => t.fullName.toLowerCase() === lName);
     if (byFull) return byFull;
-    // Then first name match (e.g. "Kevin")
-    const byFirst = TECHS.find(t => t.name.toLowerCase() === lName);
+    const byFirst = list.find(t => t.name.toLowerCase() === lName);
     if (byFirst) return byFirst;
   }
   return null;
@@ -1075,9 +1078,12 @@ export function KeyBoardPage() {
                   CAN_EDIT_ROLES.includes(rawRole.replace(/[\s_]/g, "")) ||
                   rawRole === "admin";
 
+  // Dynamic tech list — loaded from Management app, falls back to hardcoded
+  const [techs, setTechs] = useState(FALLBACK_TECHS);
+
   // Identify if the logged-in user is a technician (by email match)
   const isSA = canEdit; // SA/admin can edit everything
-  const myTech = matchTech(user?.email, user?.name); // null if not a technician
+  const myTech = matchTech(user?.email, user?.name, techs); // null if not a technician
   const isTech = !!myTech && rawRole === "technician";
 
   const [cards,            setCards]            = useState([]);
@@ -1104,6 +1110,25 @@ export function KeyBoardPage() {
       setSyncErr("Sync error — " + e.message);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  // Fetch technicians from Management app (via Training backend proxy)
+  const fetchTechnicians = useCallback(async () => {
+    try {
+      const data = await apiFetch("/api/shop/technicians");
+      if (data?.technicians && data.technicians.length > 0) {
+        // Assign colors based on index (stable per session)
+        const loaded = data.technicians.map((t, i) => ({
+          ...t,
+          color: t.color || TECH_COLORS[i % TECH_COLORS.length],
+        }));
+        setTechs(loaded);
+        TECHS = loaded; // Update module-level ref for functions outside component
+        console.log(`[KeyBoard] Loaded ${loaded.length} technicians from Management app`);
+      }
+    } catch (e) {
+      console.warn("[KeyBoard] Could not load technicians from Management app, using fallback:", e.message);
     }
   }, []);
 
@@ -1195,12 +1220,15 @@ export function KeyBoardPage() {
   }, [tekmetricROs]);
 
   useEffect(() => {
+    fetchTechnicians(); // Load techs from Management app on mount
     fetchCards(); fetchConfig(); fetchAppointments(); fetchActiveROs();
     pollRef.current = setInterval(() => {
       fetchCards(); fetchConfig(); fetchAppointments(); fetchActiveROs();
     }, 15000);
-    return () => clearInterval(pollRef.current);
-  }, [fetchCards, fetchConfig, fetchAppointments, fetchActiveROs]);
+    // Refresh technicians every 5 minutes (skills/config changes are less frequent)
+    const techPoll = setInterval(fetchTechnicians, 300000);
+    return () => { clearInterval(pollRef.current); clearInterval(techPoll); };
+  }, [fetchCards, fetchConfig, fetchAppointments, fetchActiveROs, fetchTechnicians]);
 
   useEffect(() => {
     function update() {
@@ -1287,7 +1315,7 @@ export function KeyBoardPage() {
 
   // Match appointments to technicians (by email as source of truth, name as fallback)
   const appointmentsByTech = {};
-  TECHS.forEach(t => { appointmentsByTech[t.key] = []; });
+  techs.forEach(t => { appointmentsByTech[t.key] = []; });
   appointments.forEach(appt => {
     const matched = matchTech(appt.technician_email, appt.technician_name);
     if (matched) {
@@ -1440,7 +1468,7 @@ export function KeyBoardPage() {
                   ▶
                 </button>
                 {/* Tech number circles stacked */}
-                {TECHS.map(tech => (
+                {techs.map(tech => (
                   <div
                     key={tech.key}
                     style={{
@@ -1494,8 +1522,8 @@ export function KeyBoardPage() {
             <div style={{
               display: "grid",
               gridTemplateColumns: isTech
-                ? `160px minmax(190px, 1fr) 160px repeat(${TECHS.length - 1}, minmax(170px, 1fr))`
-                : `160px repeat(${TECHS.length}, minmax(170px, 1fr)) 160px`,
+                ? `160px minmax(190px, 1fr) 160px repeat(${techs.length - 1}, minmax(170px, 1fr))`
+                : `160px repeat(${techs.length}, minmax(170px, 1fr)) 160px`,
               gap: 4, padding: 6,
               minHeight: "100%",
               boxSizing: "border-box",
@@ -1607,7 +1635,7 @@ export function KeyBoardPage() {
               </div>
 
               {/* ─── TECH COLUMNS (skip myTech if tech view — already rendered first) ── */}
-              {(isTech ? TECHS.filter(t => t.key !== myTech?.key) : TECHS).map(tech => {
+              {(isTech ? techs.filter(t => t.key !== myTech?.key) : techs).map(tech => {
                 const isUnavail = unavailableTechs.has(tech.key);
                 const techLoad = computeTechLoad(cards, unavailableTechs);
                 const l = techLoad[tech.key];
