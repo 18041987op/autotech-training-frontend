@@ -1061,8 +1061,9 @@ export function KeyBoardPage() {
   const [toast,            setToast]            = useState(null); // { message, type }
   const [modal,            setModal]            = useState(null);
   const [clockDate,        setClockDate]        = useState("");
-  const [clockTime,        setClockTime]        = useState("");
-  const [clockSec,         setClockSec]         = useState("");
+  const [clockHM,          setClockHM]          = useState(""); // "11:08"
+  const [clockSec,         setClockSec]         = useState(""); // "45"
+  const [clockAMPM,        setClockAMPM]        = useState(""); // "PM"
   const [unavailableTechs, setUnavailableTechs] = useState(new Set());
   const [panelOpen,        setPanelOpen]        = useState(false);
   const pollRef = useRef(null);
@@ -1178,8 +1179,12 @@ export function KeyBoardPage() {
     function update() {
       const n = new Date();
       setClockDate(n.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }));
-      setClockTime(n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }));
+      let h = n.getHours(), m = n.getMinutes(), ampm = "AM";
+      if (h >= 12) { ampm = "PM"; if (h > 12) h -= 12; }
+      if (h === 0) h = 12;
+      setClockHM(`${h}:${String(m).padStart(2, "0")}`);
       setClockSec(String(n.getSeconds()).padStart(2, "0"));
+      setClockAMPM(ampm);
     }
     update();
     const id = setInterval(update, 1000);
@@ -1325,10 +1330,11 @@ export function KeyBoardPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* Date */}
             <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 600 }}>{clockDate}</span>
-            {/* Time + magnified seconds */}
+            {/* Time: HH:MM + :SS magnified + AM/PM */}
             <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
-              <span style={{ color: D.text, fontSize: "1.3rem", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{clockTime}</span>
-              <span style={{ color: "#818cf8", fontSize: "1.8rem", fontWeight: 800, fontVariantNumeric: "tabular-nums", marginLeft: 2, minWidth: "2ch", display: "inline-block", textShadow: "0 0 12px rgba(129,140,248,0.5)" }}>{clockSec}</span>
+              <span style={{ color: D.text, fontSize: "1.3rem", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{clockHM}</span>
+              <span style={{ color: "#818cf8", fontSize: "1.8rem", fontWeight: 800, fontVariantNumeric: "tabular-nums", minWidth: "2.5ch", display: "inline-block", textShadow: "0 0 12px rgba(129,140,248,0.5)" }}>:{clockSec}</span>
+              <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 700, marginLeft: 4 }}>{clockAMPM}</span>
             </div>
             {canEdit && (
               <button
