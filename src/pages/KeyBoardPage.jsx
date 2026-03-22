@@ -32,13 +32,14 @@ const useT = () => React.useContext(TCtx);
 // Employee data sourced from Management app (EMPLOYEE_MASTER).
 // Emails must match work_email in Supabase employees table AND Tekmetric employee email.
 // TODO: Load dynamically from /api/tekmetric/employees when Tekmetric is active.
+// Dispatch order (num) comes from Management app Employee Settings page (tech_order).
 const TECHS = [
   { key: "romel",    empId: "TECH001", num: 1, name: "Romel",    fullName: "Romel Perez",     email: "romelptryonauto@gmail.com",    color: "#7c3aed" },
   { key: "juan",     empId: "TECH002", num: 2, name: "Juan",     fullName: "Juan Perez",      email: "juantryonauto@gmail.com",      color: "#1d4ed8" },
-  { key: "walter",   empId: "TECH003", num: 3, name: "Walter",   fullName: "Walter Villeda",  email: "walter.autorxcenter@gmail.com", color: "#0369a1" },
-  { key: "eluzahin", empId: "TECH004", num: 4, name: "Eluzahin", fullName: "Eluzahin Torres", email: "calebtorres221@gmail.com",      color: "#059669" },
-  { key: "kevin",    empId: "TECH005", num: 5, name: "Kevin",    fullName: "Kevin Murillo",   email: "kevin.autorxcenter@gmail.com",  color: "#ea580c" },
-  { key: "ivan",     empId: "TECH006", num: 6, name: "Ivan",     fullName: "Ivan Alarcon",    email: "ivan.a.autorxcenter@gmail.com", color: "#475569" },
+  { key: "eluzahin", empId: "TECH004", num: 3, name: "Eluzahin", fullName: "Eluzahin Torres", email: "calebtorres221@gmail.com",      color: "#059669" },
+  { key: "kevin",    empId: "TECH005", num: 4, name: "Kevin",    fullName: "Kevin Murillo",   email: "kevin.autorxcenter@gmail.com",  color: "#ea580c" },
+  { key: "ivan",     empId: "TECH006", num: 5, name: "Ivan",     fullName: "Ivan Alarcon",    email: "ivan.a.autorxcenter@gmail.com", color: "#475569" },
+  { key: "walter",   empId: "TECH003", num: 6, name: "Walter",   fullName: "Walter Villeda",  email: "walter.autorxcenter@gmail.com", color: "#0369a1" },
 ];
 
 /**
