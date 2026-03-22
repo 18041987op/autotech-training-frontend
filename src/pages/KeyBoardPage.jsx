@@ -1,14 +1,16 @@
 /**
- * KeyBoardPage — Smart Shop Key Board v4
+ * KeyBoardPage — Smart Shop Key Board v5 (Technician Lanes)
  *
- * COLUMNS (5):
- *   🔴 Customer Waiting  — client in waiting room, highest priority
- *   🟠 Drop Off          — client dropped off
- *   🟡 In Progress       — repair active OR on hold (parts/approval)
- *   🟢 Ready for Pick Up — repair done, call customer
- *   ⚪ Shop / Employee   — internal vehicles
+ * REDESIGN: From status columns → technician lanes with sub-sections
+ *   Each tech has: 📅 Appointments, ⏳ Waiting, 🚗 Drop Off, ✅ Ready
+ *   Plus: 🛍️ Shop Cars column for internal vehicles
  *
- * 8 OVERRIDE RULES  (see dispatch logic section)
+ * FEATURES:
+ *   - Tekmetric appointment fetching (every 15s poll)
+ *   - Tekmetric RO auto-sync: WAITING_FOR_PICKUP → ready, INVOICE → delete
+ *   - Unassigned cards shown at top with warning color
+ *   - State Inspection appointments highlighted in red
+ *   - 8 OVERRIDE RULES  (see dispatch logic section)
  *
  * Designed for large-screen display — readable from 10+ feet.
  * Dark theme with high-contrast column colors.
@@ -19,6 +21,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useOutletContext } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "../lib/api";
+import { getAppointments, getActiveRepairOrders } from "../lib/tekmetric";
 
 // ─── i18n context (avoids prop-drilling t() into every sub-component) ─────────
 const TCtx = React.createContext((k) => k);
@@ -910,6 +913,64 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
   );
 }
 
+// ─── Appointment Card ────────────────────────────────────────────────────────
+
+function AppointmentCard({ appt }) {
+  const isStateInspection = /inspection|state inspection/i.test(appt.title);
+  const startTime = appt.start_time ? new Date(appt.start_time).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "TBD";
+  const typeLabel = appt.appointment_type === "DROP_OFF" ? "Drop Off" : "Customer Waiting";
+
+  return (
+    <div
+      style={{
+        background: isStateInspection ? "#fee2e2" : "#e0f2fe",
+        borderRadius: 8,
+        padding: "8px 9px",
+        boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+        position: "relative",
+        borderLeft: `4px solid ${isStateInspection ? "#dc2626" : "#0369a1"}`,
+        ...(isStateInspection ? { animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" } : {}),
+      }}
+    >
+      <style>
+        {`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }`}
+      </style>
+
+      {/* Time */}
+      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: isStateInspection ? "#991b1b" : "#0c4a6e" }}>
+        ⏰ {startTime}
+      </div>
+
+      {/* Customer name */}
+      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: isStateInspection ? "#7f1d1d" : "#164e63", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {appt.customer_name}
+      </div>
+
+      {/* Vehicle */}
+      <div style={{ fontSize: "0.7rem", color: isStateInspection ? "#991b1b" : "#0c4a6e", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {appt.vehicle_description}
+      </div>
+
+      {/* Title */}
+      <div style={{ fontSize: "0.7rem", color: isStateInspection ? "#7f1d1d" : "#164e63", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>
+        {appt.title}
+      </div>
+
+      {/* Badges */}
+      <div style={{ display: "flex", gap: 4, marginTop: 5, flexWrap: "wrap" }}>
+        {isStateInspection && (
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#dc2626", color: "#fff" }}>
+            🔍 STATE INSPECTION
+          </span>
+        )}
+        <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: isStateInspection ? "#991b1b" : "#0369a1", color: "#fff" }}>
+          {typeLabel}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function KeyBoardPage() {
@@ -921,6 +982,8 @@ export function KeyBoardPage() {
                   rawRole === "admin";
 
   const [cards,            setCards]            = useState([]);
+  const [appointments,     setAppointments]     = useState([]);
+  const [tekmetricROs,     setTekmetricROs]     = useState([]);
   const [loading,          setLoading]          = useState(true);
   const [syncErr,          setSyncErr]          = useState(null);
   const [modal,            setModal]            = useState(null);
@@ -940,6 +1003,26 @@ export function KeyBoardPage() {
     }
   }, []);
 
+  const fetchAppointments = useCallback(async () => {
+    try {
+      const data = await getAppointments();
+      setAppointments(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.warn("[Tekmetric] Appointment fetch failed:", e);
+      setAppointments([]);
+    }
+  }, []);
+
+  const fetchActiveROs = useCallback(async () => {
+    try {
+      const data = await getActiveRepairOrders();
+      setTekmetricROs(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.warn("[Tekmetric] Active RO fetch failed:", e);
+      setTekmetricROs([]);
+    }
+  }, []);
+
   const fetchConfig = useCallback(async () => {
     try {
       const data = await apiFetch("/api/keyboard/config/tech_status");
@@ -947,11 +1030,38 @@ export function KeyBoardPage() {
     } catch { /* ignore */ }
   }, []);
 
+  // Auto-sync with Tekmetric ROs
   useEffect(() => {
-    fetchCards(); fetchConfig();
-    pollRef.current = setInterval(() => { fetchCards(); fetchConfig(); }, 15000);
+    if (tekmetricROs.length === 0) return;
+    setCards(prev => {
+      let updated = [...prev];
+      const toDelete = [];
+
+      tekmetricROs.forEach(ro => {
+        const idx = updated.findIndex(c => c.ro === ro.repair_order_number);
+        if (idx === -1) return;
+
+        if (ro.status === "WAITING_FOR_PICKUP") {
+          console.log(`[AutoSync] Moving card RO ${ro.repair_order_number} to READY`);
+          updated[idx] = { ...updated[idx], col: "ready" };
+        } else if (ro.status === "INVOICE") {
+          console.log(`[AutoSync] Deleting card RO ${ro.repair_order_number} (INVOICE)`);
+          toDelete.push(updated[idx].id);
+        }
+      });
+
+      updated = updated.filter(c => !toDelete.includes(c.id));
+      return updated;
+    });
+  }, [tekmetricROs]);
+
+  useEffect(() => {
+    fetchCards(); fetchConfig(); fetchAppointments(); fetchActiveROs();
+    pollRef.current = setInterval(() => {
+      fetchCards(); fetchConfig(); fetchAppointments(); fetchActiveROs();
+    }, 15000);
     return () => clearInterval(pollRef.current);
-  }, [fetchCards, fetchConfig]);
+  }, [fetchCards, fetchConfig, fetchAppointments, fetchActiveROs]);
 
   useEffect(() => {
     function update() {
@@ -1011,12 +1121,70 @@ export function KeyBoardPage() {
     catch (e) { setSyncErr("Action failed — " + e.message); fetchCards(); }
   }, [cards, fetchCards]);
 
+  // Match appointments to technicians (by first name, case-insensitive)
+  const appointmentsByTech = {};
+  TECHS.forEach(t => { appointmentsByTech[t.key] = []; });
+  appointments.forEach(appt => {
+    const matchedTech = TECHS.find(t => t.name.toLowerCase() === (appt.technician_name || "").toLowerCase());
+    if (matchedTech) {
+      appointmentsByTech[matchedTech.key].push(appt);
+    }
+  });
+
+  // Unassigned cards (no tech selected)
+  const unassignedCards = cards.filter(c => !c.tech);
+
+  const handleToggleUnavailable = useCallback(async (techKey) => {
+    if (!canEdit) return;
+    setUnavailableTechs(prev => {
+      const next = new Set(prev);
+      if (next.has(techKey)) next.delete(techKey); else next.add(techKey);
+      apiFetch("/api/keyboard/config/tech_status", { method: "PUT", body: { unavailable: [...next] } }).catch(() => {});
+      return next;
+    });
+  }, [canEdit]);
+
+  const handleSaveCard = useCallback(async (cardData) => {
+    const exists = cards.find(c => c.id === cardData.id);
+    setCards(prev => exists ? prev.map(c => c.id === cardData.id ? cardData : c) : [...prev, cardData]);
+    setModal(null);
+    try {
+      if (exists) {
+        await apiFetch(`/api/keyboard/cards/${cardData.id}`, { method: "PATCH", body: toDbRow(cardData) });
+      } else {
+        await apiFetch("/api/keyboard/cards", { method: "POST", body: toDbRow(cardData) });
+      }
+    } catch (e) {
+      setSyncErr("Save failed — " + e.message);
+      fetchCards();
+    }
+  }, [cards, fetchCards]);
+
+  const handleDeleteCard = useCallback(async (id) => {
+    setCards(prev => prev.filter(c => c.id !== id));
+    try { await apiFetch(`/api/keyboard/cards/${id}`, { method: "DELETE" }); }
+    catch (e) { setSyncErr("Delete failed — " + e.message); fetchCards(); }
+  }, [fetchCards]);
+
+  const handleQuickAction = useCallback(async (id, action) => {
+    const card = cards.find(c => c.id === id);
+    if (!card) return;
+    const patch = action === "done"   ? { col: "ready", status: "repairing" }
+                : action === "hold"   ? { status: "onhold" }
+                : action === "resume" ? { status: "repairing" }
+                : null;
+    if (!patch) return;
+    setCards(prev => prev.map(c => c.id === id ? { ...c, ...patch } : c));
+    try { await apiFetch(`/api/keyboard/cards/${id}`, { method: "PATCH", body: patch }); }
+    catch (e) { setSyncErr("Action failed — " + e.message); fetchCards(); }
+  }, [cards, fetchCards]);
+
   return (
     <TCtx.Provider value={t}>
       <div style={{
         display: "flex", flexDirection: "column",
         background: D.bg, color: D.text,
-        flex: 1,          // fills the flex-1 container Layout provides for the keyboard route
+        flex: 1,
         overflow: "hidden",
       }}>
         {/* Header */}
@@ -1029,6 +1197,18 @@ export function KeyBoardPage() {
             {loading && <span style={{ fontSize: "0.65rem", color: D.textLight }}>{t("keyboard.loading")}</span>}
             {!canEdit && <span style={{ fontSize: "0.68rem", color: D.textLight, background: D.surface2, border: `1px solid ${D.border}`, padding: "2px 8px", borderRadius: 20 }}>{t("keyboard.viewOnly")}</span>}
             <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 600 }}>{clock}</span>
+            {canEdit && (
+              <button
+                onClick={() => setModal({ colId: "waiting", card: null })}
+                style={{
+                  background: D.primary, color: "#fff", border: "none", borderRadius: 6,
+                  padding: "5px 12px", fontSize: "0.85rem", fontWeight: 700,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                }}
+              >
+                + {t("keyboard.cols.add")}
+              </button>
+            )}
           </div>
         </div>
 
@@ -1039,25 +1219,250 @@ export function KeyBoardPage() {
             <TechPanel cards={cards} unavailableTechs={unavailableTechs} canEdit={canEdit} onToggleUnavailable={handleToggleUnavailable} />
           </div>
 
-          {/* Board — horizontal scroll when narrow */}
+          {/* Board — Technician Lanes */}
           <div style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}>
             <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(5, minmax(180px, 1fr))",
-              gap: 10, padding: 12,
-              minWidth: 920,
+              display: "flex", flexDirection: "column",
+              padding: 12,
               minHeight: "100%",
               boxSizing: "border-box",
-              alignContent: "start",
+              gap: 12,
             }}>
-              {COLS.map(col => (
-                <Column key={col.id} col={col} cards={cards} canEdit={canEdit}
-                  onAddClick={(colId) => setModal({ colId, card: null })}
-                  onEditCard={(card)  => setModal({ colId: card.col, card })}
-                  onDeleteCard={handleDeleteCard}
-                  onQuickAction={handleQuickAction}
-                />
-              ))}
+              {/* Unassigned cards section */}
+              {unassignedCards.length > 0 && (
+                <div style={{
+                  padding: "10px 12px",
+                  background: `linear-gradient(160deg, #7c2d12, #451a03)`,
+                  borderRadius: 12,
+                  border: `2px solid #ea580c`,
+                  minHeight: 80,
+                }}>
+                  <div style={{ color: "#fff", fontWeight: 900, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+                    ⚠️ Unassigned ({unassignedCards.length})
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {unassignedCards.map(card => (
+                      <div key={card.id} style={{ flex: "0 0 calc(20% - 5px)", minWidth: 150 }}>
+                        <KeyCard card={card} col={{ id: card.col, needsDispatch: true }} canEdit={canEdit}
+                          onEdit={(c) => setModal({ colId: c.col, card: c })}
+                          onDelete={handleDeleteCard}
+                          onQuickAction={handleQuickAction} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Appointments Banner */}
+              <div style={{
+                padding: "10px 12px",
+                background: "#1e293b",
+                borderRadius: 12,
+                border: `1px solid ${D.border}`,
+              }}>
+                <div style={{ color: D.text, fontWeight: 900, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
+                  📅 Today's Appointments ({appointments.length})
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+                  {appointments.length === 0 ? (
+                    <div style={{ fontSize: "0.75rem", color: D.textLight }}>No appointments scheduled</div>
+                  ) : (
+                    appointments.map((appt, i) => (
+                      <AppointmentCard key={i} appt={appt} />
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Tech Lanes */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${TECHS.length}, minmax(200px, 1fr)) minmax(200px, 1fr)`,
+                gap: 12,
+                minWidth: `${(TECHS.length + 1) * 220}px`,
+              }}>
+                {/* Each tech's column */}
+                {TECHS.map(tech => {
+                  const isUnavail = unavailableTechs.has(tech.key);
+                  const load = computeTechLoad(cards, unavailableTechs);
+                  const l = load[tech.key];
+                  const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
+                  const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
+                  const techAppts = appointmentsByTech[tech.key] || [];
+
+                  // Cards for this tech in each status
+                  const techWaitingCards = cards.filter(c => c.tech === tech.key && c.col === "waiting");
+                  const techDropoffCards = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
+                  const techRepairCards = cards.filter(c => c.tech === tech.key && c.col === "repair");
+                  const techReadyCards = cards.filter(c => c.tech === tech.key && c.col === "ready");
+
+                  return (
+                    <div key={tech.key} style={{
+                      display: "flex", flexDirection: "column", gap: 10,
+                      opacity: isUnavail ? 0.5 : 1,
+                      pointerEvents: isUnavail ? "none" : "auto",
+                    }}>
+                      {/* Tech Header */}
+                      <div style={{
+                        padding: "10px 12px",
+                        background: tech.color,
+                        borderRadius: 10,
+                        color: "#fff",
+                        textAlign: "center",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: "50%",
+                            background: "rgba(255,255,255,0.3)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontWeight: 900, fontSize: "0.95rem",
+                          }}>
+                            {tech.num}
+                          </div>
+                          <span style={{ fontSize: "0.95rem", fontWeight: 800, flex: 1 }}>{tech.name}</span>
+                        </div>
+                        <div style={{ fontSize: "0.65rem", fontWeight: 700, marginBottom: 5 }}>
+                          {l.hours.toFixed(1)}h / {MAX_HOURS}h
+                        </div>
+                        <div style={{ height: 4, background: "rgba(255,255,255,0.3)", borderRadius: 4, overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 4 }} />
+                        </div>
+                      </div>
+
+                      {/* Appointments Sub-section */}
+                      <div style={{
+                        background: "#1e3a5f",
+                        borderRadius: 10,
+                        padding: "8px",
+                        minHeight: 60,
+                      }}>
+                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#93c5fd", textTransform: "uppercase", marginBottom: 6 }}>
+                          📅 Appts ({techAppts.length})
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 150, overflowY: "auto" }}>
+                          {techAppts.length === 0 ? (
+                            <div style={{ fontSize: "0.65rem", color: "#64748b" }}>None</div>
+                          ) : (
+                            techAppts.map((appt, i) => (
+                              <AppointmentCard key={i} appt={appt} />
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Waiting Sub-section */}
+                      <div style={{
+                        background: `linear-gradient(160deg, #dc2626, #7f1d1d)`,
+                        borderRadius: 10,
+                        padding: "8px",
+                        minHeight: 80,
+                      }}>
+                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: 6 }}>
+                          ⏳ Waiting ({techWaitingCards.length})
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 200, overflowY: "auto" }}>
+                          {techWaitingCards.map(card => (
+                            <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
+                              onEdit={(c) => setModal({ colId: c.col, card: c })}
+                              onDelete={handleDeleteCard}
+                              onQuickAction={handleQuickAction} />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Drop Off + In Progress Sub-section */}
+                      <div style={{
+                        background: `linear-gradient(160deg, #ea580c, #7c2d12)`,
+                        borderRadius: 10,
+                        padding: "8px",
+                        minHeight: 80,
+                      }}>
+                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: 6 }}>
+                          🚗 Drop Off / In Progress ({techDropoffCards.length + techRepairCards.length})
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 250, overflowY: "auto" }}>
+                          {/* Drop Off cards */}
+                          {techDropoffCards.map(card => (
+                            <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
+                              onEdit={(c) => setModal({ colId: c.col, card: c })}
+                              onDelete={handleDeleteCard}
+                              onQuickAction={handleQuickAction} />
+                          ))}
+                          {/* In Progress cards — with working badge */}
+                          {techRepairCards.map(card => (
+                            <div key={card.id} style={{ position: "relative" }}>
+                              <KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit}
+                                onEdit={(c) => setModal({ colId: c.col, card: c })}
+                                onDelete={handleDeleteCard}
+                                onQuickAction={handleQuickAction} />
+                              <div style={{
+                                position: "absolute", top: 8, right: 8,
+                                fontSize: "0.65rem", fontWeight: 700,
+                                background: "#ca8a04", color: "#000",
+                                padding: "2px 6px", borderRadius: 4,
+                              }}>
+                                ⚙️ WORKING
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Ready For Pick Up Sub-section */}
+                      <div style={{
+                        background: `linear-gradient(160deg, #16a34a, #14532d)`,
+                        borderRadius: 10,
+                        padding: "8px",
+                        minHeight: 80,
+                      }}>
+                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: 6 }}>
+                          ✅ Ready ({techReadyCards.length})
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 200, overflowY: "auto" }}>
+                          {techReadyCards.map(card => (
+                            <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
+                              onEdit={(c) => setModal({ colId: c.col, card: c })}
+                              onDelete={handleDeleteCard}
+                              onQuickAction={handleQuickAction} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Shop Cars Column */}
+                <div style={{
+                  display: "flex", flexDirection: "column", gap: 10,
+                }}>
+                  <div style={{
+                    padding: "10px 12px",
+                    background: "#475569",
+                    borderRadius: 10,
+                    color: "#fff",
+                    textAlign: "center",
+                  }}>
+                    <div style={{ fontSize: "0.95rem", fontWeight: 800 }}>🛍️</div>
+                    <div style={{ fontSize: "0.8rem", fontWeight: 700, marginTop: 4 }}>Shop Cars</div>
+                  </div>
+
+                  <div style={{
+                    background: `linear-gradient(160deg, #475569, #1e293b)`,
+                    borderRadius: 10,
+                    padding: "8px",
+                    minHeight: 200,
+                  }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: "calc(100vh - 400px)", overflowY: "auto" }}>
+                      {cards.filter(c => c.col === "shop").map(card => (
+                        <KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit}
+                          onEdit={(c) => setModal({ colId: c.col, card: c })}
+                          onDelete={handleDeleteCard}
+                          onQuickAction={handleQuickAction} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
