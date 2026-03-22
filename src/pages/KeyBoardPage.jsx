@@ -671,44 +671,6 @@ function btnStyle(bg, color, flex1 = false) {
   };
 }
 
-// ─── Column ───────────────────────────────────────────────────────────────────
-
-function Column({ col, cards, canEdit, onAddClick, onEditCard, onDeleteCard, onQuickAction }) {
-  const t = useT();
-  const colCards = cards.filter(c => c.col === col.id);
-  const colLabel = t(`keyboard.cols.${col.id}`);
-  return (
-    <div style={{ borderRadius: 14, padding: "10px 8px", background: `linear-gradient(160deg, ${col.color}, ${col.darkColor})`, display: "flex", flexDirection: "column", minHeight: 0 }}>
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 8, flexShrink: 0 }}>
-        <div style={{ color: "#fff", fontWeight: 900, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: 0.8, textShadow: "0 1px 4px rgba(0,0,0,0.5)", lineHeight: 1.3 }}>
-          {colLabel.split("\n").map((line, i) => (
-            <span key={i}>{line}{i === 0 && colLabel.includes("\n") ? <br /> : null}</span>
-          ))}
-        </div>
-        <span style={{ display: "inline-block", marginTop: 4, background: "rgba(0,0,0,0.3)", color: "#fff", fontSize: "0.75rem", fontWeight: 700, padding: "1px 9px", borderRadius: 20 }}>
-          {colCards.length}
-        </span>
-      </div>
-      {/* Cards */}
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6, minHeight: 0, paddingBottom: 4 }}>
-        {colCards.map(card => (
-          <KeyCard key={card.id} card={card} col={col} canEdit={canEdit}
-            onEdit={onEditCard} onDelete={onDeleteCard} onQuickAction={onQuickAction} />
-        ))}
-      </div>
-      {canEdit && (
-        <button onClick={() => onAddClick(col.id)}
-          style={{ marginTop: 6, flexShrink: 0, background: "rgba(255,255,255,0.15)", border: "2px dashed rgba(255,255,255,0.5)", borderRadius: 8, color: "rgba(255,255,255,0.9)", fontSize: "0.8rem", fontWeight: 700, padding: 6, cursor: "pointer", transition: "background 0.15s" }}
-          onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.28)")}
-          onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}>
-          {t("keyboard.cols.add")}
-        </button>
-      )}
-    </div>
-  );
-}
-
 // ─── Card Modal ───────────────────────────────────────────────────────────────
 
 function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
