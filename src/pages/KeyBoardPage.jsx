@@ -652,10 +652,10 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         </div>
       )}
 
-      {/* Override note (R8) */}
+      {/* Override note (R8) — prominent red badge */}
       {card.overrideNote && (
-        <div style={{ fontSize: "0.65rem", color: "#92400e", background: "#fef3c7", border: "1px solid #fde68a", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
-          {t("keyboard.card.override")} {card.overrideNote}
+        <div style={{ fontSize: "0.65rem", color: "#fecaca", background: "#7f1d1d", border: "1px solid #dc2626", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
+          <span style={{ fontWeight: 800, color: "#f87171" }}>⚠️ OVERRIDE:</span> {card.overrideNote}
         </div>
       )}
 
@@ -708,9 +708,13 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
   const col = COLS.find(c => c.id === colId);
   const isWaiting = colId === "waiting";
   const returningTechKey = card?.originalTech || null;
-  const analysis = dispatchAnalysis(cards, { isWaiting, returningTechKey, unavailableTechs });
+  // When EDITING an existing card, exclude it from load so we see the TRUE recommendation
+  const cardsForAnalysis = card?.id ? cards.filter(c => c.id !== card.id) : cards;
+  const analysis = dispatchAnalysis(cardsForAnalysis, { isWaiting, returningTechKey, unavailableTechs });
   const suggestedKey = analysis.find(a => a.tag !== "unavailable")?.tech.key;
   const rec = getRecommendationText(analysis, isWaiting, t);
+  // Show warning if editing and current tech is NOT the suggested one
+  const isOverride = card?.tech && suggestedKey && card.tech !== suggestedKey;
 
   const [name,         setName]         = useState(card?.name     || "");
   const [vehicle,      setVehicle]      = useState(card?.vehicle  || "");
@@ -724,9 +728,17 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
   const [errors,       setErrors]       = useState({});
 
   const selColDef = COLS.find(c => c.id === selCol);
-  const conflicts = selColDef.needsDispatch && selTech
-    ? detectConflicts({ ...card, hours: parseFloat(hours) || 0, skill, id: card?.id || "__new__" }, selTech, cards, t)
+  const ruleConflicts = selColDef.needsDispatch && selTech
+    ? detectConflicts({ ...card, hours: parseFloat(hours) || 0, skill, id: card?.id || "__new__" }, selTech, cardsForAnalysis, t)
     : [];
+  // R9 (new): Warn when assigning to a tech that's not the dispatch recommendation
+  const isWrongTech = selColDef.needsDispatch && selTech && suggestedKey && selTech !== suggestedKey;
+  const conflicts = isWrongTech
+    ? [...ruleConflicts, {
+        rule: 9, severity: "warning", icon: "🔀",
+        message: `Not the recommended tech. Rules suggest ${TECHS.find(te => te.key === suggestedKey)?.name || suggestedKey} — you are assigning to ${TECHS.find(te => te.key === selTech)?.name || selTech}. Provide a reason.`,
+      }]
+    : ruleConflicts;
   const hasConflict = conflicts.length > 0;
 
   function handleSave() {
@@ -837,6 +849,17 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
         {selColDef.needsDispatch && (
           <>
             <hr style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "14px 0" }} />
+
+            {/* Override warning when editing a card assigned to a non-recommended tech */}
+            {isOverride && card && (
+              <div style={{ padding: "10px 14px", borderRadius: 10, border: "2px solid #ef4444", background: "#fef2f2", marginBottom: 10 }}>
+                <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#dc2626", marginBottom: 3 }}>⚠️ OVERRIDE DETECTED</div>
+                <div style={{ fontSize: "0.75rem", color: "#7f1d1d", lineHeight: 1.5 }}>
+                  This card is assigned to <strong>{TECHS.find(te => te.key === card.tech)?.name || card.tech}</strong>, but the dispatch rules recommend <strong>{TECHS.find(te => te.key === suggestedKey)?.name || suggestedKey}</strong>.
+                  {card.overrideNote ? <><br />Override reason: "{card.overrideNote}"</> : <><br /><strong style={{ color: "#dc2626" }}>No override reason was provided.</strong></>}
+                </div>
+              </div>
+            )}
 
             <div style={{ padding: "10px 14px", borderRadius: 10, border: `2px solid ${rec.accent}33`, background: `${rec.accent}12`, marginBottom: 12 }}>
               <div style={{ fontSize: "0.8rem", fontWeight: 800, color: rec.accent, marginBottom: 3 }}>{rec.title}</div>
@@ -1203,10 +1226,10 @@ export function KeyBoardPage() {
         flex: 1,
         overflow: "hidden",
       }}>
-        {/* Header — slim strip */}
+        {/* Header — slim strip, padded left for Layout's floating hamburger button */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "4px 12px", background: D.surface,
+          padding: "4px 12px 4px 48px", background: D.surface,
           borderBottom: `1px solid ${D.border}`, flexShrink: 0,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -1233,12 +1256,13 @@ export function KeyBoardPage() {
         </div>
 
         {/* Workspace */}
-        <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0 }}>
+        <div style={{ display: "flex", flex: 1, minHeight: 0, overflow: "hidden" }}>
           {/* Tech Panel — Collapsible */}
           <div style={{
             flexShrink: 0,
             overflowY: "auto",
-            width: panelOpen ? 220 : 40,
+            overflowX: "hidden",
+            width: panelOpen ? 220 : 36,
             transition: "width 0.3s ease",
             position: "relative",
             background: D.surface,
@@ -1250,12 +1274,12 @@ export function KeyBoardPage() {
                 left: 0,
                 top: 0,
                 bottom: 0,
-                width: 40,
+                width: 36,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                padding: "8px 0",
-                gap: 6,
+                padding: "6px 0",
+                gap: 4,
                 zIndex: 10,
                 background: D.surface,
               }}>
@@ -1263,14 +1287,14 @@ export function KeyBoardPage() {
                 <button
                   onClick={() => setPanelOpen(true)}
                   style={{
-                    width: 28,
-                    height: 28,
+                    width: 24,
+                    height: 24,
                     border: "none",
                     background: D.primary,
                     color: "#fff",
-                    borderRadius: 6,
+                    borderRadius: 5,
                     cursor: "pointer",
-                    fontSize: "0.7rem",
+                    fontSize: "0.6rem",
                     fontWeight: 800,
                   }}
                 >
@@ -1281,19 +1305,19 @@ export function KeyBoardPage() {
                   <div
                     key={tech.key}
                     style={{
-                      width: 24,
-                      height: 24,
+                      width: 22,
+                      height: 22,
                       borderRadius: "50%",
                       background: unavailableTechs.has(tech.key) ? D.textLight : tech.color,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontWeight: 900,
-                      fontSize: "0.65rem",
+                      fontSize: "0.6rem",
                       color: "#fff",
                       flexShrink: 0,
-                      title: tech.name,
                     }}
+                    title={tech.name}
                   >
                     {tech.num}
                   </div>
@@ -1330,9 +1354,8 @@ export function KeyBoardPage() {
           <div style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}>
             <div style={{
               display: "grid",
-              gridTemplateColumns: `200px repeat(${TECHS.length}, minmax(190px, 1fr)) 200px`,
-              gap: 6, padding: 8,
-              minWidth: `${(TECHS.length + 2) * 200}px`,
+              gridTemplateColumns: `160px repeat(${TECHS.length}, minmax(170px, 1fr)) 160px`,
+              gap: 4, padding: 6,
               minHeight: "100%",
               boxSizing: "border-box",
               alignContent: "start",
