@@ -782,190 +782,145 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
   const colLabel = t(`keyboard.cols.${col.id}`).replace("\n", " ");
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 12 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={{ background: "#fff", borderRadius: 18, padding: 24, width: 460, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", boxShadow: "0 24px 70px rgba(0,0,0,0.5)", color: "#0f172a" }}>
+      <div style={{ background: "#fff", borderRadius: 18, width: 480, maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto", overflowX: "hidden", boxShadow: "0 24px 70px rgba(0,0,0,0.5)", color: "#0f172a" }}>
 
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, marginBottom: 2 }}>
-          {card ? t("keyboard.modal.editTitle") : t("keyboard.modal.addTitle")}
-        </div>
-        <div style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: 16 }}>{colLabel}</div>
-
-        {/* Status selector */}
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 8px" }}>Status</label>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginBottom: 14 }}>
-          {COLS.map(c => (
-            <button
-              key={c.id}
-              onClick={() => setSelCol(c.id)}
-              style={{
-                padding: "8px 6px",
-                borderRadius: 8,
-                border: `2px solid ${selCol === c.id ? c.color : "#e2e8f0"}`,
-                background: selCol === c.id ? c.color + "22" : "#fff",
-                color: selCol === c.id ? c.color : "#64748b",
-                fontSize: "0.7rem",
-                fontWeight: 700,
-                cursor: "pointer",
-                textAlign: "center",
-                whiteSpace: "nowrap",
-              }}
-              title={t(`keyboard.cols.${c.id}`)}
-            >
-              {c.id === "waiting" && "⏳"}
-              {c.id === "dropoff" && "🚗"}
-              {c.id === "repair" && "⚙️"}
-              {c.id === "ready" && "✅"}
-              {c.id === "shop" && "🏪"}
-            </button>
-          ))}
-        </div>
-
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 4px" }}>{t("keyboard.modal.customerLabel")}</label>
-        <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Martinez" style={inp(errors.name)} maxLength={20} onKeyDown={e => e.key === "Enter" && handleSave()} />
-
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>{t("keyboard.modal.vehicleLabel")}</label>
-        <input value={vehicle} onChange={e => setVehicle(e.target.value)} placeholder="e.g. 2019 Honda Civic" style={inp(errors.vehicle)} maxLength={30} />
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          <div>
-            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>{t("keyboard.modal.roLabel")}</label>
-            <input value={ro} onChange={e => setRo(e.target.value)} placeholder="4821" style={inp(false)} maxLength={10} />
+        {/* Header */}
+        <div style={{ padding: "16px 20px 12px", borderBottom: "1px solid #e2e8f0" }}>
+          <div style={{ fontSize: "1.05rem", fontWeight: 800 }}>
+            {card ? t("keyboard.modal.editTitle") : t("keyboard.modal.addTitle")}
           </div>
-          <div>
-            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>{t("keyboard.modal.hoursLabel")}</label>
-            <input value={hours} onChange={e => setHours(e.target.value)} placeholder="2.5" type="number" min={0.5} max={12} step={0.5} style={inp(false)} />
+          {/* Status selector — compact icon row */}
+          <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+            {COLS.map(c => {
+              const active = selCol === c.id;
+              const icons = { waiting: "⏳", dropoff: "🚗", repair: "⚙️", ready: "✅", shop: "🏪" };
+              const labels = { waiting: "Waiting", dropoff: "Drop Off", repair: "In Progress", ready: "Ready", shop: "Shop" };
+              return (
+                <button key={c.id} onClick={() => setSelCol(c.id)}
+                  style={{
+                    flex: 1, padding: "6px 2px", borderRadius: 8,
+                    border: active ? `2px solid ${c.color}` : "2px solid #e2e8f0",
+                    background: active ? c.color + "18" : "#fff",
+                    cursor: "pointer", textAlign: "center",
+                  }}>
+                  <div style={{ fontSize: "1rem" }}>{icons[c.id]}</div>
+                  <div style={{ fontSize: "0.55rem", fontWeight: 700, color: active ? c.color : "#94a3b8", marginTop: 2 }}>{labels[c.id]}</div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Deadline — datetime-local for multi-day support */}
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>
-          {t("keyboard.modal.deadlineLabel")}
-        </label>
-        <input
-          type="datetime-local"
-          value={deadline}
-          onChange={e => setDeadline(e.target.value)}
-          style={{ ...inp(false), colorScheme: "light" }}
-        />
-        <div style={{ fontSize: "0.65rem", color: "#94a3b8", marginTop: 3 }}>
-          {t("keyboard.modal.deadlineHint")}
-        </div>
+        {/* Form body */}
+        <div style={{ padding: "12px 20px" }}>
+          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "0 0 3px" }}>{t("keyboard.modal.customerLabel")}</label>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Martinez" style={inp(errors.name)} maxLength={20} onKeyDown={e => e.key === "Enter" && handleSave()} />
 
-        {/* Skill (R7) */}
-        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "10px 0 4px" }}>
-          {t("keyboard.modal.skillLabel")}
-        </label>
-        <input value={skill} onChange={e => setSkill(e.target.value)} placeholder='e.g. "alignment", "diagnostic"' style={inp(false)} maxLength={30} />
+          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "8px 0 3px" }}>{t("keyboard.modal.vehicleLabel")}</label>
+          <input value={vehicle} onChange={e => setVehicle(e.target.value)} placeholder="e.g. 2019 Honda Civic" style={inp(errors.vehicle)} maxLength={30} />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8 }}>
+            <div>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "0 0 3px" }}>{t("keyboard.modal.roLabel")}</label>
+              <input value={ro} onChange={e => setRo(e.target.value)} placeholder="4821" style={inp(false)} maxLength={10} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "0 0 3px" }}>{t("keyboard.modal.hoursLabel")}</label>
+              <input value={hours} onChange={e => setHours(e.target.value)} placeholder="2.5" type="number" min={0.5} max={12} step={0.5} style={inp(false)} />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "0 0 3px" }}>{t("keyboard.modal.skillLabel")}</label>
+              <input value={skill} onChange={e => setSkill(e.target.value)} placeholder="alignment" style={inp(false)} maxLength={30} />
+            </div>
+          </div>
+
+          <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "8px 0 3px" }}>{t("keyboard.modal.deadlineLabel")}</label>
+          <input type="datetime-local" value={deadline} onChange={e => setDeadline(e.target.value)} style={{ ...inp(false), colorScheme: "light" }} />
+        </div>
 
         {/* Dispatch section */}
         {selColDef.needsDispatch && (
-          <>
-            <hr style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "14px 0" }} />
+          <div style={{ padding: "0 20px 12px", borderTop: "1px solid #e2e8f0", marginTop: 4, paddingTop: 12 }}>
 
-            {/* Override warning when editing a card assigned to a non-recommended tech */}
+            {/* Override warning */}
             {isOverride && card && (
-              <div style={{ padding: "10px 14px", borderRadius: 10, border: "2px solid #ef4444", background: "#fef2f2", marginBottom: 10 }}>
-                <div style={{ fontSize: "0.8rem", fontWeight: 800, color: "#dc2626", marginBottom: 3 }}>⚠️ OVERRIDE DETECTED</div>
-                <div style={{ fontSize: "0.75rem", color: "#7f1d1d", lineHeight: 1.5 }}>
-                  This card is assigned to <strong>{TECHS.find(te => te.key === card.tech)?.name || card.tech}</strong>, but the dispatch rules recommend <strong>{TECHS.find(te => te.key === suggestedKey)?.name || suggestedKey}</strong>.
-                  {card.overrideNote ? <><br />Override reason: "{card.overrideNote}"</> : <><br /><strong style={{ color: "#dc2626" }}>No override reason was provided.</strong></>}
-                </div>
+              <div style={{ padding: "8px 12px", borderRadius: 10, border: "2px solid #ef4444", background: "#fef2f2", marginBottom: 8, fontSize: "0.72rem", color: "#7f1d1d", lineHeight: 1.4 }}>
+                <strong style={{ color: "#dc2626" }}>⚠️ OVERRIDE:</strong> Assigned to {TECHS.find(te => te.key === card.tech)?.name}, rules say {TECHS.find(te => te.key === suggestedKey)?.name}.
+                {card.overrideNote ? ` Reason: "${card.overrideNote}"` : " No reason given."}
               </div>
             )}
 
-            <div style={{ padding: "10px 14px", borderRadius: 10, border: `2px solid ${rec.accent}33`, background: `${rec.accent}12`, marginBottom: 12 }}>
-              <div style={{ fontSize: "0.8rem", fontWeight: 800, color: rec.accent, marginBottom: 3 }}>{rec.title}</div>
-              <div style={{ fontSize: "0.78rem", color: "#374151", lineHeight: 1.5 }}>{rec.body}</div>
+            {/* Recommendation banner — compact */}
+            <div style={{ padding: "8px 12px", borderRadius: 10, border: `2px solid ${rec.accent}33`, background: `${rec.accent}12`, marginBottom: 10 }}>
+              <div style={{ fontSize: "0.75rem", fontWeight: 800, color: rec.accent }}>{rec.title}</div>
+              <div style={{ fontSize: "0.7rem", color: "#374151", lineHeight: 1.4 }}>{rec.body}</div>
             </div>
 
-            <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 8px" }}>{t("keyboard.modal.selectTech")}</label>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {analysis.map(({ tech, tag, tier, hours: tH, available, jobs }) => {
+            {/* Tech carousel — horizontal scroll */}
+            <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", margin: "0 0 6px" }}>{t("keyboard.modal.selectTech")}</label>
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 6 }}>
+              {analysis.map(({ tech, tag, tier, hours: tH, jobs }) => {
                 const isUnavail   = tag === "unavailable";
                 const isSuggested = tech.key === suggestedKey;
                 const isSelected  = tech.key === selTech;
                 const pct = Math.min(100, (tH / MAX_HOURS) * 100);
                 const barColor = tH >= MAX_HOURS ? "#ef4444" : tH > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
 
-                const tagBg = isUnavail ? "#f1f5f9"
-                  : tag === "full" || tag === "overloaded" ? "#fee2e2"
-                  : tag === "finishing" ? "#ffedd5"
-                  : tag === "warning"   ? "#fef9c3"
-                  : isSuggested ? "#dcfce7" : "#eef2ff";
-                const tagText = isUnavail ? "#94a3b8"
-                  : tag === "full" || tag === "overloaded" ? "#991b1b"
-                  : tag === "finishing" ? "#9a3412"
-                  : tag === "warning"   ? "#854d0e"
-                  : isSuggested ? "#166534" : "#4338ca";
-                const tagLabel = isUnavail ? t("keyboard.techPanel.off")
-                  : isSuggested ? t("keyboard.modal.tagBestMatch")
-                  : tag === "free"       ? t("keyboard.modal.tagFree")
-                  : tag === "finishing"  ? t("keyboard.modal.tagFinishing")
-                  : tag === "warning"    ? t("keyboard.modal.tagDueSoon")
-                  : tag === "full"       ? t("keyboard.modal.tagFull")
-                  : tag === "overloaded" ? t("keyboard.modal.tagManyJobs")
-                  : tag === "deadline"   ? t("keyboard.modal.tagDeadline")
-                  : tag === "busy"       ? t("keyboard.modal.tagBusy", { n: jobs.length })
-                  : t("keyboard.modal.tagAvailable");
-
-                const jobSummary = jobs.length > 0
-                  ? jobs.map(j => `${j.name}${j.hours ? ` (${j.hours}h)` : ""}${j.deadline ? ` ⏱️${formatDeadline(j.deadline, t)}` : ""}`).join(", ")
-                  : isUnavail ? t("keyboard.modal.markedAbsent") : t("keyboard.techPanel.noJobs");
-
                 return (
                   <div key={tech.key}
                     onClick={() => !isUnavail && setSelTech(tech.key)}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${isSelected ? (isSuggested ? "#22c55e" : "#6366f1") : isSuggested ? "#86efac" : "#e2e8f0"}`, background: isSelected ? (isSuggested ? "#f0fdf4" : "#eef2ff") : isSuggested ? "#f0fdf4" : "#fff", cursor: isUnavail ? "not-allowed" : "pointer", opacity: isUnavail || tier >= 6 ? 0.5 : 1 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: isUnavail ? "#cbd5e1" : tech.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "0.82rem", color: "#fff", flexShrink: 0 }}>{tech.num}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#0f172a" }}>{tech.name}</span>
-                        <span style={{ fontSize: "0.65rem", color: "#94a3b8" }}>{tH > 0 ? `${tH}h / ${MAX_HOURS}h` : t("keyboard.modal.free")}</span>
-                      </div>
-                      <div style={{ fontSize: "0.67rem", color: "#64748b", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{jobSummary}</div>
-                      <div style={{ height: 3, background: "#e2e8f0", borderRadius: 3, marginTop: 3, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
-                      </div>
+                    style={{
+                      flexShrink: 0, width: 90, padding: "8px 6px", borderRadius: 10, textAlign: "center",
+                      border: isSelected ? `2.5px solid ${isSuggested ? "#22c55e" : "#6366f1"}` : isSuggested ? "2px solid #86efac" : "1.5px solid #e2e8f0",
+                      background: isSelected ? (isSuggested ? "#f0fdf4" : "#eef2ff") : isSuggested ? "#f0fdf4" : "#fff",
+                      cursor: isUnavail ? "not-allowed" : "pointer",
+                      opacity: isUnavail || tier >= 6 ? 0.4 : 1,
+                    }}>
+                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: isUnavail ? "#cbd5e1" : tech.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "0.85rem", color: "#fff", margin: "0 auto" }}>{tech.num}</div>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#0f172a", marginTop: 4 }}>{tech.name}</div>
+                    <div style={{ fontSize: "0.58rem", color: "#94a3b8", marginTop: 1 }}>{tH > 0 ? `${tH}h` : "Free"}</div>
+                    <div style={{ height: 3, background: "#e2e8f0", borderRadius: 3, marginTop: 3, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
                     </div>
-                    <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: tagBg, color: tagText, flexShrink: 0, whiteSpace: "nowrap" }}>{tagLabel}</span>
+                    {isSuggested && !isSelected && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#166534", marginTop: 3 }}>✓ BEST</div>}
+                    {isSelected && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#4338ca", marginTop: 3 }}>● SELECTED</div>}
+                    {isUnavail && <div style={{ fontSize: "0.5rem", fontWeight: 800, color: "#94a3b8", marginTop: 3 }}>OFF</div>}
                   </div>
                 );
               })}
             </div>
 
-            {/* Conflict warnings */}
+            {/* Conflict warnings — compact */}
             {conflicts.length > 0 && (
-              <div style={{ marginTop: 12 }}>
+              <div style={{ marginTop: 8 }}>
                 {conflicts.map((c, i) => (
-                  <div key={i} style={{ padding: "8px 12px", borderRadius: 8, marginBottom: 6, background: c.severity === "danger" ? "#fee2e2" : "#fef9c3", border: `1px solid ${c.severity === "danger" ? "#fca5a5" : "#fde68a"}`, fontSize: "0.75rem", color: c.severity === "danger" ? "#7f1d1d" : "#78350f", lineHeight: 1.5 }}>
+                  <div key={i} style={{ padding: "6px 10px", borderRadius: 8, marginBottom: 4, background: c.severity === "danger" ? "#fee2e2" : "#fef9c3", border: `1px solid ${c.severity === "danger" ? "#fca5a5" : "#fde68a"}`, fontSize: "0.7rem", color: c.severity === "danger" ? "#7f1d1d" : "#78350f", lineHeight: 1.4 }}>
                     {c.icon} {c.message}
                   </div>
                 ))}
               </div>
             )}
 
-            {/* R8: Override reason */}
+            {/* Override reason */}
             {hasConflict && (
-              <div style={{ marginTop: 8 }}>
-                <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#92400e", margin: "0 0 4px" }}>
-                  {t("keyboard.modal.overrideLabel")}
-                </label>
+              <div style={{ marginTop: 6 }}>
                 <textarea value={overrideNote} onChange={e => setOverrideNote(e.target.value)}
                   placeholder={t("keyboard.modal.overridePlaceholder")}
                   rows={2}
-                  style={{ width: "100%", border: `1.5px solid ${errors.overrideNote ? "#ef4444" : "#fbbf24"}`, borderRadius: 8, padding: "8px 10px", fontSize: "0.82rem", color: "#0f172a", outline: "none", boxSizing: "border-box", resize: "vertical", background: "#fffbeb" }}
+                  style={{ width: "100%", border: `1.5px solid ${errors.overrideNote ? "#ef4444" : "#fbbf24"}`, borderRadius: 8, padding: "8px 10px", fontSize: "0.8rem", color: "#0f172a", outline: "none", boxSizing: "border-box", resize: "vertical", background: "#fffbeb" }}
                 />
-                {errors.overrideNote && <div style={{ fontSize: "0.68rem", color: "#dc2626", marginTop: 2 }}>{t("keyboard.modal.overrideRequired")}</div>}
+                {errors.overrideNote && <div style={{ fontSize: "0.65rem", color: "#dc2626", marginTop: 2 }}>{t("keyboard.modal.overrideRequired")}</div>}
               </div>
             )}
-          </>
+          </div>
         )}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-          <button onClick={onClose} style={{ flex: 1, padding: 10, border: "1.5px solid #e2e8f0", borderRadius: 8, background: "#fff", color: "#64748b", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem" }}>{t("keyboard.modal.cancel")}</button>
-          <button onClick={handleSave} style={{ flex: 2, padding: 10, border: "none", borderRadius: 8, background: hasConflict ? "#f59e0b" : "#6366f1", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: "0.9rem" }}>
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: 8, padding: "12px 20px 16px", borderTop: "1px solid #e2e8f0" }}>
+          <button onClick={onClose} style={{ flex: 1, padding: 10, border: "1.5px solid #e2e8f0", borderRadius: 10, background: "#fff", color: "#64748b", fontWeight: 700, cursor: "pointer", fontSize: "0.85rem" }}>{t("keyboard.modal.cancel")}</button>
+          <button onClick={handleSave} style={{ flex: 2, padding: 10, border: "none", borderRadius: 10, background: hasConflict ? "#f59e0b" : "#6366f1", color: "#fff", fontWeight: 800, cursor: "pointer", fontSize: "0.85rem" }}>
             {hasConflict ? t("keyboard.modal.overrideSave") : t("keyboard.modal.save")}
           </button>
         </div>
