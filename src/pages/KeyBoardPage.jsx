@@ -30,12 +30,25 @@ const useT = () => React.useContext(TCtx);
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TECHS = [
-  { key: "romel",    num: 1, name: "Romel",    color: "#7c3aed" },
-  { key: "juan",     num: 2, name: "Juan",     color: "#1d4ed8" },
-  { key: "eluzahin", num: 3, name: "Eluzahin", color: "#0369a1" },
-  { key: "kevin",    num: 4, name: "Kevin",    color: "#ea580c" },
-  { key: "ivan",     num: 5, name: "Ivan",     color: "#475569" },
+  { key: "romel",    num: 1, name: "Romel",    email: "romel@autorx.com",    color: "#7c3aed" },
+  { key: "juan",     num: 2, name: "Juan",     email: "juan@autorx.com",     color: "#1d4ed8" },
+  { key: "eluzahin", num: 3, name: "Eluzahin", email: "eluzahin@autorx.com", color: "#0369a1" },
+  { key: "kevin",    num: 4, name: "Kevin",    email: "kevin@autorx.com",    color: "#ea580c" },
+  { key: "ivan",     num: 5, name: "Ivan",     email: "ivan@autorx.com",     color: "#475569" },
 ];
+
+/** Match a technician by email (primary) or name (fallback). Email is the source of truth. */
+function matchTech(email, name) {
+  if (email) {
+    const byEmail = TECHS.find(t => t.email.toLowerCase() === email.toLowerCase());
+    if (byEmail) return byEmail;
+  }
+  if (name) {
+    const byName = TECHS.find(t => t.name.toLowerCase() === name.toLowerCase());
+    if (byName) return byName;
+  }
+  return null;
+}
 
 const COLS = [
   { id: "waiting", color: "#dc2626", darkColor: "#7f1d1d", needsDispatch: true  },
@@ -1065,8 +1078,8 @@ export function KeyBoardPage() {
             toDelete.push(updated[idx].id);
           }
         } else if (ro.status !== "INVOICE" && ro.status !== "VOID") {
-          // Auto-create card for new RO
-          const matchedTech = TECHS.find(t => t.name.toLowerCase() === (ro.technician_name || "").toLowerCase());
+          // Auto-create card for new RO — match by email (source of truth), fallback to name
+          const matchedTech = matchTech(ro.technician_email, ro.technician_name);
           const newCard = {
             id: uid(),
             col: "dropoff",
@@ -1169,13 +1182,13 @@ export function KeyBoardPage() {
     catch (e) { setSyncErr("Action failed — " + e.message); fetchCards(); }
   }, [cards, fetchCards]);
 
-  // Match appointments to technicians (by first name, case-insensitive)
+  // Match appointments to technicians (by email as source of truth, name as fallback)
   const appointmentsByTech = {};
   TECHS.forEach(t => { appointmentsByTech[t.key] = []; });
   appointments.forEach(appt => {
-    const matchedTech = TECHS.find(t => t.name.toLowerCase() === (appt.technician_name || "").toLowerCase());
-    if (matchedTech) {
-      appointmentsByTech[matchedTech.key].push(appt);
+    const matched = matchTech(appt.technician_email, appt.technician_name);
+    if (matched) {
+      appointmentsByTech[matched.key].push(appt);
     }
   });
 
