@@ -1258,11 +1258,8 @@ export function KeyBoardPage() {
   // Unassigned cards (no tech selected)
   const unassignedCards = cards.filter(c => !c.tech);
 
-  // Column order: if tech is logged in, put their column first, then unassigned
+  // Column order note: if tech is logged in, their column renders first (separate block)
   // SA/admin/view-only sees default order: Appointments | Techs... | Unassigned
-  const orderedTechs = isTech && myTech
-    ? [myTech, ...TECHS.filter(t => t.key !== myTech.key)]
-    : TECHS;
 
   // Guarded handlers — check permission before allowing action
   const guardedEdit = (card) => {
@@ -1302,28 +1299,29 @@ export function KeyBoardPage() {
         flex: 1,
         overflow: "hidden",
       }}>
-        {/* Header — expanded for garage display with large clock */}
+        {/* Header — tall for garage display, room for hamburger */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "8px 16px 8px 52px", background: D.surface,
+          padding: "10px 20px 10px 56px", background: D.surface,
           borderBottom: `1px solid ${D.border}`, flexShrink: 0,
+          minHeight: 48,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: "1.2rem" }}>🔑</span>
-            <span style={{ color: D.text, fontSize: "1.05rem", fontWeight: 800 }}>{t("keyboard.title")}</span>
+            <span style={{ fontSize: "1.3rem" }}>🔑</span>
+            <span style={{ color: D.text, fontSize: "1.15rem", fontWeight: 800 }}>{t("keyboard.title")}</span>
             {syncErr && <span style={{ fontSize: "0.65rem", color: D.danger, background: D.dangerBg, padding: "2px 8px", borderRadius: 10 }}>⚠️ {syncErr}</span>}
-            {loading && <span style={{ fontSize: "0.7rem", color: D.textLight }}>⟳ syncing</span>}
+            {loading && <span style={{ fontSize: "0.7rem", color: D.textLight }}>⟳</span>}
             {!canEdit && !isTech && <span style={{ fontSize: "0.7rem", color: D.textLight, background: D.surface2, padding: "2px 8px", borderRadius: 10 }}>{t("keyboard.viewOnly")}</span>}
-            {isTech && myTech && <span style={{ fontSize: "0.7rem", color: myTech.color, background: `${myTech.color}22`, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>👤 {myTech.fullName}</span>}
+            {isTech && myTech && <span style={{ fontSize: "0.75rem", color: myTech.color, background: `${myTech.color}22`, padding: "3px 10px", borderRadius: 10, fontWeight: 700 }}>👤 {myTech.fullName}</span>}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ color: D.text, fontSize: "1.1rem", fontWeight: 700, letterSpacing: 0.5 }}>{clock}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ color: D.text, fontSize: "1.3rem", fontWeight: 700, letterSpacing: 0.5 }}>{clock}</span>
             {canEdit && (
               <button
                 onClick={() => setModal({ colId: "waiting", card: null })}
                 style={{
                   background: D.primary, color: "#fff", border: "none", borderRadius: 6,
-                  padding: "6px 14px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer",
+                  padding: "7px 16px", fontSize: "0.85rem", fontWeight: 700, cursor: "pointer",
                 }}
               >
                 + New
@@ -1354,9 +1352,9 @@ export function KeyBoardPage() {
           {/* Tech Panel — Collapsible */}
           <div style={{
             flexShrink: 0,
-            overflowY: "auto",
+            overflowY: panelOpen ? "auto" : "hidden",
             overflowX: "hidden",
-            width: panelOpen ? 220 : 36,
+            width: panelOpen ? 220 : 28,
             transition: "width 0.3s ease",
             position: "relative",
             background: D.surface,
@@ -1368,12 +1366,12 @@ export function KeyBoardPage() {
                 left: 0,
                 top: 0,
                 bottom: 0,
-                width: 36,
+                width: 28,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                padding: "6px 0",
-                gap: 4,
+                padding: "4px 0",
+                gap: 3,
                 zIndex: 10,
                 background: D.surface,
               }}>
@@ -1381,14 +1379,14 @@ export function KeyBoardPage() {
                 <button
                   onClick={() => setPanelOpen(true)}
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 20,
+                    height: 20,
                     border: "none",
                     background: D.primary,
                     color: "#fff",
-                    borderRadius: 5,
+                    borderRadius: 4,
                     cursor: "pointer",
-                    fontSize: "0.6rem",
+                    fontSize: "0.55rem",
                     fontWeight: 800,
                   }}
                 >
@@ -1399,15 +1397,15 @@ export function KeyBoardPage() {
                   <div
                     key={tech.key}
                     style={{
-                      width: 22,
-                      height: 22,
+                      width: 18,
+                      height: 18,
                       borderRadius: "50%",
                       background: unavailableTechs.has(tech.key) ? D.textLight : tech.color,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontWeight: 900,
-                      fontSize: "0.6rem",
+                      fontSize: "0.5rem",
                       color: "#fff",
                       flexShrink: 0,
                     }}
@@ -1460,7 +1458,6 @@ export function KeyBoardPage() {
               {/* ─── TECH VIEW: My Column first, then Unassigned ─── */}
               {isTech && (() => {
                 const tech = myTech;
-                const isUnavail = unavailableTechs.has(tech.key);
                 const techLoadData = computeTechLoad(cards, unavailableTechs);
                 const l = techLoadData[tech.key];
                 const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
