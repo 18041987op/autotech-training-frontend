@@ -1682,7 +1682,8 @@
       "3h": "3h",
       "eod": "EOD",
       "tomorrow": "Tom",
-      "clear": "Clear"
+      "clear": "Clear",
+      "nextOpen": "Next open"
     },
     "dispatch": {
       "allUnavailableTitle": "⚠️ All Techs Unavailable",

@@ -1680,7 +1680,8 @@
       "3h": "3h",
       "eod": "Fin día",
       "tomorrow": "Mañ",
-      "clear": "Limpiar"
+      "clear": "Limpiar",
+      "nextOpen": "Próxima apertura"
     },
     "dispatch": {
       "allUnavailableTitle": "⚠️ Todos los Técnicos No Disponibles",

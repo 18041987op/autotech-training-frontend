@@ -789,7 +789,7 @@ function btnStyle(bg, color, flex1 = false) {
 
 // ─── Card Modal ───────────────────────────────────────────────────────────────
 
-function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
+function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs, shopHours }) {
   const t = useT();
   const col = COLS.find(c => c.id === colId);
   const isWaiting = colId === "waiting";
@@ -915,8 +915,64 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             </div>
           </div>
 
-          {/* Deadline — presets + custom time */}
+          {/* Deadline — presets + custom time (shop-hours aware) */}
           <label style={{ display: "block", fontSize: "0.7rem", fontWeight: 700, color: "#475569", margin: "8px 0 3px" }}>{t("keyboard.modal.deadlineLabel")}</label>
+          {(() => {
+            // Calculate shop-aware base time and closing time
+            const days = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+            const now = new Date();
+            const todayKey = days[now.getDay()];
+            const todayHours = shopHours?.hours?.[todayKey];
+            let closeTime = null; // closing time as Date
+            let openTime = null;  // opening time as Date
+            let nextOpenDate = null; // next opening as Date (for when shop is closed)
+
+            if (todayHours?.open && todayHours?.close) {
+              const [oh, om] = todayHours.open.split(":").map(Number);
+              const [ch, cm] = todayHours.close.split(":").map(Number);
+              openTime = new Date(now); openTime.setHours(oh, om, 0, 0);
+              closeTime = new Date(now); closeTime.setHours(ch, cm, 0, 0);
+            }
+
+            // Is shop currently open?
+            const isOpen = openTime && closeTime && now >= openTime && now < closeTime;
+
+            // Find next open day/time if currently closed
+            if (!isOpen && shopHours?.hours) {
+              for (let offset = 0; offset <= 7; offset++) {
+                const check = new Date(now);
+                check.setDate(check.getDate() + (offset === 0 ? 1 : offset));
+                const checkKey = days[check.getDay()];
+                const checkH = shopHours.hours[checkKey];
+                if (checkH?.open) {
+                  const [noh, nom] = checkH.open.split(":").map(Number);
+                  nextOpenDate = new Date(check); nextOpenDate.setHours(noh, nom, 0, 0);
+                  break;
+                }
+              }
+            }
+
+            // Base time for calculations: now if open, next opening if closed
+            const baseTime = isOpen ? now : nextOpenDate;
+            const eodTime = isOpen && closeTime ? closeTime : (nextOpenDate ? (() => {
+              const nKey = days[nextOpenDate.getDay()];
+              const nH = shopHours?.hours?.[nKey];
+              if (nH?.close) {
+                const [nch, ncm] = nH.close.split(":").map(Number);
+                const d = new Date(nextOpenDate); d.setHours(nch, ncm, 0, 0);
+                return d;
+              }
+              return null;
+            })() : null);
+
+            const closedBanner = !isOpen && nextOpenDate;
+
+            return (<>
+              {closedBanner && (
+                <div style={{ fontSize: "0.65rem", color: "#f59e0b", background: "#451a03", padding: "4px 8px", borderRadius: 6, marginBottom: 4 }}>
+                  🕐 {t("keyboard.board.shopLabel")}: CLOSED — {t("keyboard.deadline.nextOpen")}: {nextOpenDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} {nextOpenDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              )}
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
             {[
               { label: t("keyboard.deadline.1h"), mins: 60 },
@@ -927,15 +983,32 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
             ].map(p => {
               let targetISO = "";
               if (p.mins === null) {
-                const eod = new Date(); eod.setHours(17, 0, 0, 0);
-                targetISO = eod.toISOString().slice(0, 16);
+                // EOD = closing time today (or next open day's closing)
+                if (eodTime) {
+                  targetISO = new Date(eodTime.getTime() - eodTime.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                } else {
+                  const eod = new Date(); eod.setHours(17, 0, 0, 0);
+                  targetISO = eod.toISOString().slice(0, 16);
+                }
               } else if (p.mins === -1) {
-                const tom = new Date(); tom.setDate(tom.getDate() + 1); tom.setHours(9, 0, 0, 0);
-                targetISO = tom.toISOString().slice(0, 16);
+                // Tomorrow = next open day's opening
+                if (nextOpenDate) {
+                  targetISO = new Date(nextOpenDate.getTime() - nextOpenDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                } else {
+                  const tom = new Date(); tom.setDate(tom.getDate() + 1); tom.setHours(9, 0, 0, 0);
+                  targetISO = tom.toISOString().slice(0, 16);
+                }
               } else {
-                const d = new Date(Date.now() + p.mins * 60000);
+                // +Nh from base time (now if open, next open if closed)
+                const base = baseTime || now;
+                const d = new Date(base.getTime() + p.mins * 60000);
                 d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0);
-                targetISO = d.toISOString().slice(0, 16);
+                // Clamp to closing time if it would go past close
+                if (closeTime && isOpen && d > closeTime) {
+                  targetISO = new Date(closeTime.getTime() - closeTime.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                } else {
+                  targetISO = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                }
               }
               const isActive = deadline === targetISO;
               return (
@@ -974,6 +1047,8 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
               ⏱️ {formatDeadline(deadline, t)}
             </div>
           )}
+            </>);
+          })()}
         </div>
 
         {/* Dispatch section */}
@@ -1911,7 +1986,7 @@ export function KeyBoardPage() {
         {modal && (
           <CardModal colId={modal.colId} card={modal.card} cards={cards}
             onSave={handleSaveCard} onClose={() => setModal(null)}
-            unavailableTechs={unavailableTechs} />
+            unavailableTechs={unavailableTechs} shopHours={shopHours} />
         )}
       </div>
     </TCtx.Provider>
