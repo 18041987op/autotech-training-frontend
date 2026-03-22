@@ -522,6 +522,8 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   const dlUrgency = card.deadline ? deadlineUrgency(card.deadline) : null;
   const dlStyle   = dlUrgency ? URGENCY_STYLE[dlUrgency] : null;
 
+  const isUnassigned = !tech;
+
   return (
     <div
       onClick={() => canEdit && !confirmAction && onEdit(card)}
@@ -530,13 +532,20 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         borderRadius: 10, padding: "9px 10px",
         boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
         position: "relative", userSelect: "none",
-        borderLeft: `4px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "#334155"}`,
+        border: isUnassigned ? `2px solid #fbbf24` : undefined,
+        borderLeft: isUnassigned ? `4px solid #fbbf24` : `4px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "#334155"}`,
+        animation: isUnassigned ? "blinkAmber 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none",
         cursor: canEdit ? "pointer" : "default",
         transition: "transform 0.12s, box-shadow 0.12s",
       }}
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 5px 14px rgba(0,0,0,0.5)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)"; }}
     >
+      {isUnassigned && (
+        <style>
+          {`@keyframes blinkAmber { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}
+        </style>
+      )}
       {/* Confirmation overlay — shown for all users on Done/Hold, and for non-SA on all actions */}
       {confirmAction && (
         <div style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.94)", borderRadius: 10, zIndex: 10, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 8, gap: 6 }}
@@ -689,10 +698,12 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
   const [deadline,     setDeadline]     = useState(card?.deadline || "");
   const [skill,        setSkill]        = useState(card?.skill    || "");
   const [selTech,      setSelTech]      = useState(card?.tech || (col.needsDispatch ? suggestedKey : "") || "");
+  const [selCol,       setSelCol]       = useState(colId);
   const [overrideNote, setOverrideNote] = useState("");
   const [errors,       setErrors]       = useState({});
 
-  const conflicts = col.needsDispatch && selTech
+  const selColDef = COLS.find(c => c.id === selCol);
+  const conflicts = selColDef.needsDispatch && selTech
     ? detectConflicts({ ...card, hours: parseFloat(hours) || 0, skill, id: card?.id || "__new__" }, selTech, cards, t)
     : [];
   const hasConflict = conflicts.length > 0;
@@ -703,14 +714,15 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
     if (!vehicle.trim()) errs.vehicle = true;
     if (hasConflict && !overrideNote.trim()) errs.overrideNote = true;
     if (Object.keys(errs).length) { setErrors(errs); return; }
+    const selColDef = COLS.find(c => c.id === selCol);
     onSave({
       ...(card || {}),
-      id: card?.id || uid(), col: colId, status: card?.status || "repairing",
+      id: card?.id || uid(), col: selCol, status: card?.status || "repairing",
       name: name.trim(), vehicle: vehicle.trim(), ro: ro.trim(),
       hours: parseFloat(hours) || 0, deadline: deadline.trim(), skill: skill.trim(),
-      tech: col.needsDispatch ? selTech : (card?.tech || ""),
+      tech: selColDef.needsDispatch ? selTech : (card?.tech || ""),
       addedAt: card?.addedAt || Date.now(),
-      originalTech: card?.originalTech || (col.needsDispatch ? selTech : ""),
+      originalTech: card?.originalTech || (selColDef.needsDispatch ? selTech : ""),
       overrideNote: overrideNote.trim(),
     });
   }
@@ -732,6 +744,36 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
           {card ? t("keyboard.modal.editTitle") : t("keyboard.modal.addTitle")}
         </div>
         <div style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: 16 }}>{colLabel}</div>
+
+        {/* Status selector */}
+        <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 8px" }}>Status</label>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 6, marginBottom: 14 }}>
+          {COLS.map(c => (
+            <button
+              key={c.id}
+              onClick={() => setSelCol(c.id)}
+              style={{
+                padding: "8px 6px",
+                borderRadius: 8,
+                border: `2px solid ${selCol === c.id ? c.color : "#e2e8f0"}`,
+                background: selCol === c.id ? c.color + "22" : "#fff",
+                color: selCol === c.id ? c.color : "#64748b",
+                fontSize: "0.7rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                textAlign: "center",
+                whiteSpace: "nowrap",
+              }}
+              title={t(`keyboard.cols.${c.id}`)}
+            >
+              {c.id === "waiting" && "⏳"}
+              {c.id === "dropoff" && "🚗"}
+              {c.id === "repair" && "⚙️"}
+              {c.id === "ready" && "✅"}
+              {c.id === "shop" && "🏪"}
+            </button>
+          ))}
+        </div>
 
         <label style={{ display: "block", fontSize: "0.78rem", fontWeight: 700, color: "#475569", margin: "0 0 4px" }}>{t("keyboard.modal.customerLabel")}</label>
         <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Martinez" style={inp(errors.name)} maxLength={20} onKeyDown={e => e.key === "Enter" && handleSave()} />
@@ -771,7 +813,7 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
         <input value={skill} onChange={e => setSkill(e.target.value)} placeholder='e.g. "alignment", "diagnostic"' style={inp(false)} maxLength={30} />
 
         {/* Dispatch section */}
-        {col.needsDispatch && (
+        {selColDef.needsDispatch && (
           <>
             <hr style={{ border: "none", borderTop: "1px solid #e2e8f0", margin: "14px 0" }} />
 
@@ -951,7 +993,11 @@ export function KeyBoardPage() {
   const [modal,            setModal]            = useState(null);
   const [clock,            setClock]            = useState("");
   const [unavailableTechs, setUnavailableTechs] = useState(new Set());
+  const [panelOpen,        setPanelOpen]        = useState(false);
+  const [headerVisible,    setHeaderVisible]    = useState(true);
   const pollRef = useRef(null);
+  const headerHideTimeoutRef = useRef(null);
+  const headerHoverTimeoutRef = useRef(null);
 
   const fetchCards = useCallback(async () => {
     try {
@@ -998,22 +1044,57 @@ export function KeyBoardPage() {
     setCards(prev => {
       let updated = [...prev];
       const toDelete = [];
+      const newCards = [];
 
       tekmetricROs.forEach(ro => {
-        const idx = updated.findIndex(c => c.ro === ro.repair_order_number);
-        if (idx === -1) return;
+        const roNumber = String(ro.repair_order_number);
+        const idx = updated.findIndex(c => String(c.ro) === roNumber);
 
-        if (ro.status === "WAITING_FOR_PICKUP") {
-          console.log(`[AutoSync] Moving card RO ${ro.repair_order_number} to READY`);
-          updated[idx] = { ...updated[idx], col: "ready" };
-        } else if (ro.status === "INVOICE") {
-          console.log(`[AutoSync] Deleting card RO ${ro.repair_order_number} (INVOICE)`);
-          toDelete.push(updated[idx].id);
+        if (idx !== -1) {
+          // Card exists, sync status
+          if (ro.status === "WAITING_FOR_PICKUP") {
+            console.log(`[AutoSync] Moving card RO ${roNumber} to READY`);
+            updated[idx] = { ...updated[idx], col: "ready" };
+          } else if (ro.status === "INVOICE") {
+            console.log(`[AutoSync] Deleting card RO ${roNumber} (INVOICE)`);
+            toDelete.push(updated[idx].id);
+          }
+        } else if (ro.status !== "INVOICE" && ro.status !== "VOID") {
+          // Auto-create card for new RO
+          const matchedTech = TECHS.find(t => t.name.toLowerCase() === (ro.technician_name || "").toLowerCase());
+          const newCard = {
+            id: uid(),
+            col: "dropoff",
+            status: "repairing",
+            name: ro.customer_name || "",
+            vehicle: ro.vehicle_description || "",
+            ro: roNumber,
+            hours: 0,
+            deadline: "",
+            tech: matchedTech ? matchedTech.key : "",
+            originalTech: matchedTech ? matchedTech.key : "",
+            addedAt: Date.now(),
+            overrideNote: "",
+            skill: "",
+          };
+          console.log(`[AutoSync] Auto-created card for RO #${roNumber} → tech: ${matchedTech ? matchedTech.name : "unassigned"}`);
+          newCards.push(newCard);
         }
       });
 
       updated = updated.filter(c => !toDelete.includes(c.id));
-      return updated;
+      const finalCards = [...updated, ...newCards];
+
+      // Persist new cards to API
+      if (newCards.length > 0) {
+        newCards.forEach(card => {
+          apiFetch("/api/keyboard/cards", { method: "POST", body: toDbRow(card) }).catch(e => {
+            console.warn(`[AutoSync] Failed to persist card for RO ${card.ro}:`, e);
+          });
+        });
+      }
+
+      return finalCards;
     });
   }, [tekmetricROs]);
 
@@ -1036,6 +1117,32 @@ export function KeyBoardPage() {
     update();
     const id = setInterval(update, 60000);
     return () => clearInterval(id);
+  }, []);
+
+  // Auto-hide header after 3 seconds, show on top hover, hide on leave
+  useEffect(() => {
+    const hideAfterDelay = () => {
+      headerHideTimeoutRef.current = setTimeout(() => {
+        setHeaderVisible(false);
+      }, 3000);
+    };
+
+    hideAfterDelay();
+
+    const handleTopHover = (e) => {
+      if (e.clientY < 40) {
+        clearTimeout(headerHideTimeoutRef.current);
+        clearTimeout(headerHoverTimeoutRef.current);
+        setHeaderVisible(true);
+      }
+    };
+
+    window.addEventListener("mousemove", handleTopHover);
+    return () => {
+      clearTimeout(headerHideTimeoutRef.current);
+      clearTimeout(headerHoverTimeoutRef.current);
+      window.removeEventListener("mousemove", handleTopHover);
+    };
   }, []);
 
   const handleToggleUnavailable = useCallback(async (techKey) => {
@@ -1104,8 +1211,34 @@ export function KeyBoardPage() {
         flex: 1,
         overflow: "hidden",
       }}>
-        {/* Header */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 18px", background: D.surface, borderBottom: `1px solid ${D.border}`, flexShrink: 0 }}>
+        {/* Header — with auto-hide */}
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px 18px",
+            background: D.surface,
+            borderBottom: `1px solid ${D.border}`,
+            zIndex: 100,
+            transition: "transform 0.3s ease",
+            transform: headerVisible ? "translateY(0)" : "translateY(-100%)",
+            height: 52,
+          }}
+          onMouseEnter={() => {
+            clearTimeout(headerHoverTimeoutRef.current);
+            setHeaderVisible(true);
+          }}
+          onMouseLeave={() => {
+            headerHoverTimeoutRef.current = setTimeout(() => {
+              setHeaderVisible(false);
+            }, 1000);
+          }}
+        >
           <h1 style={{ color: D.text, fontSize: "1.1rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
             🔑 {t("keyboard.title")}
           </h1>
@@ -1129,11 +1262,127 @@ export function KeyBoardPage() {
           </div>
         </div>
 
-        {/* Workspace */}
-        <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0 }}>
-          {/* Tech Panel */}
-          <div style={{ flexShrink: 0, overflowY: "auto" }}>
-            <TechPanel cards={cards} unavailableTechs={unavailableTechs} canEdit={canEdit} onToggleUnavailable={handleToggleUnavailable} />
+        {/* Top bar indicator (hidden header) */}
+        {!headerVisible && (
+          <div style={{
+            height: 3,
+            background: D.surface,
+            borderBottom: `3px solid ${D.primary}`,
+            flexShrink: 0,
+          }} />
+        )}
+
+        {/* Floating clock badge (when header hidden) */}
+        {!headerVisible && (
+          <div style={{
+            position: "fixed",
+            top: 8,
+            right: 18,
+            background: D.surface,
+            border: `1px solid ${D.border}`,
+            borderRadius: 20,
+            padding: "4px 10px",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            color: D.textMed,
+            zIndex: 99,
+          }}>
+            🕐 {clock}
+          </div>
+        )}
+
+        {/* Workspace — adjusted for fixed header */}
+        <div style={{ display: "flex", flex: 1, overflow: "auto", minHeight: 0, marginTop: headerVisible ? 52 : 3 }}>
+          {/* Tech Panel — Collapsible */}
+          <div style={{
+            flexShrink: 0,
+            overflowY: "auto",
+            width: panelOpen ? 220 : 40,
+            transition: "width 0.3s ease",
+            position: "relative",
+            background: D.surface,
+            borderRight: `1px solid ${D.border}`,
+          }}>
+            {!panelOpen && (
+              <div style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: 40,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                padding: "8px 0",
+                gap: 6,
+                zIndex: 10,
+                background: D.surface,
+              }}>
+                {/* Expand button */}
+                <button
+                  onClick={() => setPanelOpen(true)}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    border: "none",
+                    background: D.primary,
+                    color: "#fff",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                  }}
+                >
+                  ▶
+                </button>
+                {/* Tech number circles stacked */}
+                {TECHS.map(tech => (
+                  <div
+                    key={tech.key}
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      background: unavailableTechs.has(tech.key) ? D.textLight : tech.color,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 900,
+                      fontSize: "0.65rem",
+                      color: "#fff",
+                      flexShrink: 0,
+                      title: tech.name,
+                    }}
+                  >
+                    {tech.num}
+                  </div>
+                ))}
+              </div>
+            )}
+            {panelOpen && (
+              <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+                <button
+                  onClick={() => setPanelOpen(false)}
+                  style={{
+                    width: "100%",
+                    padding: "6px 0",
+                    background: "none",
+                    border: "none",
+                    borderBottom: `1px solid ${D.border}`,
+                    color: D.textLight,
+                    cursor: "pointer",
+                    fontSize: "0.7rem",
+                    fontWeight: 800,
+                  }}
+                  title="Collapse panel"
+                >
+                  ◀
+                </button>
+                <div style={{ flex: 1, overflowY: "auto" }}>
+                  <TechPanel cards={cards} unavailableTechs={unavailableTechs} canEdit={canEdit} onToggleUnavailable={handleToggleUnavailable} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Board — Optimized for large garage display */}
