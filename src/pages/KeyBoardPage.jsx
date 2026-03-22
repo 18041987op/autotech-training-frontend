@@ -1054,7 +1054,9 @@ export function KeyBoardPage() {
   const [syncErr,          setSyncErr]          = useState(null);
   const [toast,            setToast]            = useState(null); // { message, type }
   const [modal,            setModal]            = useState(null);
-  const [clock,            setClock]            = useState("");
+  const [clockDate,        setClockDate]        = useState("");
+  const [clockTime,        setClockTime]        = useState("");
+  const [clockSec,         setClockSec]         = useState("");
   const [unavailableTechs, setUnavailableTechs] = useState(new Set());
   const [panelOpen,        setPanelOpen]        = useState(false);
   const pollRef = useRef(null);
@@ -1169,13 +1171,12 @@ export function KeyBoardPage() {
   useEffect(() => {
     function update() {
       const n = new Date();
-      setClock(
-        n.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) +
-        "  " + n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
-      );
+      setClockDate(n.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }));
+      setClockTime(n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true }));
+      setClockSec(String(n.getSeconds()).padStart(2, "0"));
     }
     update();
-    const id = setInterval(update, 1000); // tick every second
+    const id = setInterval(update, 1000);
     return () => clearInterval(id);
   }, []);
 
@@ -1316,7 +1317,13 @@ export function KeyBoardPage() {
             {isTech && myTech && <span style={{ fontSize: "0.75rem", color: myTech.color, background: `${myTech.color}22`, padding: "3px 10px", borderRadius: 10, fontWeight: 700 }}>👤 {myTech.fullName}</span>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span style={{ color: D.text, fontSize: "1.3rem", fontWeight: 700, letterSpacing: 0.5 }}>{clock}</span>
+            {/* Date */}
+            <span style={{ color: D.textMed, fontSize: "0.85rem", fontWeight: 600 }}>{clockDate}</span>
+            {/* Time + magnified seconds */}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
+              <span style={{ color: D.text, fontSize: "1.3rem", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{clockTime}</span>
+              <span style={{ color: "#818cf8", fontSize: "1.8rem", fontWeight: 800, fontVariantNumeric: "tabular-nums", marginLeft: 2, minWidth: "2ch", display: "inline-block", textShadow: "0 0 12px rgba(129,140,248,0.5)" }}>{clockSec}</span>
+            </div>
             {canEdit && (
               <button
                 onClick={() => setModal({ colId: "waiting", card: null })}
