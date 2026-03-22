@@ -265,22 +265,78 @@ function buildTechResult(tech, l) {
   return { tech, tag, tier, hours: l.hours, available: Math.max(0, available), jobs: l.jobs, worstUrgency: u };
 }
 
+/**
+ * Round-robin fair dispatch.
+ *
+ * The idea: after a tech receives a job, the NEXT tech in rotation should be
+ * suggested for the following job (as long as rules allow). This ensures all
+ * techs get equal opportunity to earn, even on slow days.
+ *
+ * We count TOTAL jobs each tech has touched today (active + ready/done)
+ * and use that as a tiebreaker. The tech with fewer total jobs goes first.
+ * If still tied, we use dispatch order (num) starting from the tech AFTER
+ * the one who got the most recent job.
+ */
 function dispatchAnalysis(cards, { isWaiting = false, returningTechKey = null, unavailableTechs = new Set() } = {}) {
   const load = computeTechLoad(cards, unavailableTechs);
+
+  // Count ALL jobs today per tech (including completed/ready — for fair rotation)
+  const totalJobsToday = {};
+  TECHS.forEach(t => { totalJobsToday[t.key] = 0; });
+  cards.forEach(c => {
+    if (c.tech && totalJobsToday[c.tech] !== undefined) {
+      totalJobsToday[c.tech]++;
+    }
+  });
+
+  // Find who got the most recent job (highest addedAt timestamp among all assigned cards)
+  let lastAssignedKey = null;
+  let lastAssignedAt = 0;
+  cards.forEach(c => {
+    if (c.tech && c.addedAt > lastAssignedAt) {
+      lastAssignedAt = c.addedAt;
+      lastAssignedKey = c.tech;
+    }
+  });
+
   // R3: Return vehicle → force original tech
   if (returningTechKey) {
     const tech = TECHS.find(t => t.key === returningTechKey);
     if (tech) {
       const result = { ...buildTechResult(tech, load[returningTechKey]), tag: "return", tier: 0 };
       const rest = TECHS.filter(t => t.key !== returningTechKey)
-        .map(t => buildTechResult(t, load[t.key]))
-        .sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : a.tech.num - b.tech.num);
-      return [result, ...rest];
+        .map(t => ({ ...buildTechResult(t, load[t.key]), totalJobs: totalJobsToday[t.key] || 0 }))
+        .sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : (a.totalJobs !== b.totalJobs ? a.totalJobs - b.totalJobs : a.tech.num - b.tech.num));
+      return [{ ...result, totalJobs: totalJobsToday[returningTechKey] || 0 }, ...rest];
     }
   }
-  return TECHS
-    .map(tech => buildTechResult(tech, load[tech.key]))
-    .sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : a.tech.num - b.tech.num);
+
+  // Build results with totalJobs for fair rotation
+  const results = TECHS.map(tech => ({
+    ...buildTechResult(tech, load[tech.key]),
+    totalJobs: totalJobsToday[tech.key] || 0,
+  }));
+
+  // Sort: tier first, then fewer total jobs (fairness), then rotation order
+  // Rotation: after lastAssignedKey, the next tech in dispatch order goes first
+  const lastIdx = lastAssignedKey ? TECHS.findIndex(t => t.key === lastAssignedKey) : -1;
+
+  results.sort((a, b) => {
+    // Primary: tier (lower = better)
+    if (a.tier !== b.tier) return a.tier - b.tier;
+    // Secondary: fewer total jobs today = priority (fairness)
+    if (a.totalJobs !== b.totalJobs) return a.totalJobs - b.totalJobs;
+    // Tertiary: rotation order — tech after lastAssigned goes first
+    if (lastIdx >= 0) {
+      const aRotation = (TECHS.findIndex(t => t.key === a.tech.key) - lastIdx - 1 + TECHS.length) % TECHS.length;
+      const bRotation = (TECHS.findIndex(t => t.key === b.tech.key) - lastIdx - 1 + TECHS.length) % TECHS.length;
+      return aRotation - bRotation;
+    }
+    // Fallback: dispatch order
+    return a.tech.num - b.tech.num;
+  });
+
+  return results;
 }
 
 function getRecommendationText(analysis, isWaiting, t) {
