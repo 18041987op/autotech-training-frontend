@@ -52,6 +52,7 @@ export function Layout({ user, onSignOut }) {
   const isKeyboard = location.pathname.startsWith("/keyboard");
   const isAdmin = user?.role === "admin";
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [kbNavOpen, setKbNavOpen] = useState(false);
 
   const baseNav = [
     { to: "/",            label: t("nav.home"),        icon: HomeIcon,       end: true },
@@ -79,7 +80,7 @@ export function Layout({ user, onSignOut }) {
 
   return (
     <div className="h-screen bg-slate-50 text-slate-900 flex overflow-hidden">
-        {/* ── Desktop Sidebar — hidden on keyboard route ── */}
+        {/* ── Desktop Sidebar — normal pages ── */}
         {!isKeyboard && (
           <aside className="hidden md:flex md:flex-shrink-0 md:w-64 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5 md:h-full md:overflow-y-auto">
             <Brand />
@@ -91,6 +92,67 @@ export function Layout({ user, onSignOut }) {
             />
             <CrossAppNav isAdmin={isAdmin} />
           </aside>
+        )}
+
+        {/* ── Keyboard: floating menu button + slide-over nav drawer ── */}
+        {isKeyboard && (
+          <>
+            {/* Floating menu button — always visible, top-left corner */}
+            <button
+              onClick={() => setKbNavOpen(true)}
+              className="fixed top-2 left-2 z-50 w-9 h-9 rounded-lg bg-slate-800/80 backdrop-blur border border-slate-600/50 text-slate-300 hover:text-white hover:bg-slate-700 transition-all flex items-center justify-center shadow-lg"
+              aria-label="Open navigation"
+              title="Menu"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+
+            {/* Slide-over backdrop */}
+            {kbNavOpen && (
+              <div
+                className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+                onClick={() => setKbNavOpen(false)}
+              />
+            )}
+
+            {/* Slide-over navigation panel */}
+            <div className={cx(
+              "fixed top-0 left-0 z-50 h-full w-72 max-w-[85vw] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out",
+              kbNavOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+              <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                <BrandInline />
+                <button
+                  onClick={() => setKbNavOpen(false)}
+                  className="btn-outline-sm px-3"
+                  aria-label="Close menu"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <UserCard user={user} />
+                <div onClick={() => setKbNavOpen(false)}>
+                  <NavSection
+                    baseNav={baseNav}
+                    adminExtra={adminExtra}
+                    showAdmin={adminExtra.length > 0}
+                  />
+                </div>
+                <CrossAppNav isAdmin={isAdmin} />
+              </div>
+              {/* Sign out at bottom */}
+              <div className="border-t border-slate-200 p-3">
+                <button
+                  onClick={() => { setKbNavOpen(false); onSignOut(); }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t("auth.signOut")}
+                </button>
+              </div>
+            </div>
+          </>
         )}
 
         {/* ── Main content area ── */}
