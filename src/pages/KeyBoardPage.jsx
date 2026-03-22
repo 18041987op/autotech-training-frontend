@@ -1136,250 +1136,207 @@ export function KeyBoardPage() {
             <TechPanel cards={cards} unavailableTechs={unavailableTechs} canEdit={canEdit} onToggleUnavailable={handleToggleUnavailable} />
           </div>
 
-          {/* Board — Technician Lanes */}
+          {/* Board — Optimized for large garage display */}
           <div style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}>
             <div style={{
-              display: "flex", flexDirection: "column",
-              padding: 12,
+              display: "grid",
+              gridTemplateColumns: `200px repeat(${TECHS.length}, minmax(190px, 1fr)) 200px`,
+              gap: 6, padding: 8,
+              minWidth: `${(TECHS.length + 2) * 200}px`,
               minHeight: "100%",
               boxSizing: "border-box",
-              gap: 12,
+              alignContent: "start",
             }}>
-              {/* Unassigned cards section */}
-              {unassignedCards.length > 0 && (
-                <div style={{
-                  padding: "10px 12px",
-                  background: `linear-gradient(160deg, #7c2d12, #451a03)`,
-                  borderRadius: 12,
-                  border: `2px solid #ea580c`,
-                  minHeight: 80,
-                }}>
-                  <div style={{ color: "#fff", fontWeight: 900, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-                    ⚠️ Unassigned ({unassignedCards.length})
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {unassignedCards.map(card => (
-                      <div key={card.id} style={{ flex: "0 0 calc(20% - 5px)", minWidth: 150 }}>
-                        <KeyCard card={card} col={{ id: card.col, needsDispatch: true }} canEdit={canEdit}
-                          onEdit={(c) => setModal({ colId: c.col, card: c })}
-                          onDelete={handleDeleteCard}
-                          onQuickAction={handleQuickAction} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Appointments Banner */}
+              {/* ─── APPOINTMENTS COLUMN ──────────────────────────────── */}
               <div style={{
-                padding: "10px 12px",
-                background: "#1e293b",
-                borderRadius: 12,
+                background: D.surface, borderRadius: 10,
                 border: `1px solid ${D.border}`,
+                display: "flex", flexDirection: "column", overflow: "hidden",
               }}>
-                <div style={{ color: D.text, fontWeight: 900, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8 }}>
-                  📅 Today's Appointments ({appointments.length})
+                <div style={{
+                  padding: "8px 10px", background: "#1e3a5f",
+                  textAlign: "center", flexShrink: 0,
+                  borderBottom: `1px solid ${D.border}`,
+                }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#93c5fd" }}>📅 APPOINTMENTS</div>
+                  <div style={{ fontSize: "0.65rem", color: "#60a5fa", marginTop: 2 }}>{appointments.length} today</div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 8 }}>
+                <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                   {appointments.length === 0 ? (
-                    <div style={{ fontSize: "0.75rem", color: D.textLight }}>No appointments scheduled</div>
+                    <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>No appointments</div>
                   ) : (
-                    appointments.map((appt, i) => (
-                      <AppointmentCard key={i} appt={appt} />
-                    ))
+                    appointments
+                      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                      .map((appt, i) => <AppointmentCard key={i} appt={appt} />)
                   )}
                 </div>
               </div>
 
-              {/* Tech Lanes */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: `repeat(${TECHS.length}, minmax(200px, 1fr)) minmax(200px, 1fr)`,
-                gap: 12,
-                minWidth: `${(TECHS.length + 1) * 220}px`,
-              }}>
-                {/* Each tech's column */}
-                {TECHS.map(tech => {
-                  const isUnavail = unavailableTechs.has(tech.key);
-                  const load = computeTechLoad(cards, unavailableTechs);
-                  const l = load[tech.key];
-                  const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
-                  const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
-                  const techAppts = appointmentsByTech[tech.key] || [];
+              {/* ─── TECH COLUMNS ─────────────────────────────────────── */}
+              {TECHS.map(tech => {
+                const isUnavail = unavailableTechs.has(tech.key);
+                const techLoad = computeTechLoad(cards, unavailableTechs);
+                const l = techLoad[tech.key];
+                const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
+                const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
+                const techAppts = appointmentsByTech[tech.key] || [];
 
-                  // Cards for this tech in each status
-                  const techWaitingCards = cards.filter(c => c.tech === tech.key && c.col === "waiting");
-                  const techDropoffCards = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
-                  const techRepairCards = cards.filter(c => c.tech === tech.key && c.col === "repair");
-                  const techReadyCards = cards.filter(c => c.tech === tech.key && c.col === "ready");
+                const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting");
+                const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
+                const techRepair  = cards.filter(c => c.tech === tech.key && c.col === "repair");
+                const techReady   = cards.filter(c => c.tech === tech.key && c.col === "ready");
+                const techShop    = cards.filter(c => c.tech === tech.key && c.col === "shop");
 
-                  return (
-                    <div key={tech.key} style={{
-                      display: "flex", flexDirection: "column", gap: 10,
-                      opacity: isUnavail ? 0.5 : 1,
-                      pointerEvents: isUnavail ? "none" : "auto",
-                    }}>
-                      {/* Tech Header */}
-                      <div style={{
-                        padding: "10px 12px",
-                        background: tech.color,
-                        borderRadius: 10,
-                        color: "#fff",
-                        textAlign: "center",
-                      }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 6 }}>
-                          <div style={{
-                            width: 32, height: 32, borderRadius: "50%",
-                            background: "rgba(255,255,255,0.3)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontWeight: 900, fontSize: "0.95rem",
-                          }}>
-                            {tech.num}
-                          </div>
-                          <span style={{ fontSize: "0.95rem", fontWeight: 800, flex: 1 }}>{tech.name}</span>
-                        </div>
-                        <div style={{ fontSize: "0.65rem", fontWeight: 700, marginBottom: 5 }}>
-                          {l.hours.toFixed(1)}h / {MAX_HOURS}h
-                        </div>
-                        <div style={{ height: 4, background: "rgba(255,255,255,0.3)", borderRadius: 4, overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 4 }} />
-                        </div>
-                      </div>
-
-                      {/* Appointments Sub-section */}
-                      <div style={{
-                        background: "#1e3a5f",
-                        borderRadius: 10,
-                        padding: "8px",
-                        minHeight: 60,
-                      }}>
-                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#93c5fd", textTransform: "uppercase", marginBottom: 6 }}>
-                          📅 Appts ({techAppts.length})
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 150, overflowY: "auto" }}>
-                          {techAppts.length === 0 ? (
-                            <div style={{ fontSize: "0.65rem", color: "#64748b" }}>None</div>
-                          ) : (
-                            techAppts.map((appt, i) => (
-                              <AppointmentCard key={i} appt={appt} />
-                            ))
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Waiting Sub-section */}
-                      <div style={{
-                        background: `linear-gradient(160deg, #dc2626, #7f1d1d)`,
-                        borderRadius: 10,
-                        padding: "8px",
-                        minHeight: 80,
-                      }}>
-                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: 6 }}>
-                          ⏳ Waiting ({techWaitingCards.length})
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 200, overflowY: "auto" }}>
-                          {techWaitingCards.map(card => (
-                            <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
-                              onEdit={(c) => setModal({ colId: c.col, card: c })}
-                              onDelete={handleDeleteCard}
-                              onQuickAction={handleQuickAction} />
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Drop Off + In Progress Sub-section */}
-                      <div style={{
-                        background: `linear-gradient(160deg, #ea580c, #7c2d12)`,
-                        borderRadius: 10,
-                        padding: "8px",
-                        minHeight: 80,
-                      }}>
-                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: 6 }}>
-                          🚗 Drop Off / In Progress ({techDropoffCards.length + techRepairCards.length})
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 250, overflowY: "auto" }}>
-                          {/* Drop Off cards */}
-                          {techDropoffCards.map(card => (
-                            <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
-                              onEdit={(c) => setModal({ colId: c.col, card: c })}
-                              onDelete={handleDeleteCard}
-                              onQuickAction={handleQuickAction} />
-                          ))}
-                          {/* In Progress cards — with working badge */}
-                          {techRepairCards.map(card => (
-                            <div key={card.id} style={{ position: "relative" }}>
-                              <KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit}
-                                onEdit={(c) => setModal({ colId: c.col, card: c })}
-                                onDelete={handleDeleteCard}
-                                onQuickAction={handleQuickAction} />
-                              <div style={{
-                                position: "absolute", top: 8, right: 8,
-                                fontSize: "0.65rem", fontWeight: 700,
-                                background: "#ca8a04", color: "#000",
-                                padding: "2px 6px", borderRadius: 4,
-                              }}>
-                                ⚙️ WORKING
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Ready For Pick Up Sub-section */}
-                      <div style={{
-                        background: `linear-gradient(160deg, #16a34a, #14532d)`,
-                        borderRadius: 10,
-                        padding: "8px",
-                        minHeight: 80,
-                      }}>
-                        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", marginBottom: 6 }}>
-                          ✅ Ready ({techReadyCards.length})
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: 200, overflowY: "auto" }}>
-                          {techReadyCards.map(card => (
-                            <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
-                              onEdit={(c) => setModal({ colId: c.col, card: c })}
-                              onDelete={handleDeleteCard}
-                              onQuickAction={handleQuickAction} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Shop Cars Column */}
-                <div style={{
-                  display: "flex", flexDirection: "column", gap: 10,
-                }}>
+                const divider = (color, label, count) => (
                   <div style={{
-                    padding: "10px 12px",
-                    background: "#475569",
-                    borderRadius: 10,
-                    color: "#fff",
-                    textAlign: "center",
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "3px 0", margin: "2px 0",
                   }}>
-                    <div style={{ fontSize: "0.95rem", fontWeight: 800 }}>🛍️</div>
-                    <div style={{ fontSize: "0.8rem", fontWeight: 700, marginTop: 4 }}>Shop Cars</div>
+                    <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
+                    <span style={{ fontSize: "0.58rem", fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>
+                      {label} {count > 0 ? `(${count})` : ""}
+                    </span>
+                    <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
                   </div>
+                );
 
-                  <div style={{
-                    background: `linear-gradient(160deg, #475569, #1e293b)`,
-                    borderRadius: 10,
-                    padding: "8px",
-                    minHeight: 200,
+                return (
+                  <div key={tech.key} style={{
+                    background: D.surface, borderRadius: 10,
+                    border: `1px solid ${isUnavail ? D.border : tech.color}40`,
+                    display: "flex", flexDirection: "column", overflow: "hidden",
+                    opacity: isUnavail ? 0.4 : 1,
                   }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 5, maxHeight: "calc(100vh - 400px)", overflowY: "auto" }}>
-                      {cards.filter(c => c.col === "shop").map(card => (
-                        <KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit}
-                          onEdit={(c) => setModal({ colId: c.col, card: c })}
-                          onDelete={handleDeleteCard}
-                          onQuickAction={handleQuickAction} />
-                      ))}
+                    {/* Tech Header — compact */}
+                    <div style={{
+                      padding: "6px 10px", background: tech.color,
+                      display: "flex", alignItems: "center", gap: 8,
+                      flexShrink: 0,
+                    }}>
+                      <div style={{
+                        width: 26, height: 26, borderRadius: "50%",
+                        background: "rgba(255,255,255,0.25)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontWeight: 900, fontSize: "0.85rem", color: "#fff", flexShrink: 0,
+                      }}>
+                        {tech.num}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#fff" }}>{tech.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                          <div style={{ height: 3, flex: 1, background: "rgba(255,255,255,0.25)", borderRadius: 3, overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
+                          </div>
+                          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap" }}>
+                            {l.hours.toFixed(1)}/{MAX_HOURS}h
+                          </span>
+                        </div>
+                      </div>
+                      {isUnavail && (
+                        <span style={{ fontSize: "0.55rem", fontWeight: 800, background: "rgba(0,0,0,0.4)", color: "#fbbf24", padding: "2px 6px", borderRadius: 10 }}>OFF</span>
+                      )}
                     </div>
+
+                    {/* Cards area — single scrollable column with thin dividers */}
+                    <div style={{ flex: 1, overflowY: "auto", padding: "4px 6px", display: "flex", flexDirection: "column", gap: 3 }}>
+
+                      {/* Appointments for this tech */}
+                      {techAppts.length > 0 && (
+                        <>
+                          {divider("#60a5fa", "📅 Appts", techAppts.length)}
+                          {techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}
+                        </>
+                      )}
+
+                      {/* Customer Waiting */}
+                      {divider("#ef4444", "⏳ Waiting", techWaiting.length)}
+                      {techWaiting.map(card => (
+                        <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
+                          onEdit={(c) => setModal({ colId: c.col, card: c })}
+                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                      ))}
+
+                      {/* Drop Off + In Progress */}
+                      {divider("#f97316", "🚗 Drop Off", techDropoff.length + techRepair.length)}
+                      {techDropoff.map(card => (
+                        <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
+                          onEdit={(c) => setModal({ colId: c.col, card: c })}
+                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                      ))}
+                      {techRepair.map(card => (
+                        <div key={card.id} style={{ position: "relative" }}>
+                          <KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit}
+                            onEdit={(c) => setModal({ colId: c.col, card: c })}
+                            onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                          <div style={{
+                            position: "absolute", top: 6, right: 24,
+                            fontSize: "0.6rem", fontWeight: 800,
+                            background: "#ca8a04", color: "#000",
+                            padding: "1px 5px", borderRadius: 3,
+                          }}>⚙️ WORKING</div>
+                        </div>
+                      ))}
+
+                      {/* Ready for Pick Up */}
+                      {divider("#22c55e", "✅ Ready", techReady.length)}
+                      {techReady.map(card => (
+                        <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
+                          onEdit={(c) => setModal({ colId: c.col, card: c })}
+                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                      ))}
+
+                      {/* Shop cars for this tech */}
+                      {techShop.length > 0 && (
+                        <>
+                          {divider("#64748b", "🏪 Shop", techShop.length)}
+                          {techShop.map(card => (
+                            <KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit}
+                              onEdit={(c) => setModal({ colId: c.col, card: c })}
+                              onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* ─── UNASSIGNED COLUMN ────────────────────────────────── */}
+              <div style={{
+                background: D.surface, borderRadius: 10,
+                border: unassignedCards.length > 0 ? "2px solid #ea580c" : `1px solid ${D.border}`,
+                display: "flex", flexDirection: "column", overflow: "hidden",
+              }}>
+                <div style={{
+                  padding: "8px 10px",
+                  background: unassignedCards.length > 0 ? "#7c2d12" : D.surface2,
+                  textAlign: "center", flexShrink: 0,
+                  borderBottom: `1px solid ${D.border}`,
+                }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>
+                    ⚠️ UNASSIGNED
+                  </div>
+                  <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>
+                    {unassignedCards.length} cards
                   </div>
                 </div>
+                <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
+                  {unassignedCards.length === 0 ? (
+                    <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>All assigned</div>
+                  ) : (
+                    <>
+                      {/* Also include shop cars with no tech */}
+                      {unassignedCards.map(card => (
+                        <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit}
+                          onEdit={(c) => setModal({ colId: c.col, card: c })}
+                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                      ))}
+                    </>
+                  )}
+                </div>
               </div>
+
             </div>
           </div>
         </div>
