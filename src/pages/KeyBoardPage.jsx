@@ -1447,7 +1447,7 @@ export function KeyBoardPage() {
             <div style={{
               display: "grid",
               gridTemplateColumns: isTech
-                ? `minmax(190px, 1fr) 160px 160px repeat(${TECHS.length - 1}, minmax(170px, 1fr))`
+                ? `160px minmax(190px, 1fr) 160px repeat(${TECHS.length - 1}, minmax(170px, 1fr))`
                 : `160px repeat(${TECHS.length}, minmax(170px, 1fr)) 160px`,
               gap: 4, padding: 6,
               minHeight: "100%",
@@ -1455,7 +1455,7 @@ export function KeyBoardPage() {
               alignContent: "start",
             }}>
 
-              {/* ─── TECH VIEW: My Column first, then Unassigned ─── */}
+              {/* ─── TECH VIEW: My Column (renders 2nd in grid, after Appointments) ─── */}
               {isTech && (() => {
                 const tech = myTech;
                 const techLoadData = computeTechLoad(cards, unavailableTechs);
@@ -1482,6 +1482,7 @@ export function KeyBoardPage() {
                     background: D.surface, borderRadius: 10,
                     border: `2px solid ${tech.color}`,
                     display: "flex", flexDirection: "column", overflow: "hidden",
+                    order: 2,
                   }}>
                     <div style={{ padding: "6px 10px", background: tech.color, display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                       <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "0.85rem", color: "#fff", flexShrink: 0 }}>{tech.num}</div>
@@ -1510,12 +1511,13 @@ export function KeyBoardPage() {
                 );
               })()}
 
-              {/* ─── TECH VIEW: Unassigned second ──────────────────── */}
+              {/* ─── TECH VIEW: Unassigned (3rd in grid) ──────────── */}
               {isTech && (
                 <div style={{
                   background: D.surface, borderRadius: 10,
                   border: unassignedCards.length > 0 ? "2px solid #ea580c" : `1px solid ${D.border}`,
                   display: "flex", flexDirection: "column", overflow: "hidden",
+                  order: 3,
                 }}>
                   <div style={{ padding: "8px 10px", background: unassignedCards.length > 0 ? "#7c2d12" : D.surface2, textAlign: "center", flexShrink: 0, borderBottom: `1px solid ${D.border}` }}>
                     <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>⚠️ UNASSIGNED</div>
@@ -1531,11 +1533,12 @@ export function KeyBoardPage() {
                 </div>
               )}
 
-              {/* ─── APPOINTMENTS COLUMN (position depends on view) ── */}
+              {/* ─── APPOINTMENTS COLUMN — always first (left side) ── */}
               <div style={{
                 background: D.surface, borderRadius: 10,
                 border: `1px solid ${D.border}`,
                 display: "flex", flexDirection: "column", overflow: "hidden",
+                order: 1,
               }}>
                 <div style={{
                   padding: "8px 10px", background: "#1e3a5f",
@@ -1594,6 +1597,7 @@ export function KeyBoardPage() {
                     opacity: isUnavail ? 0.4 : isMyColumn ? 1 : 0.35,
                     filter: isMyColumn ? "none" : "saturate(0.3)",
                     transition: "opacity 0.3s, filter 0.3s",
+                    order: isTech ? 4 : undefined,
                   }}>
                     {/* Tech Header — compact */}
                     <div style={{
