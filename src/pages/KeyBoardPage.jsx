@@ -1258,6 +1258,12 @@ export function KeyBoardPage() {
   // Unassigned cards (no tech selected)
   const unassignedCards = cards.filter(c => !c.tech);
 
+  // Column order: if tech is logged in, put their column first, then unassigned
+  // SA/admin/view-only sees default order: Appointments | Techs... | Unassigned
+  const orderedTechs = isTech && myTech
+    ? [myTech, ...TECHS.filter(t => t.key !== myTech.key)]
+    : TECHS;
+
   // Guarded handlers — check permission before allowing action
   const guardedEdit = (card) => {
     if (!canInteractWith(card)) {
@@ -1442,14 +1448,93 @@ export function KeyBoardPage() {
           <div style={{ flex: 1, overflowX: "auto", overflowY: "auto" }}>
             <div style={{
               display: "grid",
-              gridTemplateColumns: `160px repeat(${TECHS.length}, minmax(170px, 1fr)) 160px`,
+              gridTemplateColumns: isTech
+                ? `minmax(190px, 1fr) 160px 160px repeat(${TECHS.length - 1}, minmax(170px, 1fr))`
+                : `160px repeat(${TECHS.length}, minmax(170px, 1fr)) 160px`,
               gap: 4, padding: 6,
               minHeight: "100%",
               boxSizing: "border-box",
               alignContent: "start",
             }}>
 
-              {/* ─── APPOINTMENTS COLUMN ──────────────────────────────── */}
+              {/* ─── TECH VIEW: My Column first, then Unassigned ─── */}
+              {isTech && (() => {
+                const tech = myTech;
+                const isUnavail = unavailableTechs.has(tech.key);
+                const techLoadData = computeTechLoad(cards, unavailableTechs);
+                const l = techLoadData[tech.key];
+                const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
+                const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
+                const techAppts = appointmentsByTech[tech.key] || [];
+                const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting");
+                const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
+                const techRepair  = cards.filter(c => c.tech === tech.key && c.col === "repair");
+                const techReady   = cards.filter(c => c.tech === tech.key && c.col === "ready");
+                const techShop    = cards.filter(c => c.tech === tech.key && c.col === "shop");
+
+                const divider = (color, label, count) => (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "3px 0", margin: "2px 0" }}>
+                    <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
+                    <span style={{ fontSize: "0.58rem", fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>{label} {count > 0 ? `(${count})` : ""}</span>
+                    <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
+                  </div>
+                );
+
+                return (
+                  <div style={{
+                    background: D.surface, borderRadius: 10,
+                    border: `2px solid ${tech.color}`,
+                    display: "flex", flexDirection: "column", overflow: "hidden",
+                  }}>
+                    <div style={{ padding: "6px 10px", background: tech.color, display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "0.85rem", color: "#fff", flexShrink: 0 }}>{tech.num}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#fff" }}>⭐ {tech.fullName || tech.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                          <div style={{ height: 3, flex: 1, background: "rgba(255,255,255,0.25)", borderRadius: 3, overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
+                          </div>
+                          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap" }}>{l.hours.toFixed(1)}/{MAX_HOURS}h</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, overflowY: "auto", padding: "4px 6px", display: "flex", flexDirection: "column", gap: 3 }}>
+                      {techAppts.length > 0 && (<>{divider("#60a5fa", "📅 Appts", techAppts.length)}{techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}</>)}
+                      {divider("#ef4444", "⏳ Waiting", techWaiting.length)}
+                      {techWaiting.map(card => (<KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
+                      {divider("#f97316", "🚗 Drop Off", techDropoff.length + techRepair.length)}
+                      {techDropoff.map(card => (<KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
+                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} /><div style={{ position: "absolute", top: 6, right: 24, fontSize: "0.6rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "1px 5px", borderRadius: 3 }}>⚙️ WORKING</div></div>))}
+                      {divider("#22c55e", "✅ Ready", techReady.length)}
+                      {techReady.map(card => (<KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
+                      {techShop.length > 0 && (<>{divider("#64748b", "🏪 Shop", techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}</>)}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ─── TECH VIEW: Unassigned second ──────────────────── */}
+              {isTech && (
+                <div style={{
+                  background: D.surface, borderRadius: 10,
+                  border: unassignedCards.length > 0 ? "2px solid #ea580c" : `1px solid ${D.border}`,
+                  display: "flex", flexDirection: "column", overflow: "hidden",
+                }}>
+                  <div style={{ padding: "8px 10px", background: unassignedCards.length > 0 ? "#7c2d12" : D.surface2, textAlign: "center", flexShrink: 0, borderBottom: `1px solid ${D.border}` }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>⚠️ UNASSIGNED</div>
+                    <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>{unassignedCards.length} cards</div>
+                  </div>
+                  <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
+                    {unassignedCards.length === 0 ? (
+                      <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>All assigned</div>
+                    ) : unassignedCards.map(card => (
+                      <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─── APPOINTMENTS COLUMN (position depends on view) ── */}
               <div style={{
                 background: D.surface, borderRadius: 10,
                 border: `1px solid ${D.border}`,
@@ -1474,8 +1559,8 @@ export function KeyBoardPage() {
                 </div>
               </div>
 
-              {/* ─── TECH COLUMNS ─────────────────────────────────────── */}
-              {TECHS.map(tech => {
+              {/* ─── TECH COLUMNS (skip myTech if tech view — already rendered first) ── */}
+              {(isTech ? TECHS.filter(t => t.key !== myTech?.key) : TECHS).map(tech => {
                 const isUnavail = unavailableTechs.has(tech.key);
                 const techLoad = computeTechLoad(cards, unavailableTechs);
                 const l = techLoad[tech.key];
@@ -1607,8 +1692,8 @@ export function KeyBoardPage() {
                 );
               })}
 
-              {/* ─── UNASSIGNED COLUMN ────────────────────────────────── */}
-              <div style={{
+              {/* ─── UNASSIGNED COLUMN (SA/admin view — tech view renders it above) ── */}
+              {!isTech && <div style={{
                 background: D.surface, borderRadius: 10,
                 border: unassignedCards.length > 0 ? "2px solid #ea580c" : `1px solid ${D.border}`,
                 display: "flex", flexDirection: "column", overflow: "hidden",
@@ -1640,7 +1725,7 @@ export function KeyBoardPage() {
                     </>
                   )}
                 </div>
-              </div>
+              </div>}
 
             </div>
           </div>
