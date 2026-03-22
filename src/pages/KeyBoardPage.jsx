@@ -779,8 +779,6 @@ function CardModal({ colId, card, cards, onSave, onClose, unavailableTechs }) {
     outline: "none", boxSizing: "border-box",
   });
 
-  const colLabel = t(`keyboard.cols.${col.id}`).replace("\n", " ");
-
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
       onClick={e => e.target === e.currentTarget && onClose()}>
