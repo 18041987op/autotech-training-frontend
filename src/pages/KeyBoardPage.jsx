@@ -1041,11 +1041,17 @@ export function KeyBoardPage() {
                   CAN_EDIT_ROLES.includes(rawRole.replace(/[\s_]/g, "")) ||
                   rawRole === "admin";
 
+  // Identify if the logged-in user is a technician (by email match)
+  const isSA = canEdit; // SA/admin can edit everything
+  const myTech = matchTech(user?.email, user?.name); // null if not a technician
+  const isTech = !!myTech && rawRole === "technician";
+
   const [cards,            setCards]            = useState([]);
   const [appointments,     setAppointments]     = useState([]);
   const [tekmetricROs,     setTekmetricROs]     = useState([]);
   const [loading,          setLoading]          = useState(true);
   const [syncErr,          setSyncErr]          = useState(null);
+  const [toast,            setToast]            = useState(null); // { message, type }
   const [modal,            setModal]            = useState(null);
   const [clock,            setClock]            = useState("");
   const [unavailableTechs, setUnavailableTechs] = useState(new Set());
@@ -1172,6 +1178,28 @@ export function KeyBoardPage() {
     return () => clearInterval(id);
   }, []);
 
+  // Toast auto-dismiss
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(id);
+  }, [toast]);
+
+  // Permission check: can this user interact with a specific card?
+  function canInteractWith(card) {
+    if (isSA) return true; // SA/admin can do anything
+    if (isTech && card.tech === myTech.key) return true; // own cards
+    if (isTech && !card.tech) return true; // unassigned cards
+    return false;
+  }
+
+  function showPermissionWarning(techName) {
+    setToast({
+      message: `⛔ You can only modify your own cards. This card is assigned to ${techName || "another technician"}.`,
+      type: "error",
+    });
+  }
+
   const handleToggleUnavailable = useCallback(async (techKey) => {
     if (!canEdit) return;
     setUnavailableTechs(prev => {
@@ -1230,6 +1258,36 @@ export function KeyBoardPage() {
   // Unassigned cards (no tech selected)
   const unassignedCards = cards.filter(c => !c.tech);
 
+  // Guarded handlers — check permission before allowing action
+  const guardedEdit = (card) => {
+    if (!canInteractWith(card)) {
+      const ownerTech = TECHS.find(te => te.key === card.tech);
+      showPermissionWarning(ownerTech?.name);
+      return;
+    }
+    setModal({ colId: card.col, card });
+  };
+
+  const guardedDelete = (id) => {
+    const card = cards.find(c => c.id === id);
+    if (card && !canInteractWith(card)) {
+      const ownerTech = TECHS.find(te => te.key === card.tech);
+      showPermissionWarning(ownerTech?.name);
+      return;
+    }
+    handleDeleteCard(id);
+  };
+
+  const guardedQuickAction = (id, action) => {
+    const card = cards.find(c => c.id === id);
+    if (card && !canInteractWith(card)) {
+      const ownerTech = TECHS.find(te => te.key === card.tech);
+      showPermissionWarning(ownerTech?.name);
+      return;
+    }
+    handleQuickAction(id, action);
+  };
+
   return (
     <TCtx.Provider value={t}>
       <div style={{
@@ -1238,27 +1296,28 @@ export function KeyBoardPage() {
         flex: 1,
         overflow: "hidden",
       }}>
-        {/* Header — slim strip, padded left for Layout's floating hamburger button */}
+        {/* Header — expanded for garage display with large clock */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "4px 12px 4px 48px", background: D.surface,
+          padding: "8px 16px 8px 52px", background: D.surface,
           borderBottom: `1px solid ${D.border}`, flexShrink: 0,
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: "0.9rem" }}>🔑</span>
-            <span style={{ color: D.text, fontSize: "0.85rem", fontWeight: 800 }}>{t("keyboard.title")}</span>
-            {syncErr && <span style={{ fontSize: "0.6rem", color: D.danger, background: D.dangerBg, padding: "1px 6px", borderRadius: 10 }}>⚠️</span>}
-            {loading && <span style={{ fontSize: "0.6rem", color: D.textLight }}>⟳</span>}
-            {!canEdit && <span style={{ fontSize: "0.6rem", color: D.textLight, background: D.surface2, padding: "1px 6px", borderRadius: 10 }}>{t("keyboard.viewOnly")}</span>}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: "1.2rem" }}>🔑</span>
+            <span style={{ color: D.text, fontSize: "1.05rem", fontWeight: 800 }}>{t("keyboard.title")}</span>
+            {syncErr && <span style={{ fontSize: "0.65rem", color: D.danger, background: D.dangerBg, padding: "2px 8px", borderRadius: 10 }}>⚠️ {syncErr}</span>}
+            {loading && <span style={{ fontSize: "0.7rem", color: D.textLight }}>⟳ syncing</span>}
+            {!canEdit && !isTech && <span style={{ fontSize: "0.7rem", color: D.textLight, background: D.surface2, padding: "2px 8px", borderRadius: 10 }}>{t("keyboard.viewOnly")}</span>}
+            {isTech && myTech && <span style={{ fontSize: "0.7rem", color: myTech.color, background: `${myTech.color}22`, padding: "2px 8px", borderRadius: 10, fontWeight: 700 }}>👤 {myTech.fullName}</span>}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ color: D.textMed, fontSize: "0.75rem", fontWeight: 600 }}>{clock}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ color: D.text, fontSize: "1.1rem", fontWeight: 700, letterSpacing: 0.5 }}>{clock}</span>
             {canEdit && (
               <button
                 onClick={() => setModal({ colId: "waiting", card: null })}
                 style={{
-                  background: D.primary, color: "#fff", border: "none", borderRadius: 5,
-                  padding: "3px 10px", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer",
+                  background: D.primary, color: "#fff", border: "none", borderRadius: 6,
+                  padding: "6px 14px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer",
                 }}
               >
                 + New
@@ -1266,6 +1325,23 @@ export function KeyBoardPage() {
             )}
           </div>
         </div>
+
+        {/* Toast notification */}
+        {toast && (
+          <div style={{
+            position: "fixed", top: 60, left: "50%", transform: "translateX(-50%)",
+            zIndex: 500, padding: "10px 20px", borderRadius: 10,
+            background: toast.type === "error" ? "#7f1d1d" : "#14532d",
+            border: `1px solid ${toast.type === "error" ? "#dc2626" : "#22c55e"}`,
+            color: toast.type === "error" ? "#fecaca" : "#bbf7d0",
+            fontSize: "0.85rem", fontWeight: 700,
+            boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+            animation: "slideDown 0.3s ease",
+          }}>
+            <style>{`@keyframes slideDown { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }`}</style>
+            {toast.message}
+          </div>
+        )}
 
         {/* Workspace */}
         <div style={{ display: "flex", flex: 1, minHeight: 0, overflow: "hidden" }}>
@@ -1406,6 +1482,8 @@ export function KeyBoardPage() {
                 const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
                 const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
                 const techAppts = appointmentsByTech[tech.key] || [];
+                // Dim columns of OTHER techs when logged in as a technician
+                const isMyColumn = !isTech || tech.key === myTech?.key;
 
                 const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting");
                 const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
@@ -1429,9 +1507,11 @@ export function KeyBoardPage() {
                 return (
                   <div key={tech.key} style={{
                     background: D.surface, borderRadius: 10,
-                    border: `1px solid ${isUnavail ? D.border : tech.color}40`,
+                    border: isMyColumn ? `1px solid ${isUnavail ? D.border : tech.color}40` : `1px solid ${D.border}`,
                     display: "flex", flexDirection: "column", overflow: "hidden",
-                    opacity: isUnavail ? 0.4 : 1,
+                    opacity: isUnavail ? 0.4 : isMyColumn ? 1 : 0.35,
+                    filter: isMyColumn ? "none" : "saturate(0.3)",
+                    transition: "opacity 0.3s, filter 0.3s",
                   }}>
                     {/* Tech Header — compact */}
                     <div style={{
@@ -1478,22 +1558,22 @@ export function KeyBoardPage() {
                       {divider("#ef4444", "⏳ Waiting", techWaiting.length)}
                       {techWaiting.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
-                          onEdit={(c) => setModal({ colId: c.col, card: c })}
-                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                          onEdit={guardedEdit}
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
                       ))}
 
                       {/* Drop Off + In Progress */}
                       {divider("#f97316", "🚗 Drop Off", techDropoff.length + techRepair.length)}
                       {techDropoff.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
-                          onEdit={(c) => setModal({ colId: c.col, card: c })}
-                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                          onEdit={guardedEdit}
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
                       ))}
                       {techRepair.map(card => (
                         <div key={card.id} style={{ position: "relative" }}>
                           <KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit}
-                            onEdit={(c) => setModal({ colId: c.col, card: c })}
-                            onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                            onEdit={guardedEdit}
+                            onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
                           <div style={{
                             position: "absolute", top: 6, right: 24,
                             fontSize: "0.6rem", fontWeight: 800,
@@ -1507,8 +1587,8 @@ export function KeyBoardPage() {
                       {divider("#22c55e", "✅ Ready", techReady.length)}
                       {techReady.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
-                          onEdit={(c) => setModal({ colId: c.col, card: c })}
-                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                          onEdit={guardedEdit}
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
                       ))}
 
                       {/* Shop cars for this tech */}
@@ -1554,8 +1634,8 @@ export function KeyBoardPage() {
                       {/* Also include shop cars with no tech */}
                       {unassignedCards.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit}
-                          onEdit={(c) => setModal({ colId: c.col, card: c })}
-                          onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                          onEdit={guardedEdit}
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
                       ))}
                     </>
                   )}

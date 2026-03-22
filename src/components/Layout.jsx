@@ -100,11 +100,11 @@ export function Layout({ user, onSignOut }) {
             {/* Floating menu button — always visible, top-left corner */}
             <button
               onClick={() => setKbNavOpen(true)}
-              className="fixed top-2 left-2 z-50 w-9 h-9 rounded-lg bg-slate-800/80 backdrop-blur border border-slate-600/50 text-slate-300 hover:text-white hover:bg-slate-700 transition-all flex items-center justify-center shadow-lg"
+              className="fixed top-1.5 left-2 z-50 w-10 h-10 rounded-xl bg-slate-700/90 backdrop-blur border border-slate-500/50 text-slate-200 hover:text-white hover:bg-slate-600 transition-all flex items-center justify-center shadow-lg"
               aria-label="Open navigation"
               title="Menu"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-5 w-5" />
             </button>
 
             {/* Slide-over backdrop */}
