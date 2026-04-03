@@ -19,6 +19,8 @@ import {
   ExternalLink,
   BarChart2,
   Gauge,
+  Package,
+  ClipboardList,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -57,6 +59,8 @@ export function Layout({ user, onSignOut }) {
   const baseNav = [
     { to: "/",            label: t("nav.home"),        icon: HomeIcon,       end: true },
     { to: "/keyboard",    label: "Key Board",          icon: KeyRound },
+    { to: "/tools",       label: "Tools",              icon: Wrench },
+    { to: "/my-tools",    label: "My Tools",           icon: Package },
     { to: "/training",    label: t("nav.training"),    icon: GraduationCap },
     { to: "/assessments", label: t("nav.assessments"), icon: Layers },
     { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
@@ -70,9 +74,12 @@ export function Layout({ user, onSignOut }) {
   // Admin section
   const adminExtra = isAdmin
     ? [
-        { to: "/admin/progress",     label: t("nav.dashboard"),    icon: BarChart2  },
-        { to: "/admin/suggestions",  label: "Suggestions",         icon: Lightbulb  },
-        { to: "/settings",           label: t("nav.settings"),     icon: SettingsIcon },
+        { to: "/admin/progress",      label: t("nav.dashboard"),    icon: BarChart2  },
+        { to: "/admin/tools",         label: "Manage Tools",        icon: Wrench },
+        { to: "/admin/loans",         label: "All Loans",           icon: ClipboardList },
+        { to: "/admin/tool-reports",  label: "Tool Reports",        icon: BarChart2 },
+        { to: "/admin/suggestions",   label: "Suggestions",         icon: Lightbulb  },
+        { to: "/settings",            label: t("nav.settings"),     icon: SettingsIcon },
       ]
     : [];
 
@@ -358,41 +365,26 @@ function SideItem({ to, label, icon: Icon, end }) {
 
 // ─── CrossAppNav ─────────────────────────────────────────────────────────────
 function CrossAppNav({ isAdmin }) {
+  if (!isAdmin) return null;
   return (
     <div className="border-t border-slate-200 pt-3 mt-3">
       <p className="mb-2 px-3 text-xs font-semibold uppercase text-slate-400 tracking-wider">
         Other Apps
       </p>
       <div className="flex flex-col gap-1.5">
-        {/* Tools — visible to all users */}
+        {/* Management — admin only */}
         <a
-          href={TOOLS_URL}
+          href={MANAGEMENT_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-sky-200 bg-sky-50 text-sky-700 hover:bg-sky-100"
+          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
         >
-          <span className="w-6 h-6 bg-sky-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Wrench className="w-3.5 h-3.5 text-white" />
+          <span className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <BarChart2 className="w-3.5 h-3.5 text-white" />
           </span>
-          <span className="flex-1 text-left">Tool Management</span>
+          <span className="flex-1 text-left">Management</span>
           <ExternalLink className="w-3 h-3 opacity-50" />
         </a>
-
-        {/* Management — admin only */}
-        {isAdmin && (
-          <a
-            href={MANAGEMENT_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
-          >
-            <span className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
-              <BarChart2 className="w-3.5 h-3.5 text-white" />
-            </span>
-            <span className="flex-1 text-left">Management</span>
-            <ExternalLink className="w-3 h-3 opacity-50" />
-          </a>
-        )}
       </div>
     </div>
   );

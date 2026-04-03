@@ -27,6 +27,13 @@ import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
 import { KeyBoardPage } from "./pages/KeyBoardPage";
 
+// Tools pages
+import { ToolsCatalogPage } from "./pages/ToolsCatalogPage";
+import { ToolDetailPage } from "./pages/ToolDetailPage";
+import { MyToolsPage } from "./pages/MyToolsPage";
+import { AdminToolsPage } from "./pages/AdminToolsPage";
+import { AdminLoansPage } from "./pages/AdminLoansPage";
+import { AdminToolReportsPage } from "./pages/AdminToolReportsPage";
 
 
 function Protected({ user, children }) {
@@ -129,6 +136,11 @@ function AppRoutes() {
         {/* Key Board — visible to all employees */}
         <Route path="keyboard" element={<KeyBoardPage />} />
 
+        {/* Tools — visible to all employees */}
+        <Route path="tools" element={<ToolsCatalogPage />} />
+        <Route path="tools/:id" element={<ToolDetailPage />} />
+        <Route path="my-tools" element={<MyToolsPage />} />
+
         {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />
 
@@ -138,6 +150,9 @@ function AppRoutes() {
         <Route path="admin/progress" element={<AdminProgressPage />} />
         <Route path="admin/suggestions" element={<AdminSuggestionsPage />} />
         <Route path="admin/content" element={<ModulesListPage pageType="admin-content-placeholder" />} />
+        <Route path="admin/tools" element={<AdminToolsPage />} />
+        <Route path="admin/loans" element={<AdminLoansPage />} />
+        <Route path="admin/tool-reports" element={<AdminToolReportsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
