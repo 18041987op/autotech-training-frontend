@@ -47,6 +47,11 @@ export const getMyProfile = (email, empId) => {
 export const updateMyProfile = (email, data) =>
   hrFetch(`/profile?email=${encodeURIComponent(email)}`, { method: "PUT", body: data });
 
+// ─── Shop Hours ───────────────────────────────────────────────────────────
+
+/** Get shop operating hours from shop_settings */
+export const getShopHours = () => hrFetch("/shop-hours");
+
 // ─── Schedule ──────────────────────────────────────────────────────────────
 
 export const getMySchedule = (email, startDate, endDate, empId) => {
@@ -69,6 +74,10 @@ export const saveScheduleEntry = (entry) =>
 /** Admin: bulk upsert schedules */
 export const saveSchedulesBulk = (schedules) =>
   hrFetch("/schedule", { method: "PUT", body: { schedules } });
+
+/** Admin: approve schedules — ids[], or approve_week+start_date+end_date */
+export const approveSchedules = (payload) =>
+  hrFetch("/schedule", { method: "PATCH", body: payload });
 
 /** Admin: delete a schedule entry */
 export const deleteScheduleEntry = (empId, date) =>
