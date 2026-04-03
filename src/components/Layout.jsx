@@ -21,6 +21,13 @@ import {
   Gauge,
   Package,
   ClipboardList,
+  User,
+  CalendarDays,
+  Clock,
+  CalendarOff,
+  Heart,
+  Users,
+  UserCog,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -55,32 +62,68 @@ export function Layout({ user, onSignOut }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [kbNavOpen, setKbNavOpen] = useState(false);
 
-  const baseNav = [
-    { to: "/",            label: t("nav.home"),        icon: HomeIcon,       end: true },
-    { to: "/keyboard",    label: "Key Board",          icon: KeyRound },
-    { to: "/tools",       label: "Tools",              icon: Wrench },
-    { to: "/my-tools",    label: "My Tools",           icon: Package },
-    { to: "/training",    label: t("nav.training"),    icon: GraduationCap },
-    { to: "/assessments", label: t("nav.assessments"), icon: Layers },
-    { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
-    { to: "/scorecard",   label: t("nav.myScorecard"), icon: Gauge },
-    { to: "/culture",     label: t("nav.culture"),     icon: Shield },
-    { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
-    // Non-admin users see Settings in the main nav
-    ...(!isAdmin ? [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] : []),
+  // ─── Sectioned sidebar navigation ─────────────────────────────────────────
+  const navSections = [
+    {
+      key: "main",
+      label: null, // no header for top section
+      items: [
+        { to: "/",         label: t("nav.home"), icon: HomeIcon, end: true },
+        { to: "/keyboard", label: "Key Board",   icon: KeyRound },
+      ],
+    },
+    {
+      key: "training",
+      label: t("nav.training"),
+      items: [
+        { to: "/training",    label: "Modules",           icon: GraduationCap },
+        { to: "/assessments", label: t("nav.assessments"), icon: Layers },
+        { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
+        { to: "/scorecard",   label: t("nav.myScorecard"), icon: Gauge },
+        { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
+        { to: "/culture",     label: t("nav.culture"),     icon: Shield },
+      ],
+    },
+    {
+      key: "tools",
+      label: "Tools",
+      items: [
+        { to: "/tools",    label: "Catalog",  icon: Wrench },
+        { to: "/my-tools", label: "My Tools", icon: Package },
+      ],
+    },
+    {
+      key: "hr",
+      label: "HR",
+      items: [
+        { to: "/profile",   label: "My Profile", icon: User },
+        { to: "/schedule",  label: "Schedule",   icon: CalendarDays },
+        { to: "/timesheet", label: "Timesheet",  icon: Clock },
+        { to: "/time-off",  label: "Time Off",   icon: CalendarOff },
+        { to: "/benefits",  label: "Benefits",   icon: Heart },
+        { to: "/team",      label: "Team",       icon: Users },
+      ],
+    },
+    // Admin section — only visible to admins
+    ...(isAdmin
+      ? [
+          {
+            key: "admin",
+            label: t("nav.admin"),
+            items: [
+              { to: "/admin/progress",     label: t("nav.dashboard"), icon: BarChart2 },
+              { to: "/admin/users",        label: "Manage Users",     icon: UserCog },
+              { to: "/admin/modules",      label: "Manage Modules",   icon: GraduationCap },
+              { to: "/admin/tools",        label: "Manage Tools",     icon: Wrench },
+              { to: "/admin/loans",        label: "All Loans",        icon: ClipboardList },
+              { to: "/admin/tool-reports", label: "Tool Reports",     icon: BarChart2 },
+              { to: "/admin/suggestions",  label: "Suggestions",      icon: Lightbulb },
+              { to: "/settings",           label: t("nav.settings"),  icon: SettingsIcon },
+            ],
+          },
+        ]
+      : [{ key: "settings", label: null, items: [{ to: "/settings", label: t("nav.settings"), icon: SettingsIcon }] }]),
   ];
-
-  // Admin section
-  const adminExtra = isAdmin
-    ? [
-        { to: "/admin/progress",      label: t("nav.dashboard"),    icon: BarChart2  },
-        { to: "/admin/tools",         label: "Manage Tools",        icon: Wrench },
-        { to: "/admin/loans",         label: "All Loans",           icon: ClipboardList },
-        { to: "/admin/tool-reports",  label: "Tool Reports",        icon: BarChart2 },
-        { to: "/admin/suggestions",   label: "Suggestions",         icon: Lightbulb  },
-        { to: "/settings",            label: t("nav.settings"),     icon: SettingsIcon },
-      ]
-    : [];
 
   const closeMobile = () => setMobileOpen(false);
 
@@ -91,11 +134,7 @@ export function Layout({ user, onSignOut }) {
           <aside className="hidden md:flex md:flex-shrink-0 md:w-64 md:flex-col md:gap-4 md:border-r md:border-slate-200 md:bg-white md:px-4 md:py-5 md:h-full md:overflow-y-auto">
             <Brand />
             <UserCard user={user} />
-            <NavSection
-              baseNav={baseNav}
-              adminExtra={adminExtra}
-              showAdmin={adminExtra.length > 0}
-            />
+            <NavSection sections={navSections} />
             <CrossAppNav isAdmin={isAdmin} />
           </aside>
         )}
@@ -139,11 +178,7 @@ export function Layout({ user, onSignOut }) {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 <UserCard user={user} />
                 <div onClick={() => setKbNavOpen(false)}>
-                  <NavSection
-                    baseNav={baseNav}
-                    adminExtra={adminExtra}
-                    showAdmin={adminExtra.length > 0}
-                  />
+                  <NavSection sections={navSections} />
                 </div>
                 <CrossAppNav isAdmin={isAdmin} />
               </div>
@@ -216,11 +251,7 @@ export function Layout({ user, onSignOut }) {
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <UserCard user={user} />
               <div onClick={closeMobile}>
-                <NavSection
-                  baseNav={baseNav}
-                  adminExtra={adminExtra}
-                  showAdmin={adminExtra.length > 0}
-                />
+                <NavSection sections={navSections} />
               </div>
               <CrossAppNav isAdmin={isAdmin} />
             </div>
@@ -328,23 +359,21 @@ function UserCard({ user }) {
 }
 
 // ─── NavSection ──────────────────────────────────────────────────────────────
-function NavSection({ baseNav, adminExtra, showAdmin }) {
-  const { t } = useTranslation();
+function NavSection({ sections }) {
   return (
-    <nav className="flex flex-col gap-1">
-      {baseNav.map((item) => (
-        <SideItem key={item.to} {...item} />
-      ))}
-      {showAdmin ? (
-        <div className="mt-4">
-          <p className="mb-2 px-3 text-xs font-semibold uppercase text-slate-400 tracking-wider">
-            {t("nav.admin")}
-          </p>
-          {adminExtra.map((item) => (
+    <nav className="flex flex-col gap-0.5">
+      {sections.map((section, idx) => (
+        <div key={section.key} className={idx > 0 && section.label ? "mt-4" : idx > 0 ? "mt-1" : ""}>
+          {section.label && (
+            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase text-slate-400 tracking-widest">
+              {section.label}
+            </p>
+          )}
+          {section.items.map((item) => (
             <SideItem key={item.to} {...item} />
           ))}
         </div>
-      ) : null}
+      ))}
     </nav>
   );
 }

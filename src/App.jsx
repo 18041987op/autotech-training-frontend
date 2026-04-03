@@ -35,6 +35,14 @@ import { AdminToolsPage } from "./pages/AdminToolsPage";
 import { AdminLoansPage } from "./pages/AdminLoansPage";
 import { AdminToolReportsPage } from "./pages/AdminToolReportsPage";
 
+// HR pages
+import { MyProfilePage } from "./pages/MyProfilePage";
+import { SchedulePage } from "./pages/SchedulePage";
+import { TimesheetPage } from "./pages/TimesheetPage";
+import { TimeOffPage } from "./pages/TimeOffPage";
+import { BenefitsPage } from "./pages/BenefitsPage";
+import { TeamDirectoryPage } from "./pages/TeamDirectoryPage";
+
 
 function Protected({ user, children }) {
   if (!user) return <Navigate to="/login" replace />;
@@ -140,6 +148,14 @@ function AppRoutes() {
         <Route path="tools" element={<ToolsCatalogPage />} />
         <Route path="tools/:id" element={<ToolDetailPage />} />
         <Route path="my-tools" element={<MyToolsPage />} />
+
+        {/* HR — visible to all employees */}
+        <Route path="profile" element={<MyProfilePage />} />
+        <Route path="schedule" element={<SchedulePage />} />
+        <Route path="timesheet" element={<TimesheetPage />} />
+        <Route path="time-off" element={<TimeOffPage />} />
+        <Route path="benefits" element={<BenefitsPage />} />
+        <Route path="team" element={<TeamDirectoryPage />} />
 
         {/* Settings page */}
         <Route path="settings" element={<SettingsPage />} />
