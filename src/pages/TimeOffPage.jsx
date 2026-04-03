@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarOff, Plus, Clock, CheckCircle, XCircle } from "lucide-react";
+import { CalendarOff, Plus } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import { getMyTimeOff, requestTimeOff, getTimeOffBalance } from "../lib/hrApi";
 
