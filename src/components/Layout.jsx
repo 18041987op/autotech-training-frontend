@@ -34,6 +34,7 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { GlobalSearch } from "./GlobalSearch";
 import { NotificationCenter } from "./NotificationCenter";
 import { DarkModeToggle } from "./DarkModeToggle";
+import { QuickActions } from "./QuickActions";
 
 const cx = (...parts) => parts.filter(Boolean).join(" ");
 
@@ -200,10 +201,13 @@ export function Layout({ user, onSignOut }) {
         <main className={cx("flex-1 flex flex-col min-h-0", isKeyboard ? "overflow-hidden" : "overflow-y-auto")}>
           {/* TopBar hidden on keyboard — the board has its own header */}
           {!isKeyboard && (
-            <TopBar
-              onSignOut={onSignOut}
-              onOpenMobileMenu={() => setMobileOpen(true)}
-            />
+            <>
+              <TopBar
+                onSignOut={onSignOut}
+                onOpenMobileMenu={() => setMobileOpen(true)}
+              />
+              <QuickActions />
+            </>
           )}
 
           {isKeyboard ? (
@@ -312,16 +316,16 @@ function BrandInline() {
     <Link to="/" className="flex items-center gap-2">
       {imgErr ? (
         <>
-          <div className="h-8 w-8 rounded-xl bg-brand-primary flex items-center justify-center">
-            <Wrench className="h-4 w-4 text-white" />
+          <div className="h-7 w-7 rounded-xl bg-brand-primary flex items-center justify-center">
+            <Wrench className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="text-sm font-extrabold text-slate-900">{COMPANY_NAME}</span>
+          <span className="text-xs font-extrabold text-slate-900">{COMPANY_NAME}</span>
         </>
       ) : (
         <img
           src={LOGO_SRC}
           alt="AutoRx Center"
-          className="h-8 w-auto object-contain"
+          className="h-7 w-auto object-contain"
           onError={() => setImgErr(true)}
         />
       )}

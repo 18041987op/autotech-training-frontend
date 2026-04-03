@@ -241,6 +241,12 @@ img, svg, video, canvas {
     @apply btn-outline btn-sm;
   }
 
+  /* Quick-action buttons (top strip) */
+  .qa-btn {
+    @apply flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold
+           disabled:opacity-50 transition-colors shadow-sm;
+  }
+
   /* ===== Inputs ===== */
   .input {
     @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-soft;
