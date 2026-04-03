@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { Camera, X, Flashlight } from "lucide-react";
+import { Camera, X } from "lucide-react";
 
 /**
  * QR Code Scanner Component
