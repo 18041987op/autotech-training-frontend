@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus, X, Save } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, X, Save } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import { getMySchedule, getAllSchedules, getTeamDirectory, saveScheduleEntry, deleteScheduleEntry } from "../lib/hrApi";
 
@@ -24,7 +24,6 @@ export function SchedulePage() {
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const queryClient = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
-  const [selectedEmp, setSelectedEmp] = useState(null); // admin: viewing specific employee
   const [editingCell, setEditingCell] = useState(null); // { empId, date }
   const [editForm, setEditForm] = useState({ start_time: "08:00", end_time: "17:00" });
 
@@ -53,8 +52,8 @@ export function SchedulePage() {
   });
 
   const activeEmployees = teamData?.data || [];
-  const allSchedules = allSchedulesData?.data || [];
-  const mySchedules = myData?.data || [];
+  const allSchedules = useMemo(() => allSchedulesData?.data || [], [allSchedulesData]);
+  const mySchedules = useMemo(() => myData?.data || [], [myData]);
 
   // Group schedules by emp_id → date
   const scheduleMap = useMemo(() => {
