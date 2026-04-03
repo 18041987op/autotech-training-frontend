@@ -7,18 +7,21 @@ import {
   ArrowRightLeft, Package,
 } from "lucide-react";
 import { getMyTools, returnTool, transferTool, getToolsUsers } from "../lib/toolsApi";
+import { useAuthStore } from "../stores/authStore";
 
 export function MyToolsPage() {
   const queryClient = useQueryClient();
+  const user = useAuthStore((s) => s.user);
   const [returnModal, setReturnModal] = useState(null);
   const [transferModal, setTransferModal] = useState(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["myTools"],
-    queryFn: getMyTools,
+    queryKey: ["myTools", user?.email],
+    queryFn: () => getMyTools(user?.email),
+    enabled: !!user?.email,
   });
 
-  const loans = data?.loans || [];
+  const loans = data?.data || [];
 
   const handleReturnSuccess = () => {
     setReturnModal(null);
