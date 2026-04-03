@@ -65,11 +65,15 @@ export const getMyTimesheet = (email, range = "week", empId) => {
   return hrFetch(`/timesheet?${qs}`);
 };
 
-export const clockIn = (email) =>
-  hrFetch("/timesheet/clock-in", { method: "POST", body: { email } });
+export const clockIn = (email) => {
+  if (!email) throw new Error("Email is required to clock in");
+  return hrFetch("/timesheet/clock-in", { method: "POST", body: { email: String(email) } });
+};
 
-export const clockOut = (email) =>
-  hrFetch("/timesheet/clock-out", { method: "POST", body: { email } });
+export const clockOut = (email) => {
+  if (!email) throw new Error("Email is required to clock out");
+  return hrFetch("/timesheet/clock-out", { method: "POST", body: { email: String(email) } });
+};
 
 // ─── Time Off ──────────────────────────────────────────────────────────────
 

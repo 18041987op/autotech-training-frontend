@@ -7,6 +7,7 @@ import i18n from "./i18n";
 import { queryClient } from './lib/queryClient';
 
 import { apiFetch, clearToken } from "./lib/api";
+import { useAuthStore } from "./stores/authStore";
 
 import { Layout } from "./components/Layout";
 import { AuthScreen } from "./pages/AuthScreen";
@@ -65,27 +66,31 @@ export default function App() {
 function AppRoutes() {
   const [user, setUser] = useState(null);
   const [booting, setBooting] = useState(true);
+  const setStoreUser = useAuthStore((s) => s.setUser);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
 
-  // Step 4: keep session after refresh
+  // Step 4: keep session after refresh — sync to both local state and authStore
   useEffect(() => {
     (async () => {
       try {
         const data = await apiFetch("/api/auth/verify");
-        window.__APP_USER__ = data.user; // optional global for convenience
+        window.__APP_USER__ = data.user;
         setUser(data.user);
+        setStoreUser(data.user); // sync authStore so HR pages can read user.email
       } catch {
-        // invalid/expired token or no token
         setUser(null);
+        clearAuth();
       } finally {
         setBooting(false);
       }
     })();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const signOut = () => {
     window.__APP_USER__ = null;
     clearToken();
     setUser(null);
+    clearAuth();
   };
 
   if (booting) {
