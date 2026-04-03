@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   ClipboardList, Clock, AlertTriangle, CheckCircle,
-  ArrowRightLeft, Search, Filter,
+  ArrowRightLeft, Search,
 } from "lucide-react";
 import { getLoans } from "../lib/toolsApi";
 

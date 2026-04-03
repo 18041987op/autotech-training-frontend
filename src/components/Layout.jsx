@@ -39,7 +39,6 @@ const COMPANY_NAME    = "AutoRx Training";
 const COMPANY_TAGLINE = "Built for your shop";
 
 // ─── Cross-app URLs ─────────────────────────────────────────────────────────
-const TOOLS_URL      = "https://autorx-tools.netlify.app/";
 const MANAGEMENT_URL = "https://management.autorxcenter.com/";
 const FOOTER_LINKS = [
   { label: "Privacy",  href: "#" },

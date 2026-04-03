@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Wrench, Clock, User, Car,
+  ArrowLeft, Wrench, Clock,
   AlertTriangle, CheckCircle, ArrowRightLeft,
 } from "lucide-react";
 import {
