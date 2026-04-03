@@ -56,6 +56,24 @@ export const getMySchedule = (email, startDate, endDate, empId) => {
   return hrFetch(`/schedule?${qs}`);
 };
 
+/** Admin: get all employees' schedules for a date range */
+export const getAllSchedules = (startDate, endDate) => {
+  const qs = new URLSearchParams({ all: "true", start_date: startDate, end_date: endDate });
+  return hrFetch(`/schedule?${qs}`);
+};
+
+/** Admin: upsert a single schedule entry */
+export const saveScheduleEntry = (entry) =>
+  hrFetch("/schedule", { method: "POST", body: entry });
+
+/** Admin: bulk upsert schedules */
+export const saveSchedulesBulk = (schedules) =>
+  hrFetch("/schedule", { method: "PUT", body: { schedules } });
+
+/** Admin: delete a schedule entry */
+export const deleteScheduleEntry = (empId, date) =>
+  hrFetch(`/schedule?emp_id=${empId}&date=${date}`, { method: "DELETE" });
+
 // ─── Timesheet ─────────────────────────────────────────────────────────────
 
 export const getMyTimesheet = (email, range = "week", empId) => {
