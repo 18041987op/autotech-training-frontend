@@ -23,7 +23,7 @@ export function AdminLoansPage() {
     queryFn: () => getLoans(statusFilter ? { status: statusFilter } : {}),
   });
 
-  const loans = (data?.loans || []).filter((l) => {
+  const loans = (data?.data || []).filter((l) => {
     if (!search) return true;
     const s = search.toLowerCase();
     return (

@@ -34,8 +34,8 @@ export function ToolDetailPage() {
     queryFn: () => getLoans({ tool_id: id }),
   });
 
-  const tool = toolData?.tool;
-  const loans = loansData?.loans || [];
+  const tool = toolData?.data;
+  const loans = loansData?.data || [];
   const activeLoan = loans.find((l) => l.status === "active");
 
   if (isLoading) {
@@ -298,7 +298,7 @@ function TransferModal({ loan, onClose, onSuccess }) {
     queryFn: () => getToolsUsers({ active: "true" }),
   });
 
-  const users = (usersData?.users || []).filter((u) => u.id !== loan.technician_id);
+  const users = (usersData?.data || []).filter((u) => u.id !== loan.technician_id);
 
   const mutation = useMutation({
     mutationFn: (data) => transferTool(loan.id, data),

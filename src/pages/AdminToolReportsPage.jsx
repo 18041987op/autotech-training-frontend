@@ -16,8 +16,8 @@ export function AdminToolReportsPage() {
     queryFn: () => getToolsReport(reportType),
   });
 
-  const stats = statsData?.stats || {};
-  const report = reportData?.report || [];
+  const stats = statsData?.data || {};
+  const report = reportData?.data || [];
 
   return (
     <div className="space-y-6">

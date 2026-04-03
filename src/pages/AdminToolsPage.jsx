@@ -51,8 +51,8 @@ export function AdminToolsPage() {
     queryFn: getToolStats,
   });
 
-  const tools = toolsData?.tools || [];
-  const stats = statsData?.stats || {};
+  const tools = toolsData?.data || [];
+  const stats = statsData?.data || {};
 
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteTool(id),

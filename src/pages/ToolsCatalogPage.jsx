@@ -53,8 +53,8 @@ export function ToolsCatalogPage() {
       const toolId = text.includes("/") ? text.split("/").pop() : text;
       // Validate it's a real tool
       const data = await getTool(toolId);
-      if (data?.tool) {
-        toast.success(`Found: ${data.tool.name}`);
+      if (data?.data) {
+        toast.success(`Found: ${data.data.name}`);
         navigate(`/tools/${toolId}`);
       } else {
         toast.error("Tool not found for this QR code");
@@ -82,8 +82,8 @@ export function ToolsCatalogPage() {
     queryFn: getToolStats,
   });
 
-  const tools = toolsData?.tools || [];
-  const stats = statsData?.stats || {};
+  const tools = toolsData?.data || [];
+  const stats = statsData?.data || {};
 
   return (
     <div className="space-y-6">
@@ -276,7 +276,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
 
   const user = window.__APP_USER__;
   // Try to find the matching tools_user by email
-  const toolsUsers = usersData?.users || [];
+  const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(
     (u) => u.email === user?.email || u.work_email === user?.email
   );

@@ -210,7 +210,7 @@ function QuickTransferModal({ loan, onClose, onSuccess }) {
     queryKey: ["toolsUsers"],
     queryFn: () => getToolsUsers({ active: "true" }),
   });
-  const users = (data?.users || []).filter((u) => u.id !== loan.technician_id);
+  const users = (data?.data || []).filter((u) => u.id !== loan.technician_id);
 
   const mutation = useMutation({
     mutationFn: (d) => transferTool(loan.id, d),
