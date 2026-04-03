@@ -75,6 +75,16 @@ export const clockOut = (email) => {
   return hrFetch("/timesheet/clock-out", { method: "POST", body: { email: String(email) } });
 };
 
+export const takeBreak = (email) => {
+  if (!email) throw new Error("Email is required");
+  return hrFetch("/timesheet/take-break", { method: "POST", body: { email: String(email) } });
+};
+
+export const endBreak = (email) => {
+  if (!email) throw new Error("Email is required");
+  return hrFetch("/timesheet/end-break", { method: "POST", body: { email: String(email) } });
+};
+
 // ─── Time Off ──────────────────────────────────────────────────────────────
 
 export const getMyTimeOff = (email, empId) => {
