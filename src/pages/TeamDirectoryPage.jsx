@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users, Search, Mail, Phone, Briefcase } from "lucide-react";
+import { useAuthStore } from "../stores/authStore";
 import { getTeamDirectory } from "../lib/hrApi";
 
 export function TeamDirectoryPage() {
   const [search, setSearch] = useState("");
+  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const [showInactive, setShowInactive] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["teamDirectory"],
-    queryFn: getTeamDirectory,
+    queryKey: ["teamDirectory", showInactive],
+    queryFn: () => getTeamDirectory(showInactive),
   });
 
   const allMembers = data?.data || [];
@@ -30,20 +33,33 @@ export function TeamDirectoryPage() {
           Team Directory
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          {allMembers.length} team members
+          {members.length} team member{members.length !== 1 ? "s" : ""}
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search by name, role, or department..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-        />
+      {/* Search + admin toggle */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search by name, role, or department..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+          />
+        </div>
+        {isAdmin && (
+          <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={showInactive}
+              onChange={(e) => setShowInactive(e.target.checked)}
+              className="rounded border-slate-300"
+            />
+            Show inactive
+          </label>
+        )}
       </div>
 
       {isLoading ? (
@@ -60,7 +76,7 @@ export function TeamDirectoryPage() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {members.map((member) => (
-            <div key={member.emp_id} className="card p-4">
+            <div key={member.emp_id} className={`card p-4 ${!member.active ? "opacity-60" : ""}`}>
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center shrink-0">
                   <span className="text-sm font-bold text-sky-700">
@@ -91,7 +107,7 @@ export function TeamDirectoryPage() {
                     </div>
                   )}
                 </div>
-                {member.active === false && (
+                {!member.active && (
                   <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">INACTIVE</span>
                 )}
               </div>

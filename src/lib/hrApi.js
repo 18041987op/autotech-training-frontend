@@ -1,6 +1,10 @@
 /**
  * HR API service — calls Management API endpoints for HR features.
  * Same auth pattern as toolsApi.js (Bearer token to Management API).
+ *
+ * Convention:
+ *  - Employee views pass `email` (from login) → API resolves to emp_id via work_email
+ *  - Admin views can pass `emp_id` directly to view another employee's data
  */
 
 const MGMT_BASE = process.env.REACT_APP_MANAGEMENT_API_URL;
@@ -31,9 +35,13 @@ async function hrFetch(path, { method = "GET", body } = {}) {
 
 // ─── Profile ───────────────────────────────────────────────────────────────
 
-export const getMyProfile = (email) => {
-  if (!email) throw new Error("Email is required");
-  return hrFetch(`/profile?email=${encodeURIComponent(email)}`);
+/** Get profile by email (own) or emp_id (admin viewing another) */
+export const getMyProfile = (email, empId) => {
+  if (!email && !empId) throw new Error("Email or emp_id is required");
+  const qs = new URLSearchParams();
+  if (empId) qs.set("emp_id", empId);
+  else qs.set("email", email);
+  return hrFetch(`/profile?${qs}`);
 };
 
 export const updateMyProfile = (email, data) =>
@@ -41,17 +49,20 @@ export const updateMyProfile = (email, data) =>
 
 // ─── Schedule ──────────────────────────────────────────────────────────────
 
-export const getMySchedule = (email, startDate, endDate) => {
-  if (!email) throw new Error("Email is required");
-  const qs = new URLSearchParams({ email, start_date: startDate, end_date: endDate });
+export const getMySchedule = (email, startDate, endDate, empId) => {
+  const qs = new URLSearchParams({ start_date: startDate, end_date: endDate });
+  if (empId) qs.set("emp_id", empId);
+  else if (email) qs.set("email", email);
   return hrFetch(`/schedule?${qs}`);
 };
 
 // ─── Timesheet ─────────────────────────────────────────────────────────────
 
-export const getMyTimesheet = (email, range = "week") => {
-  if (!email) throw new Error("Email is required");
-  return hrFetch(`/timesheet?email=${encodeURIComponent(email)}&range=${range}`);
+export const getMyTimesheet = (email, range = "week", empId) => {
+  const qs = new URLSearchParams({ range });
+  if (empId) qs.set("emp_id", empId);
+  else if (email) qs.set("email", email);
+  return hrFetch(`/timesheet?${qs}`);
 };
 
 export const clockIn = (email) =>
@@ -62,20 +73,27 @@ export const clockOut = (email) =>
 
 // ─── Time Off ──────────────────────────────────────────────────────────────
 
-export const getMyTimeOff = (email) => {
-  if (!email) throw new Error("Email is required");
-  return hrFetch(`/time-off?email=${encodeURIComponent(email)}`);
+export const getMyTimeOff = (email, empId) => {
+  const qs = new URLSearchParams();
+  if (empId) qs.set("emp_id", empId);
+  else if (email) qs.set("email", email);
+  return hrFetch(`/time-off?${qs}`);
 };
 
-export const getTimeOffBalance = (email) => {
-  if (!email) throw new Error("Email is required");
-  return hrFetch(`/time-off/balance?email=${encodeURIComponent(email)}`);
+/** Admin: get all time-off requests from all employees */
+export const getAllTimeOff = () => hrFetch("/time-off?all=true");
+
+export const getTimeOffBalance = (email, empId) => {
+  const qs = new URLSearchParams();
+  if (empId) qs.set("emp_id", empId);
+  else if (email) qs.set("email", email);
+  return hrFetch(`/time-off/balance?${qs}`);
 };
 
 export const requestTimeOff = (email, data) =>
   hrFetch("/time-off", { method: "POST", body: { email, ...data } });
 
-// Admin: approve/deny
+/** Admin: approve/deny a request */
 export const updateTimeOffRequest = (id, data) =>
   hrFetch(`/time-off/${id}`, { method: "PUT", body: data });
 
@@ -85,4 +103,8 @@ export const getBenefits = () => hrFetch("/benefits");
 
 // ─── Team Directory ────────────────────────────────────────────────────────
 
-export const getTeamDirectory = () => hrFetch("/team");
+/** Get team directory (active only by default). Admin can pass showInactive=true */
+export const getTeamDirectory = (showInactive = false) => {
+  const qs = showInactive ? "?show_inactive=true" : "";
+  return hrFetch(`/team${qs}`);
+};
