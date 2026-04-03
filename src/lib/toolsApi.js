@@ -3,22 +3,19 @@
  * Management API base: REACT_APP_MANAGEMENT_API_URL (e.g. https://management.autorxcenter.com)
  */
 
-import { getToken } from "./api";
-
 const MGMT_BASE = process.env.REACT_APP_MANAGEMENT_API_URL;
+const MGMT_KEY = process.env.REACT_APP_MANAGEMENT_API_KEY;
 
 async function toolsFetch(path, { method = "GET", body } = {}) {
   if (!MGMT_BASE) {
     throw new Error("Missing REACT_APP_MANAGEMENT_API_URL environment variable");
   }
 
-  const token = getToken();
-
   const res = await fetch(`${MGMT_BASE}/api/tools${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(MGMT_KEY ? { Authorization: `Bearer ${MGMT_KEY}` } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
