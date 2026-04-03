@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Wrench, Search, Plus, Package,
   X, Eye,
 } from "lucide-react";
-import { getTools, getToolStats, borrowTool, getToolsUsers } from "../lib/toolsApi";
+import { getTools, getToolStats, borrowTool, getToolsUsers, getTool } from "../lib/toolsApi";
+import { QRScannerButton } from "../components/QRScanner";
 
 const CATEGORIES = [
   { value: "", label: "All Categories" },
@@ -41,8 +42,27 @@ const STATUS_LABELS = {
 
 export function ToolsCatalogPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+
+  // QR scan handler — QR code contains the tool UUID
+  const handleQRScan = async (text) => {
+    try {
+      // The QR code might be a UUID directly, or a URL containing the UUID
+      const toolId = text.includes("/") ? text.split("/").pop() : text;
+      // Validate it's a real tool
+      const data = await getTool(toolId);
+      if (data?.tool) {
+        toast.success(`Found: ${data.tool.name}`);
+        navigate(`/tools/${toolId}`);
+      } else {
+        toast.error("Tool not found for this QR code");
+      }
+    } catch {
+      toast.error("Could not find a tool with this QR code");
+    }
+  };
   const [statusFilter, setStatusFilter] = useState("");
   const [borrowModal, setBorrowModal] = useState(null); // tool to borrow
 
@@ -78,6 +98,7 @@ export function ToolsCatalogPage() {
             Browse and borrow shop tools
           </p>
         </div>
+        <QRScannerButton onScan={handleQRScan} />
       </div>
 
       {/* Stats cards */}
