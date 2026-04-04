@@ -342,11 +342,11 @@ function BorrowModal({ tool, onClose, onSuccess }) {
       return;
     }
     mutation.mutate({
-      tool_id: tool.id,
-      technician_id: currentToolsUser.id,
+      toolId: tool.id,
+      technicianId: currentToolsUser.id,
       purpose,
       vehicle,
-      expected_return: new Date(Date.now() + Number(hours) * 3600000).toISOString(),
+      loanDuration: Number(hours),
       repair_order_tekmetric_id: selectedRO?.repairOrderId || null,
       job_tekmetric_id: selectedRO?.jobs?.[0]?.id || null,
     });
