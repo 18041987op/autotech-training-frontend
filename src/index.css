@@ -178,10 +178,35 @@
 body {
   margin: 0;
   font-family: 'Source Sans 3', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16.5px;
+  font-size: 17px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Mobile font size boost ── */
+@media (max-width: 768px) {
+  body { font-size: 18px; }
+
+  /* Bump up small text classes for mobile readability */
+  .text-xs  { font-size: 0.8125rem !important; }   /* 13px instead of 12px */
+  .text-sm  { font-size: 0.9375rem !important; }   /* 15px instead of 14px */
+  .text-base { font-size: 1.0625rem !important; }  /* 17px instead of 16px */
+
+  /* Input labels & form text */
+  label { font-size: 0.875rem; }  /* 14px */
+  input, select, textarea { font-size: 1rem !important; } /* 16px — prevents iOS zoom */
+
+  /* Cards content */
+  .card p, .card span { font-size: 0.9375rem; }
+
+  /* Buttons */
+  .btn, .btn-sm, .btn-outline-sm, .qa-btn {
+    font-size: 0.875rem !important; /* 14px */
+  }
+
+  /* Nav items */
+  .nav-item { font-size: 0.9375rem !important; }
 }
 
 * {

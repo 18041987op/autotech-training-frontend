@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Wrench, Clock, AlertTriangle, CheckCircle,
-  ArrowRightLeft, Package,
+  ArrowRightLeft, Package, ThumbsUp, ThumbsDown,
 } from "lucide-react";
 import { getMyTools, returnTool, transferTool, getToolsUsers } from "../lib/toolsApi";
 import { useAuthStore } from "../stores/authStore";
@@ -146,6 +146,7 @@ export function MyToolsPage() {
 function QuickReturnModal({ loan, onClose, onSuccess }) {
   const [condition, setCondition] = useState("good");
   const [damageDesc, setDamageDesc] = useState("");
+  const [wasNeeded, setWasNeeded] = useState(null);
 
   const mutation = useMutation({
     mutationFn: (data) => returnTool(loan.id, data),
@@ -156,9 +157,12 @@ function QuickReturnModal({ loan, onClose, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     mutation.mutate({
-      condition_status: condition,
-      has_damage: condition === "damaged",
-      damage_description: condition === "damaged" ? damageDesc : undefined,
+      returnCondition: {
+        status: condition,
+        hasDamage: condition === "damaged",
+        description: condition === "damaged" ? damageDesc : undefined,
+      },
+      ...(wasNeeded !== null && { was_needed: wasNeeded }),
     });
   };
 
@@ -190,6 +194,39 @@ function QuickReturnModal({ loan, onClose, onSuccess }) {
               className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"
             />
           )}
+
+          {/* Was this tool needed? feedback */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Was this tool needed for the job?
+            </label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setWasNeeded(true)}
+                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition ${
+                  wasNeeded === true
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300"
+                }`}
+              >
+                <ThumbsUp className="h-4 w-4" /> Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => setWasNeeded(false)}
+                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition ${
+                  wasNeeded === false
+                    ? "border-red-500 bg-red-50 text-red-700"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300"
+                }`}
+              >
+                <ThumbsDown className="h-4 w-4" /> No
+              </button>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">This helps improve future tool recommendations</p>
+          </div>
+
           <div className="flex gap-3">
             <button type="button" onClick={onClose} className="flex-1 btn-outline-sm py-2.5">Cancel</button>
             <button type="submit" disabled={mutation.isPending} className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50">

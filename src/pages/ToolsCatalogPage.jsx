@@ -4,9 +4,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Wrench, Search, Plus, Package,
-  X, Eye,
+  X, Eye, Car, Sparkles, ShoppingCart, ChevronRight, AlertCircle,
 } from "lucide-react";
-import { getTools, getToolStats, borrowTool, getToolsUsers, getTool } from "../lib/toolsApi";
+import { getTools, getToolStats, borrowTool, getToolsUsers, getTool, getMyAssignedROs, getToolRecommendations, createPurchaseRequest } from "../lib/toolsApi";
 import { QRScannerButton } from "../components/QRScanner";
 
 const CATEGORIES = [
@@ -265,21 +265,34 @@ function ToolCard({ tool, onBorrow }) {
 }
 
 function BorrowModal({ tool, onClose, onSuccess }) {
+  const [step, setStep] = useState("select-ro"); // select-ro | recommendations | manual | confirm
+  const [selectedRO, setSelectedRO] = useState(null);
   const [purpose, setPurpose] = useState("");
   const [vehicle, setVehicle] = useState("");
   const [hours, setHours] = useState("8");
+  const [recommendations, setRecommendations] = useState(null);
+  const [loadingRecs, setLoadingRecs] = useState(false);
+  const [purchaseRequested, setPurchaseRequested] = useState({});
+
+  const user = window.__APP_USER__;
 
   const { data: usersData } = useQuery({
     queryKey: ["toolsUsers"],
     queryFn: () => getToolsUsers({ active: "true" }),
   });
 
-  const user = window.__APP_USER__;
-  // Try to find the matching tools_user by email
+  const { data: rosData, isLoading: loadingROs } = useQuery({
+    queryKey: ["myAssignedROs", user?.email],
+    queryFn: () => getMyAssignedROs(user?.email),
+    enabled: !!user?.email,
+    retry: false,
+  });
+
   const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(
     (u) => u.email === user?.email || u.work_email === user?.email
   );
+  const assignedROs = rosData?.data || [];
 
   const mutation = useMutation({
     mutationFn: (data) => borrowTool(data),
@@ -289,6 +302,38 @@ function BorrowModal({ tool, onClose, onSuccess }) {
     },
     onError: (err) => toast.error(err.message),
   });
+
+  // When user selects an RO, auto-fill purpose/vehicle and fetch recommendations
+  const handleSelectRO = async (ro) => {
+    setSelectedRO(ro);
+    setPurpose(ro.jobsDisplay);
+    setVehicle(ro.vehicleDisplay);
+    setStep("confirm");
+
+    // Fetch tool recommendations in background
+    if (ro.jobs && ro.jobs.length > 0) {
+      setLoadingRecs(true);
+      try {
+        const res = await getToolRecommendations({
+          job_name: ro.jobs[0].name,
+          vehicle_make: ro.vehicle?.make || "",
+          vehicle_model: ro.vehicle?.model || "",
+          vehicle_year: ro.vehicle?.year?.toString() || "",
+          canned_job_id: ro.jobs[0].cannedJobId?.toString() || "",
+        });
+        setRecommendations(res?.data || null);
+      } catch (err) {
+        console.error("Error fetching recommendations:", err);
+      } finally {
+        setLoadingRecs(false);
+      }
+    }
+  };
+
+  const handleManualEntry = () => {
+    setSelectedRO(null);
+    setStep("manual");
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -302,65 +347,254 @@ function BorrowModal({ tool, onClose, onSuccess }) {
       purpose,
       vehicle,
       expected_return: new Date(Date.now() + Number(hours) * 3600000).toISOString(),
+      repair_order_tekmetric_id: selectedRO?.repairOrderId || null,
+      job_tekmetric_id: selectedRO?.jobs?.[0]?.id || null,
     });
+  };
+
+  const handleRequestPurchase = async (rec) => {
+    try {
+      await createPurchaseRequest({
+        tool_name: rec.toolName,
+        tool_part_number: rec.toolPartNumber || rec.partNumber,
+        tool_description: rec.description,
+        job_name: selectedRO?.jobs?.[0]?.name,
+        repair_order_tekmetric_id: selectedRO?.repairOrderId,
+        vehicle_info: selectedRO?.vehicleDisplay,
+        vehicle_make: selectedRO?.vehicle?.make,
+        vehicle_model: selectedRO?.vehicle?.model,
+        vehicle_year: selectedRO?.vehicle?.year,
+        requested_by: currentToolsUser?.id,
+        requested_by_name: user?.name || user?.email,
+      });
+      setPurchaseRequested((prev) => ({ ...prev, [rec.toolName]: true }));
+      toast.success(`Purchase request sent for ${rec.toolName}`);
+    } catch (err) {
+      toast.error("Failed to submit request");
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-slate-900 mb-4">
-          Borrow: {tool.name}
-        </h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Purpose *</label>
-            <input
-              type="text"
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-              required
-              placeholder="e.g., Brake diagnostics"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Vehicle</label>
-            <input
-              type="text"
-              value={vehicle}
-              onChange={(e) => setVehicle(e.target.value)}
-              placeholder="e.g., 2020 Honda Civic"
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Return in (hours)</label>
-            <select
-              value={hours}
-              onChange={(e) => setHours(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm"
-            >
-              <option value="1">1 hour</option>
-              <option value="2">2 hours</option>
-              <option value="4">4 hours</option>
-              <option value="8">8 hours (1 shift)</option>
-              <option value="24">24 hours</option>
-              <option value="48">48 hours</option>
-            </select>
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={mutation.isPending || !purpose}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50"
-            >
-              {mutation.isPending ? "Borrowing..." : "Confirm Borrow"}
-            </button>
-          </div>
-        </form>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="p-5">
+          <h3 className="text-lg font-bold text-slate-900 mb-1">
+            Borrow: {tool.name}
+          </h3>
+
+          {/* ── Step 1: Select RO or Manual ────────────────────────────── */}
+          {step === "select-ro" && (
+            <div className="mt-4 space-y-3">
+              <p className="text-sm text-slate-500">Select the vehicle you're working on:</p>
+
+              {loadingROs ? (
+                <div className="space-y-2">
+                  {[1, 2].map((i) => <div key={i} className="h-16 rounded-xl bg-slate-100 animate-pulse" />)}
+                </div>
+              ) : assignedROs.length > 0 ? (
+                <div className="space-y-2">
+                  {assignedROs.map((ro) => (
+                    <button
+                      key={ro.repairOrderId}
+                      onClick={() => handleSelectRO(ro)}
+                      className="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-sky-100 flex items-center justify-center shrink-0">
+                          <Car className="h-4 w-4 text-sky-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 truncate">
+                            {ro.vehicleDisplay}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">
+                            RO #{ro.repairOrderNumber} — {ro.jobsDisplay}
+                          </p>
+                          {ro.customer && (
+                            <p className="text-xs text-slate-400 truncate">{ro.customer.name}</p>
+                          )}
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-sm text-slate-400">
+                  No assigned vehicles found
+                </div>
+              )}
+
+              {/* "Otro" option — always shown */}
+              <button
+                onClick={handleManualEntry}
+                className="w-full text-left p-3 rounded-xl border border-dashed border-slate-300 hover:border-sky-400 hover:bg-sky-50/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                    <Plus className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">Other / Manual Entry</p>
+                    <p className="text-xs text-slate-400">Vehicle not listed or not yet assigned</p>
+                  </div>
+                </div>
+              </button>
+
+              <button type="button" onClick={onClose} className="w-full mt-2 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* ── Step 2: Manual entry form ──────────────────────────────── */}
+          {step === "manual" && (
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-1">Purpose *</label>
+                <input
+                  type="text" value={purpose} onChange={(e) => setPurpose(e.target.value)} required
+                  placeholder="e.g., Brake diagnostics"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-1">Vehicle</label>
+                <input
+                  type="text" value={vehicle} onChange={(e) => setVehicle(e.target.value)}
+                  placeholder="e.g., 2020 Honda Civic"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-1">Return in</label>
+                <select value={hours} onChange={(e) => setHours(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm">
+                  <option value="1">1 hour</option>
+                  <option value="2">2 hours</option>
+                  <option value="4">4 hours</option>
+                  <option value="8">8 hours (1 shift)</option>
+                  <option value="24">24 hours</option>
+                  <option value="48">48 hours</option>
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setStep("select-ro")}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  Back
+                </button>
+                <button type="submit" disabled={mutation.isPending || !purpose}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50">
+                  {mutation.isPending ? "Borrowing..." : "Confirm Borrow"}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* ── Step 3: Confirm (auto-filled from RO) + Recommendations ── */}
+          {step === "confirm" && (
+            <div className="mt-4 space-y-4">
+              {/* Selected RO summary */}
+              <div className="p-3 rounded-xl bg-sky-50 border border-sky-200">
+                <p className="text-sm font-semibold text-sky-900">{selectedRO?.vehicleDisplay}</p>
+                <p className="text-xs text-sky-700">RO #{selectedRO?.repairOrderNumber} — {selectedRO?.jobsDisplay}</p>
+              </div>
+
+              {/* Duration selector */}
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-1">Return in</label>
+                <select value={hours} onChange={(e) => setHours(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm">
+                  <option value="1">1 hour</option>
+                  <option value="2">2 hours</option>
+                  <option value="4">4 hours</option>
+                  <option value="8">8 hours (1 shift)</option>
+                  <option value="24">24 hours</option>
+                  <option value="48">48 hours</option>
+                </select>
+              </div>
+
+              {/* Tool recommendations section */}
+              {loadingRecs && (
+                <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                  Looking up recommended tools...
+                </div>
+              )}
+
+              {recommendations && (
+                <div className="space-y-3">
+                  {/* In inventory */}
+                  {recommendations.inInventory?.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                        Recommended tools (in stock)
+                      </p>
+                      <div className="space-y-1.5">
+                        {recommendations.inInventory.map((rec, i) => (
+                          <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-emerald-50 border border-emerald-100">
+                            <Wrench className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-emerald-900 truncate">{rec.toolName || rec.tool?.name}</p>
+                              <p className="text-[10px] text-emerald-600 truncate">{rec.description}</p>
+                            </div>
+                            {rec.available !== false ? (
+                              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">Available</span>
+                            ) : (
+                              <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">In Use</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Not in inventory */}
+                  {recommendations.notInInventory?.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                        Recommended but not in stock
+                      </p>
+                      <div className="space-y-1.5">
+                        {recommendations.notInInventory.map((rec, i) => (
+                          <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 border border-amber-100">
+                            <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-amber-900 truncate">{rec.toolName}</p>
+                              <p className="text-[10px] text-amber-600 truncate">{rec.description}</p>
+                            </div>
+                            {purchaseRequested[rec.toolName] ? (
+                              <span className="text-[10px] font-semibold text-emerald-600">Requested</span>
+                            ) : (
+                              <button
+                                onClick={() => handleRequestPurchase(rec)}
+                                className="shrink-0 text-[10px] font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors"
+                              >
+                                <ShoppingCart className="h-2.5 w-2.5" /> Request
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => { setStep("select-ro"); setSelectedRO(null); setRecommendations(null); }}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                  Back
+                </button>
+                <button onClick={handleSubmit} disabled={mutation.isPending}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50">
+                  {mutation.isPending ? "Borrowing..." : "Confirm Borrow"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

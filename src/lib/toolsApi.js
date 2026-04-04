@@ -102,6 +102,38 @@ export const getNotifications = () => toolsFetch("/notifications");
 export const markNotificationsRead = (ids) =>
   toolsFetch("/notifications", { method: "PUT", body: { ids } });
 
+// ─── Smart Tool Lending (2026-04-03) ────────────────────────────────────────
+
+/** Get tech's assigned repair orders with vehicle/job info */
+export const getMyAssignedROs = (email) => {
+  if (!email) throw new Error("Email is required");
+  return toolsFetch(`/my-assigned-ros?email=${encodeURIComponent(email)}`);
+};
+
+/** Get tool recommendations for a job (checks DB first, then AI) */
+export const getToolRecommendations = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return toolsFetch(`/recommendations?${qs}`);
+};
+
+/** Submit feedback on a recommendation (was_needed) */
+export const submitRecommendationFeedback = (data) =>
+  toolsFetch("/recommendations", { method: "POST", body: data });
+
+/** Create a purchase request for a tool we don't have */
+export const createPurchaseRequest = (data) =>
+  toolsFetch("/purchase-requests", { method: "POST", body: data });
+
+/** List purchase requests (admin) */
+export const getPurchaseRequests = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return toolsFetch(`/purchase-requests${qs ? `?${qs}` : ""}`);
+};
+
+/** Update purchase request status (admin) */
+export const updatePurchaseRequest = (id, data) =>
+  toolsFetch(`/purchase-requests/${id}`, { method: "PATCH", body: data });
+
 // ─── Reports ────────────────────────────────────────────────────────────────
 
 export const getToolsReport = (type) => toolsFetch(`/reports?type=${type}`);

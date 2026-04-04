@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Wrench, Clock,
   AlertTriangle, CheckCircle, ArrowRightLeft,
+  ThumbsUp, ThumbsDown,
 } from "lucide-react";
 import {
   getTool, getLoans, returnTool, transferTool, getToolsUsers,
@@ -219,6 +220,7 @@ function InfoRow({ label, value }) {
 function ReturnModal({ loan, onClose, onSuccess }) {
   const [condition, setCondition] = useState("good");
   const [damageDesc, setDamageDesc] = useState("");
+  const [wasNeeded, setWasNeeded] = useState(null);
 
   const mutation = useMutation({
     mutationFn: (data) => returnTool(loan.id, data),
@@ -232,9 +234,12 @@ function ReturnModal({ loan, onClose, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     mutation.mutate({
-      condition_status: condition,
-      has_damage: condition === "damaged",
-      damage_description: condition === "damaged" ? damageDesc : undefined,
+      returnCondition: {
+        status: condition,
+        hasDamage: condition === "damaged",
+        description: condition === "damaged" ? damageDesc : undefined,
+      },
+      ...(wasNeeded !== null && { was_needed: wasNeeded }),
     });
   };
 
@@ -244,7 +249,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
         <h3 className="text-lg font-bold text-slate-900 mb-4">Return Tool</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-2">Condition</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Condition</label>
             <div className="flex gap-3">
               <label className={`flex-1 p-3 rounded-xl border-2 cursor-pointer text-center text-sm font-medium transition ${
                 condition === "good" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
@@ -264,7 +269,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
           </div>
           {condition === "damaged" && (
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Damage Description *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Damage Description *</label>
               <textarea
                 value={damageDesc}
                 onChange={(e) => setDamageDesc(e.target.value)}
@@ -275,6 +280,39 @@ function ReturnModal({ loan, onClose, onSuccess }) {
               />
             </div>
           )}
+
+          {/* Was this tool needed? feedback */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Was this tool needed for the job?
+            </label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setWasNeeded(true)}
+                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition ${
+                  wasNeeded === true
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300"
+                }`}
+              >
+                <ThumbsUp className="h-4 w-4" /> Yes
+              </button>
+              <button
+                type="button"
+                onClick={() => setWasNeeded(false)}
+                className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition ${
+                  wasNeeded === false
+                    ? "border-red-500 bg-red-50 text-red-700"
+                    : "border-slate-200 text-slate-500 hover:border-slate-300"
+                }`}
+              >
+                <ThumbsDown className="h-4 w-4" /> No
+              </button>
+            </div>
+            <p className="text-xs text-slate-400 mt-1">This helps improve future tool recommendations</p>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
               Cancel
