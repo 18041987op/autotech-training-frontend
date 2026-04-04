@@ -346,7 +346,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
       technicianId: currentToolsUser.id,
       purpose,
       vehicle,
-      loanDuration: Number(hours),
+      loanDuration: `${hours}h`,
       repair_order_tekmetric_id: selectedRO?.repairOrderId || null,
       job_tekmetric_id: selectedRO?.jobs?.[0]?.id || null,
     });
