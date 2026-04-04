@@ -293,7 +293,6 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
   const activeLoans = tool.active_loans || [];
   const quantity = tool.quantity || 1;
   const availableCount = tool.available_count ?? (quantity - activeLoans.length);
-  const borrowedCount = tool.borrowed_count || activeLoans.length;
   const canBorrow = availableCount > 0 && tool.status !== "maintenance" && tool.status !== "damaged";
 
   return (
