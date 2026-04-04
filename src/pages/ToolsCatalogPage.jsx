@@ -295,6 +295,13 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
   const availableCount = tool.available_count ?? (quantity - activeLoans.length);
   const canBorrow = availableCount > 0 && tool.status !== "maintenance" && tool.status !== "damaged";
 
+  // Derive real status from active loans (more reliable than DB status field)
+  const realStatus = tool.status === "maintenance" || tool.status === "damaged"
+    ? tool.status
+    : activeLoans.length > 0
+      ? (availableCount > 0 ? "available" : "borrowed")
+      : "available";
+
   return (
     <div className="card p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
@@ -324,8 +331,8 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
                 {availableCount}/{quantity} avail
               </span>
             ) : (
-              <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[tool.status]}`}>
-                {STATUS_LABELS[tool.status]}
+              <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[realStatus]}`}>
+                {activeLoans.length > 0 ? "Borrowed" : STATUS_LABELS[realStatus]}
               </span>
             )}
           </div>
