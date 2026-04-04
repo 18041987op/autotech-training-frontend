@@ -134,6 +134,22 @@ export const getPurchaseRequests = (params = {}) => {
 export const updatePurchaseRequest = (id, data) =>
   toolsFetch(`/purchase-requests/${id}`, { method: "PATCH", body: data });
 
+// ─── Transfer Requests ─────────────────────────────────────────────────────
+
+/** Get transfer requests involving a technician */
+export const getTransferRequests = (params = {}) => {
+  const qs = new URLSearchParams(params).toString();
+  return toolsFetch(`/transfer-requests?${qs}`);
+};
+
+/** Create a transfer request (Tech B wants tool from Tech A) */
+export const createTransferRequest = (data) =>
+  toolsFetch("/transfer-requests", { method: "POST", body: data });
+
+/** Accept or decline a transfer request */
+export const respondTransferRequest = (id, action) =>
+  toolsFetch(`/transfer-requests/${id}`, { method: "PATCH", body: { action } });
+
 // ─── Reports ────────────────────────────────────────────────────────────────
 
 export const getToolsReport = (type) => toolsFetch(`/reports?type=${type}`);

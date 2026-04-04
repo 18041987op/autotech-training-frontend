@@ -5,8 +5,9 @@ import { toast } from "sonner";
 import {
   Wrench, Clock, AlertTriangle, CheckCircle,
   ArrowRightLeft, Package, ThumbsUp, ThumbsDown,
+  Bell, Check, XCircle,
 } from "lucide-react";
-import { getMyTools, returnTool, transferTool, getToolsUsers } from "../lib/toolsApi";
+import { getMyTools, returnTool, transferTool, getToolsUsers, getTransferRequests, respondTransferRequest } from "../lib/toolsApi";
 import { useAuthStore } from "../stores/authStore";
 
 export function MyToolsPage() {
@@ -15,6 +16,17 @@ export function MyToolsPage() {
   const [returnModal, setReturnModal] = useState(null);
   const [transferModal, setTransferModal] = useState(null);
 
+  // Resolve tools_users id
+  const { data: usersData } = useQuery({
+    queryKey: ["toolsUsers"],
+    queryFn: () => getToolsUsers({ active: "true" }),
+    enabled: !!user?.email,
+  });
+  const toolsUsers = usersData?.data || [];
+  const currentToolsUser = toolsUsers.find(
+    (u) => u.email === user?.email || u.work_email === user?.email
+  );
+
   const { data, isLoading } = useQuery({
     queryKey: ["myTools", user?.email],
     queryFn: () => getMyTools(user?.email),
@@ -22,6 +34,27 @@ export function MyToolsPage() {
   });
 
   const loans = data?.data || [];
+
+  // Incoming transfer requests
+  const { data: incomingData } = useQuery({
+    queryKey: ["transferRequests", currentToolsUser?.id],
+    queryFn: () => getTransferRequests({ technician_id: currentToolsUser.id, role: "to", status: "pending" }),
+    enabled: !!currentToolsUser?.id,
+    refetchInterval: 30000,
+  });
+  const incomingRequests = incomingData?.data || [];
+
+  const handleRespondTransfer = async (requestId, action) => {
+    try {
+      await respondTransferRequest(requestId, action);
+      toast.success(action === "accept" ? "Tool transferred!" : "Request declined");
+      queryClient.invalidateQueries({ queryKey: ["transferRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["myTools"] });
+      queryClient.invalidateQueries({ queryKey: ["tools"] });
+    } catch (err) {
+      toast.error(err.message || "Failed to respond");
+    }
+  };
 
   const handleReturnSuccess = () => {
     setReturnModal(null);
@@ -46,6 +79,41 @@ export function MyToolsPage() {
           Tools currently borrowed to you
         </p>
       </div>
+
+      {/* Incoming transfer requests */}
+      {incomingRequests.length > 0 && (
+        <div className="space-y-2">
+          {incomingRequests.map((req) => (
+            <div key={req.id} className="rounded-xl border border-amber-300 bg-amber-50 p-3 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                <Bell className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-800">
+                  {req.requested_by_name} wants "{req.tool_name}"
+                </p>
+                {req.reason && (
+                  <p className="text-xs text-amber-600">{req.reason}</p>
+                )}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => handleRespondTransfer(req.id, "accept")}
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1"
+                  >
+                    <Check className="h-3 w-3" /> Accept
+                  </button>
+                  <button
+                    onClick={() => handleRespondTransfer(req.id, "decline")}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-100 flex items-center gap-1"
+                  >
+                    <XCircle className="h-3 w-3" /> Decline
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-3">

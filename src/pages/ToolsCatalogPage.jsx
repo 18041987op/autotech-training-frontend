@@ -5,8 +5,10 @@ import { toast } from "sonner";
 import {
   Wrench, Search, Plus, Package,
   X, Eye, Car, Sparkles, ShoppingCart, ChevronRight, AlertCircle,
+  ArrowRightLeft, Check, XCircle, Bell,
 } from "lucide-react";
-import { getTools, getToolStats, borrowTool, getToolsUsers, getTool, getMyAssignedROs, getToolRecommendations, createPurchaseRequest } from "../lib/toolsApi";
+import { getTools, getToolStats, borrowTool, getToolsUsers, getTool, getMyAssignedROs, getToolRecommendations, createPurchaseRequest, createTransferRequest, getTransferRequests, respondTransferRequest } from "../lib/toolsApi";
+import { useAuthStore } from "../stores/authStore";
 import { QRScannerButton } from "../components/QRScanner";
 
 const CATEGORIES = [
@@ -65,6 +67,40 @@ export function ToolsCatalogPage() {
   };
   const [statusFilter, setStatusFilter] = useState("");
   const [borrowModal, setBorrowModal] = useState(null); // tool to borrow
+  const [transferRequestModal, setTransferRequestModal] = useState(null); // tool to request transfer for
+  const user = useAuthStore((s) => s.user);
+
+  // Fetch tools users to find current user's tools_users id
+  const { data: usersData } = useQuery({
+    queryKey: ["toolsUsers"],
+    queryFn: () => getToolsUsers({ active: "true" }),
+    enabled: !!user?.email,
+  });
+  const toolsUsers = usersData?.data || [];
+  const currentToolsUser = toolsUsers.find(
+    (u) => u.email === user?.email || u.work_email === user?.email
+  );
+
+  // Fetch incoming transfer requests (pending requests where I'm the current holder)
+  const { data: incomingRequestsData } = useQuery({
+    queryKey: ["transferRequests", currentToolsUser?.id],
+    queryFn: () => getTransferRequests({ technician_id: currentToolsUser.id, role: "to", status: "pending" }),
+    enabled: !!currentToolsUser?.id,
+    refetchInterval: 30000, // poll every 30s
+  });
+  const incomingRequests = incomingRequestsData?.data || [];
+
+  const handleRespondTransfer = async (requestId, action) => {
+    try {
+      await respondTransferRequest(requestId, action);
+      toast.success(action === "accept" ? "Tool transferred!" : "Request declined");
+      queryClient.invalidateQueries({ queryKey: ["transferRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["tools"] });
+      queryClient.invalidateQueries({ queryKey: ["myTools"] });
+    } catch (err) {
+      toast.error(err.message || "Failed to respond");
+    }
+  };
 
   const { data: toolsData, isLoading } = useQuery({
     queryKey: ["tools", { search, category, status: statusFilter }],
@@ -100,6 +136,41 @@ export function ToolsCatalogPage() {
         </div>
         <QRScannerButton onScan={handleQRScan} />
       </div>
+
+      {/* Incoming transfer requests banner */}
+      {incomingRequests.length > 0 && (
+        <div className="space-y-2">
+          {incomingRequests.map((req) => (
+            <div key={req.id} className="rounded-xl border border-amber-300 bg-amber-50 p-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <Bell className="h-4 w-4 text-amber-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-800">
+                  {req.requested_by_name} wants "{req.tool_name}"
+                </p>
+                {req.reason && (
+                  <p className="text-xs text-amber-600 truncate">{req.reason}</p>
+                )}
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => handleRespondTransfer(req.id, "accept")}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1"
+                >
+                  <Check className="h-3 w-3" /> Accept
+                </button>
+                <button
+                  onClick={() => handleRespondTransfer(req.id, "decline")}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-100 flex items-center gap-1"
+                >
+                  <XCircle className="h-3 w-3" /> Decline
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -167,6 +238,7 @@ export function ToolsCatalogPage() {
               key={tool.id}
               tool={tool}
               onBorrow={() => setBorrowModal(tool)}
+              onRequestTransfer={(t) => setTransferRequestModal(t)}
             />
           ))}
         </div>
@@ -181,6 +253,20 @@ export function ToolsCatalogPage() {
             setBorrowModal(null);
             queryClient.invalidateQueries({ queryKey: ["tools"] });
             queryClient.invalidateQueries({ queryKey: ["toolStats"] });
+          }}
+        />
+      )}
+
+      {/* Transfer request modal */}
+      {transferRequestModal && (
+        <TransferRequestModal
+          tool={transferRequestModal}
+          currentToolsUser={currentToolsUser}
+          userName={user?.name || user?.email}
+          onClose={() => setTransferRequestModal(null)}
+          onSuccess={() => {
+            setTransferRequestModal(null);
+            toast.success("Transfer request sent!");
           }}
         />
       )}
@@ -203,7 +289,8 @@ function StatCard({ label, value, color }) {
   );
 }
 
-function ToolCard({ tool, onBorrow }) {
+function ToolCard({ tool, onBorrow, onRequestTransfer }) {
+  const activeLoan = tool.active_loan;
   return (
     <div className="card p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
@@ -237,6 +324,17 @@ function ToolCard({ tool, onBorrow }) {
             <p className="text-xs text-slate-400 mt-0.5">SN: {tool.serial_number}</p>
           )}
           <p className="text-xs text-slate-400">📍 {tool.location}</p>
+          {/* Show who has the tool if borrowed */}
+          {tool.status === "borrowed" && activeLoan && (
+            <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
+              <p className="text-xs font-semibold text-amber-700">
+                In use by {activeLoan.technician_name}
+              </p>
+              {activeLoan.purpose && (
+                <p className="text-[11px] text-amber-600 truncate">{activeLoan.purpose}</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
@@ -256,6 +354,14 @@ function ToolCard({ tool, onBorrow }) {
               className="text-xs font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1"
             >
               <Plus className="h-3 w-3" /> Borrow
+            </button>
+          )}
+          {tool.status === "borrowed" && activeLoan && (
+            <button
+              onClick={() => onRequestTransfer(tool)}
+              className="text-xs font-semibold text-amber-600 hover:text-amber-800 flex items-center gap-1"
+            >
+              <ArrowRightLeft className="h-3 w-3" /> Request
             </button>
           )}
         </div>
@@ -595,6 +701,94 @@ function BorrowModal({ tool, onClose, onSuccess }) {
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Transfer Request Modal ───────────────────────────────────────────────── */
+
+function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuccess }) {
+  const [reason, setReason] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const activeLoan = tool.active_loan;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentToolsUser) {
+      toast.error("Your account is not linked. Contact admin.");
+      return;
+    }
+    if (!activeLoan?.loan_id) {
+      toast.error("Could not find active loan for this tool.");
+      return;
+    }
+
+    setSending(true);
+    try {
+      await createTransferRequest({
+        loan_id: activeLoan.loan_id,
+        requested_by: currentToolsUser.id,
+        requested_by_name: userName,
+        reason,
+      });
+      onSuccess();
+    } catch (err) {
+      toast.error(err.message || "Failed to send request");
+    }
+    setSending(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-5" onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-lg font-bold text-slate-900 mb-1">
+          Request Transfer
+        </h3>
+        <p className="text-sm text-slate-500 mb-4">
+          Ask <span className="font-semibold text-slate-700">{activeLoan?.technician_name}</span> to
+          transfer <span className="font-semibold text-slate-700">{tool.name}</span> to you.
+        </p>
+
+        {/* Current holder info */}
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 mb-4">
+          <div className="flex items-center gap-2 text-sm">
+            <ArrowRightLeft className="h-4 w-4 text-amber-500" />
+            <span className="font-medium text-amber-800">
+              Currently with {activeLoan?.technician_name}
+            </span>
+          </div>
+          {activeLoan?.purpose && (
+            <p className="text-xs text-amber-600 mt-1 ml-6">{activeLoan.purpose}</p>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-600 mb-1">
+              Reason (optional)
+            </label>
+            <input
+              type="text"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="e.g., Need it for brake job on bay 3"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
+            />
+          </div>
+          <p className="text-xs text-slate-400">
+            {activeLoan?.technician_name} will get a notification and can accept or decline.
+          </p>
+          <div className="flex gap-3">
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
+              Cancel
+            </button>
+            <button type="submit" disabled={sending} className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 disabled:opacity-50">
+              {sending ? "Sending..." : "Send Request"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
