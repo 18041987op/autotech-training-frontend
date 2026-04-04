@@ -290,7 +290,12 @@ function StatCard({ label, value, color }) {
 }
 
 function ToolCard({ tool, onBorrow, onRequestTransfer }) {
-  const activeLoan = tool.active_loan;
+  const activeLoans = tool.active_loans || [];
+  const quantity = tool.quantity || 1;
+  const availableCount = tool.available_count ?? (quantity - activeLoans.length);
+  const borrowedCount = tool.borrowed_count || activeLoans.length;
+  const canBorrow = availableCount > 0 && tool.status !== "maintenance" && tool.status !== "damaged";
+
   return (
     <div className="card p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
@@ -313,9 +318,17 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
             >
               {tool.name}
             </Link>
-            <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[tool.status]}`}>
-              {STATUS_LABELS[tool.status]}
-            </span>
+            {quantity > 1 ? (
+              <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                availableCount > 0 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+              }`}>
+                {availableCount}/{quantity} avail
+              </span>
+            ) : (
+              <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[tool.status]}`}>
+                {STATUS_LABELS[tool.status]}
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             {CATEGORIES.find((c) => c.value === tool.category)?.label || tool.category}
@@ -324,15 +337,15 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
             <p className="text-xs text-slate-400 mt-0.5">SN: {tool.serial_number}</p>
           )}
           <p className="text-xs text-slate-400">📍 {tool.location}</p>
-          {/* Show who has the tool if borrowed */}
-          {tool.status === "borrowed" && activeLoan && (
-            <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-xs font-semibold text-amber-700">
-                In use by {activeLoan.technician_name}
-              </p>
-              {activeLoan.purpose && (
-                <p className="text-[11px] text-amber-600 truncate">{activeLoan.purpose}</p>
-              )}
+          {/* Show who has the tool(s) */}
+          {activeLoans.length > 0 && (
+            <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-amber-50 border border-amber-200 space-y-0.5">
+              {activeLoans.map((loan, i) => (
+                <p key={i} className="text-xs text-amber-700">
+                  <span className="font-semibold">{loan.technician_name}</span>
+                  {loan.purpose && <span className="text-amber-600"> — {loan.purpose}</span>}
+                </p>
+              ))}
             </div>
           )}
         </div>
@@ -348,7 +361,7 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
           >
             <Eye className="h-3 w-3" /> Details
           </Link>
-          {tool.status === "available" && (
+          {canBorrow && (
             <button
               onClick={onBorrow}
               className="text-xs font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1"
@@ -356,7 +369,7 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
               <Plus className="h-3 w-3" /> Borrow
             </button>
           )}
-          {tool.status === "borrowed" && activeLoan && (
+          {!canBorrow && activeLoans.length > 0 && (
             <button
               onClick={() => onRequestTransfer(tool)}
               className="text-xs font-semibold text-amber-600 hover:text-amber-800 flex items-center gap-1"
