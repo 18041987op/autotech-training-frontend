@@ -83,7 +83,7 @@ export function AdminToolsPage() {
             Tool Management
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            {stats.total || 0} tools · ${Number(stats.totalValue || 0).toLocaleString()} inventory value
+            {stats.total || 0} tools · ${Number(stats.total_value || 0).toLocaleString()} inventory value
           </p>
         </div>
         <button
