@@ -116,7 +116,6 @@ export function Layout({ user, onSignOut }) {
               { to: "/admin/progress",     label: t("nav.dashboard"), icon: BarChart2 },
               { to: "/admin/users",        label: "Manage Users",     icon: UserCog },
               { to: "/admin/modules",      label: "Manage Modules",   icon: GraduationCap },
-              { to: "/admin/content",      label: "Manage Content",   icon: FileText },
               { to: "/admin/tools",        label: "Manage Tools",     icon: Wrench },
               { to: "/admin/loans",        label: "All Loans",        icon: ClipboardList },
               { to: "/admin/tool-reports", label: "Tool Reports",     icon: BarChart2 },
