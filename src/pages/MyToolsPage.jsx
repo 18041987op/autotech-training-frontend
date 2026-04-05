@@ -25,11 +25,13 @@ export function MyToolsPage() {
   const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(
     (u) => u.email === user?.email || u.work_email === user?.email
+  ) || toolsUsers.find(
+    (u) => user?.name && u.name?.toLowerCase() === user.name.toLowerCase()
   );
 
   const { data, isLoading } = useQuery({
     queryKey: ["myTools", user?.email],
-    queryFn: () => getMyTools(user?.email),
+    queryFn: () => getMyTools(user?.email, user?.name),
     enabled: !!user?.email,
   });
 

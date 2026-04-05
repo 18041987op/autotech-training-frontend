@@ -72,9 +72,11 @@ export const returnTool = (loanId, data) =>
 export const transferTool = (loanId, data) =>
   toolsFetch(`/loans/${loanId}/transfer`, { method: "PUT", body: data });
 
-export const getMyTools = (email) => {
+export const getMyTools = (email, name) => {
   if (!email) throw new Error("Email is required to fetch my tools");
-  return toolsFetch(`/loans/my-tools?email=${encodeURIComponent(email)}`);
+  let url = `/loans/my-tools?email=${encodeURIComponent(email)}`;
+  if (name) url += `&name=${encodeURIComponent(name)}`;
+  return toolsFetch(url);
 };
 
 // ─── Users ──────────────────────────────────────────────────────────────────

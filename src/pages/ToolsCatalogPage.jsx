@@ -79,6 +79,8 @@ export function ToolsCatalogPage() {
   const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(
     (u) => u.email === user?.email || u.work_email === user?.email
+  ) || toolsUsers.find(
+    (u) => user?.name && u.name?.toLowerCase() === user.name.toLowerCase()
   );
 
   // Fetch incoming transfer requests (pending requests where I'm the current holder)
@@ -422,6 +424,8 @@ function BorrowModal({ tool, onClose, onSuccess }) {
   const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(
     (u) => u.email === user?.email || u.work_email === user?.email
+  ) || toolsUsers.find(
+    (u) => user?.name && u.name?.toLowerCase() === user.name.toLowerCase()
   );
   const assignedROs = rosData?.data || [];
 

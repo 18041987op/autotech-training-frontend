@@ -46,6 +46,8 @@ export function ToolDetailPage() {
   });
   const currentToolsUser = (usersData?.data || []).find(
     (u) => u.email === user?.email || u.work_email === user?.email
+  ) || (usersData?.data || []).find(
+    (u) => user?.name && u.name?.toLowerCase() === user.name.toLowerCase()
   );
 
   const tool = toolData?.data;
