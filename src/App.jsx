@@ -35,6 +35,7 @@ import { MyToolsPage } from "./pages/MyToolsPage";
 import { AdminToolsPage } from "./pages/AdminToolsPage";
 import { AdminLoansPage } from "./pages/AdminLoansPage";
 import { AdminToolReportsPage } from "./pages/AdminToolReportsPage";
+import { AdminContentPage } from "./pages/AdminContentPage";
 
 // HR pages
 import { MyProfilePage } from "./pages/MyProfilePage";
@@ -170,7 +171,7 @@ function AppRoutes() {
         <Route path="admin/users" element={<AdminUsersPage />} />
         <Route path="admin/progress" element={<AdminProgressPage />} />
         <Route path="admin/suggestions" element={<AdminSuggestionsPage />} />
-        <Route path="admin/content" element={<ModulesListPage pageType="admin-content-placeholder" />} />
+        <Route path="admin/content" element={<AdminContentPage />} />
         <Route path="admin/tools" element={<AdminToolsPage />} />
         <Route path="admin/loans" element={<AdminLoansPage />} />
         <Route path="admin/tool-reports" element={<AdminToolReportsPage />} />
