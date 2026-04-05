@@ -327,7 +327,7 @@ function QuickTransferModal({ loan, onClose, onSuccess }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-bold mb-4">Transfer: {loan.tool_name}</h3>
-        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate({ to_technician_id: toId, notes }); }} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate({ targetTechnicianId: toId, notes }); }} className="space-y-4">
           <select value={toId} onChange={(e) => setToId(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
             <option value="">Select technician...</option>
             {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}

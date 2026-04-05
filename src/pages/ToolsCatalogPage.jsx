@@ -237,6 +237,7 @@ export function ToolsCatalogPage() {
             <ToolCard
               key={tool.id}
               tool={tool}
+              currentUserId={currentToolsUser?.id}
               onBorrow={() => setBorrowModal(tool)}
               onRequestTransfer={(t) => setTransferRequestModal(t)}
             />
@@ -289,11 +290,16 @@ function StatCard({ label, value, color }) {
   );
 }
 
-function ToolCard({ tool, onBorrow, onRequestTransfer }) {
+function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer }) {
   const activeLoans = tool.active_loans || [];
   const quantity = tool.quantity || 1;
   const availableCount = tool.available_count ?? (quantity - activeLoans.length);
   const canBorrow = availableCount > 0 && tool.status !== "maintenance" && tool.status !== "damaged";
+
+  // Check if current user already has this tool borrowed
+  const currentUserHasTool = currentUserId && activeLoans.some(
+    (loan) => loan.technician_id === currentUserId
+  );
 
   // Derive real status from active loans (more reliable than DB status field)
   const realStatus = tool.status === "maintenance" || tool.status === "damaged"
@@ -375,7 +381,7 @@ function ToolCard({ tool, onBorrow, onRequestTransfer }) {
               <Plus className="h-3 w-3" /> Borrow
             </button>
           )}
-          {!canBorrow && activeLoans.length > 0 && (
+          {!canBorrow && activeLoans.length > 0 && !currentUserHasTool && (
             <button
               onClick={() => onRequestTransfer(tool)}
               className="text-xs font-semibold text-amber-600 hover:text-amber-800 flex items-center gap-1"

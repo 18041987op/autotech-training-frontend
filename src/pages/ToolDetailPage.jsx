@@ -360,7 +360,7 @@ function TransferModal({ loan, onClose, onSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    mutation.mutate({ to_technician_id: toId, notes });
+    mutation.mutate({ targetTechnicianId: toId, notes });
   };
 
   return (
