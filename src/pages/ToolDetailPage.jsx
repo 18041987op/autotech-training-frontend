@@ -10,6 +10,7 @@ import {
 import {
   getTool, getLoans, returnTool, transferTool, getToolsUsers,
 } from "../lib/toolsApi";
+import { useAuthStore } from "../stores/authStore";
 
 const STATUS_COLORS = {
   available: "bg-emerald-100 text-emerald-700",
@@ -35,9 +36,22 @@ export function ToolDetailPage() {
     queryFn: () => getLoans({ tool_id: id }),
   });
 
+  const user = useAuthStore((s) => s.user);
+
+  // Resolve current user's tools_users ID
+  const { data: usersData } = useQuery({
+    queryKey: ["toolsUsers"],
+    queryFn: () => getToolsUsers({ active: "true" }),
+    enabled: !!user?.email,
+  });
+  const currentToolsUser = (usersData?.data || []).find(
+    (u) => u.email === user?.email || u.work_email === user?.email
+  );
+
   const tool = toolData?.data;
   const loans = loansData?.data || [];
   const activeLoan = loans.find((l) => l.status === "active");
+  const isMyLoan = currentToolsUser && activeLoan?.technician_id === currentToolsUser.id;
 
   if (isLoading) {
     return (
@@ -123,7 +137,7 @@ export function ToolDetailPage() {
             <Clock className="h-4 w-4 text-amber-500" /> Currently Borrowed
           </h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <InfoRow label="Technician" value={activeLoan.technician_name || activeLoan.technician_id} />
+            <InfoRow label="Technician" value={activeLoan.technician?.name || activeLoan.technician_name || activeLoan.technician_id} />
             <InfoRow label="Purpose" value={activeLoan.purpose} />
             <InfoRow label="Vehicle" value={activeLoan.vehicle || "—"} />
             <InfoRow label="Borrowed" value={new Date(activeLoan.borrowed_at).toLocaleDateString()} />
@@ -140,20 +154,22 @@ export function ToolDetailPage() {
               }
             />
           </div>
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={() => setReturnModal(activeLoan)}
-              className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1.5"
-            >
-              <CheckCircle className="h-3.5 w-3.5" /> Return Tool
-            </button>
-            <button
-              onClick={() => setTransferModal(activeLoan)}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
-            >
-              <ArrowRightLeft className="h-3.5 w-3.5" /> Transfer
-            </button>
-          </div>
+          {isMyLoan && (
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setReturnModal(activeLoan)}
+                className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1.5"
+              >
+                <CheckCircle className="h-3.5 w-3.5" /> Return Tool
+              </button>
+              <button
+                onClick={() => setTransferModal(activeLoan)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
+              >
+                <ArrowRightLeft className="h-3.5 w-3.5" /> Transfer
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -170,7 +186,7 @@ export function ToolDetailPage() {
               <div key={loan.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-slate-700">
-                    {loan.technician_name || "Unknown"} — {loan.purpose}
+                    {loan.technician?.name || loan.technician_name || "Unknown"} — {loan.purpose}
                   </p>
                   <p className="text-xs text-slate-400">
                     {new Date(loan.borrowed_at).toLocaleDateString()}
