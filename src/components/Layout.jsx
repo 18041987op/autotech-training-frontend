@@ -17,7 +17,6 @@ import {
   Wrench,
   X,
   ExternalLink,
-  FileText,
   BarChart2,
   Gauge,
   Package,
