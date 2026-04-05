@@ -44,7 +44,9 @@
     "search": "Buscar",
     "comingSoon": "Próximamente",
     "view": "Ver",
-    "optionAHelp": "Opción A: layout + navegación + i18n. Próximo paso: conectar datos reales y reglas por rol."
+    "optionAHelp": "Opción A: layout + navegación + i18n. Próximo paso: conectar datos reales y reglas por rol.",
+    "back": "Volver",
+    "cancel": "Cancelar"
   },
   "auth": {
     "welcomeTitle": "Bienvenido de vuelta",
@@ -112,19 +114,19 @@
     "blurbTraining": "Rutas de aprendizaje por rol con recursos prácticos.",
     "blurbCulture": "Cómo trabajamos: comunicación, calidad, seguridad y experiencia del cliente.",
     "blurbEvaluations": "Evaluaciones ligeras para confirmar comprensión.",
-    "greeting":          "¡Buenos días, {{firstName}}!",
+    "greeting": "¡Buenos días, {{firstName}}!",
     "greetingAfternoon": "¡Buenas tardes, {{firstName}}!",
-    "greetingEvening":   "¡Buenas noches, {{firstName}}!",
-    "greetingAdmin":     "Bienvenido/a de vuelta, {{firstName}}",
-    "roleSubtitleTech":  "Técnico — mantén tu racha",
+    "greetingEvening": "¡Buenas noches, {{firstName}}!",
+    "greetingAdmin": "Bienvenido/a de vuelta, {{firstName}}",
+    "roleSubtitleTech": "Técnico — mantén tu racha",
     "roleSubtitleAdmin": "Panel de Administrador",
-    "roleSubtitleSA":    "Asesor de Servicio — mantente listo",
-    "continueLearning":  "Continuar aprendiendo",
-    "viewAllProgress":   "Ver todo el progreso →",
-    "statsCompletion":   "Compl. Promedio",
-    "statsPassed":       "Evaluaciones Aprobadas",
-    "statsFirstTry":     "Precisión al 1er Intento",
-    "statsBadges":       "Insignias Ganadas"
+    "roleSubtitleSA": "Asesor de Servicio — mantente listo",
+    "continueLearning": "Continuar aprendiendo",
+    "viewAllProgress": "Ver todo el progreso →",
+    "statsCompletion": "Compl. Promedio",
+    "statsPassed": "Evaluaciones Aprobadas",
+    "statsFirstTry": "Precisión al 1er Intento",
+    "statsBadges": "Insignias Ganadas"
   },
   "pages": {
     "onboardingTitle": "Inducción",
@@ -395,7 +397,34 @@
     "activate": "Activar",
     "deactivate": "Desactivar",
     "deactivateConfirm": "¿Desactivar este usuario? Perderá acceso de inmediato.",
-    "lastLogin": "Último acceso"
+    "lastLogin": "Último acceso",
+    "addUser": "+ Agregar Usuario",
+    "addUserSubtitle": "Crea un nuevo usuario y asigna un rol.",
+    "addUserTitle": "Agregar Usuario",
+    "createUser": "Crear usuario",
+    "creating": "Creando…",
+    "emailRequired": "El email es requerido",
+    "formLabels": {
+      "approved": "Aprobado",
+      "email": "Email",
+      "fullName": "Nombre completo",
+      "role": "Rol",
+      "temporaryPassword": "Contraseña temporal"
+    },
+    "formPlaceholders": {
+      "email": "nombre@autorxcenter.com",
+      "name": "ej., Juan Perez",
+      "password": "Mínimo 6 caracteres"
+    },
+    "hideInactive": "Ocultar inactivos",
+    "nameRequired": "El nombre es requerido",
+    "newPasswordPlaceholder": "Nueva contraseña (mín 8)",
+    "passwordRequired": "La contraseña debe tener al menos 6 caracteres",
+    "passwordValidation": "Mínimo 8 caracteres.",
+    "save": "Guardar",
+    "saving": "Guardando…",
+    "showInactive": "Mostrar inactivos",
+    "updated": "¡Actualizado!"
   },
   "roles": {
     "technician": "Técnico",
@@ -516,7 +545,6 @@
     "scoreReview": "Repasa las secciones anteriores y vuelve a intentarlo. ¡Tú puedes!",
     "diagTip": "Consejo de diagnóstico",
     "tipPrefix": "Tip",
-
     "electricalCircuitBasics": {
       "title": "Circuito Básico de Lámpara",
       "description": "Cómo funciona el circuito de una lámpara automotriz y cómo diagnosticar fallas con el Power Probe.",
@@ -642,7 +670,6 @@
         "q3exp": "12V en la entrada y 0V en la salida con el switch ON es el diagnóstico definitivo de un interruptor defectuoso. El componente que tiene voltaje en su entrada pero no lo pasa a su salida es el componente fallado."
       }
     },
-
     "alternatorAndBattery": {
       "title": "Alternador y Batería",
       "description": "Cómo funciona el sistema de carga, cómo probar una batería con voltímetro y cómo diagnosticar la salida del alternador.",
@@ -661,10 +688,10 @@
       "section1Tip": "Un sistema de carga saludable lee 13.8–14.8V en la batería con el motor encendido.",
       "altDiagTip": "Prueba la salida del alternador en los terminales de la batería con el motor encendido. Realiza prueba de carga encendiendo luces, AC y ventilador.",
       "navPills": {
-        "system":  "🔋 Sistema de Carga",
+        "system": "🔋 Sistema de Carga",
         "battery": "🔌 Prueba Batería",
-        "alt":     "⚡ Prueba Alternador",
-        "quiz":    "📝 Examen Final"
+        "alt": "⚡ Prueba Alternador",
+        "quiz": "📝 Examen Final"
       },
       "components": {
         "battery": {
@@ -741,7 +768,6 @@
         "q3exp": "Si la batería arranca bien (mantiene voltaje bajo carga) pero se descarga después de manejar, el alternador no la está recargando. Verifica la correa serpentina, voltaje de salida del alternador y conexiones."
       }
     },
-
     "oilChange": {
       "title": "Cambio de Aceite y Servicios de Fluidos",
       "description": "Selección de viscosidad de aceite, procedimiento de drenaje y llenado, y lista de verificación de fluidos.",
@@ -768,8 +794,8 @@
       "navPills": {
         "viscosity": "🛢️ Especificaciones",
         "procedure": "🔧 Procedimiento",
-        "fluids":    "🔍 Fluidos",
-        "quiz":      "📝 Examen Final"
+        "fluids": "🔍 Fluidos",
+        "quiz": "📝 Examen Final"
       },
       "specs": {
         "0w20": {
@@ -849,7 +875,6 @@
         "q3exp": "La marca MIN es el nivel mínimo aceptable absoluto, no el objetivo. Agrega suficiente aceite para llevar el nivel a la parte media o superior de la zona segura (entre MIN y MAX). No llenes más allá del MAX."
       }
     },
-
     "brakeSystem": {
       "title": "Inspección y Servicio del Sistema de Frenos",
       "description": "Componentes del freno de disco, medición de pastillas y rotores, y procedimiento de purgado.",
@@ -873,10 +898,10 @@
       "statusReplace": "🔴 Reemplazar",
       "bleedOrder": "Orden de Purgado",
       "navPills": {
-        "components":  "🛑 Componentes",
+        "components": "🛑 Componentes",
         "measurement": "📏 Medición",
-        "bleeding":    "💧 Purgado",
-        "quiz":        "📝 Examen Final"
+        "bleeding": "💧 Purgado",
+        "quiz": "📝 Examen Final"
       },
       "parts": {
         "rotor": {
@@ -938,7 +963,6 @@
         "q3exp": "Purga desde la rueda más lejana al cilindro maestro (RR) hasta la más cercana (LF): RR → LR → RF → LF. Esto purga el aire completamente a través de las líneas de freno más largas primero."
       }
     },
-
     "tireService": {
       "title": "Servicio de Llantas, TPMS y Rotación",
       "description": "Lectura del flanco de la llanta, inflado TPMS y patrones de rotación.",
@@ -958,17 +982,17 @@
       "pressureIssues": "Problema de Presión Detectado",
       "pressureIssuesDesc": "Una o más llantas fuera del rango recomendado. Objetivo: {{spec}} PSI según etiqueta de la puerta.",
       "pressureStatus": {
-        "ok":     "✅ OK",
-        "warn":   "⚠️ Revisar",
-        "low":    "⬇️ Bajo",
-        "high":   "⬆️ Alto",
+        "ok": "✅ OK",
+        "warn": "⚠️ Revisar",
+        "low": "⬇️ Bajo",
+        "high": "⬆️ Alto",
         "danger": "🔴 Peligro"
       },
       "navPills": {
-        "sizing":   "🔵 Tamaño Llanta",
-        "tpms":     "💨 TPMS",
+        "sizing": "🔵 Tamaño Llanta",
+        "tpms": "💨 TPMS",
         "rotation": "🔄 Rotación",
-        "quiz":     "📝 Examen Final"
+        "quiz": "📝 Examen Final"
       },
       "sidewall": {
         "width": {
@@ -1023,7 +1047,6 @@
         "q3exp": "Los vehículos FWD usan el patrón de cruz hacia adelante: las llantas delanteras van directamente atrás, y las traseras cruzan al frente (RR→FL, LR→FR). Esto nivela el desgaste ya que las llantas delanteras FWD se desgastan más rápido por la dirección y aceleración."
       }
     },
-
     "engineCooling": {
       "title": "Servicio del Sistema de Enfriamiento",
       "description": "Componentes del sistema de enfriamiento, tipos de refrigerante y mezcla, y prueba de presión.",
@@ -1050,9 +1073,9 @@
       "mixWarn": "Ajustar relación — fuera del rango ideal",
       "navPills": {
         "components": "🌡️ Componentes",
-        "coolants":   "🧪 Tipos de Refrigerante",
-        "pressure":   "🔧 Prueba de Presión",
-        "quiz":       "📝 Examen Final"
+        "coolants": "🧪 Tipos de Refrigerante",
+        "pressure": "🔧 Prueba de Presión",
+        "quiz": "📝 Examen Final"
       },
       "parts": {
         "radiator": {
@@ -1141,7 +1164,6 @@
         "q3exp": "Mezclar IAT (silicato verde) con OAT (ácido orgánico) causa una reacción química que puede crear una especie de lodo gelatinoso. Este lodo puede obstruir pasajes pequeños en el calentador, radiador y bomba de agua. Nunca mezcles sin verificar compatibilidad."
       }
     },
-
     "vehicleSafety": {
       "title": "Seguridad del Vehículo y Operación del Elevador",
       "description": "Tipos de elevadores, procedimiento seguro de levantamiento y requerimientos de EPP para seguridad en el taller.",
@@ -1161,10 +1183,10 @@
       "ppeReady": "Todo el EPP Verificado",
       "ppeReadyDesc": "Estás equipado y listo. Procede con el trabajo de forma segura.",
       "navPills": {
-        "lifts":     "🏗️ Tipos de Elevadores",
+        "lifts": "🏗️ Tipos de Elevadores",
         "procedure": "⬆️ Procedimiento",
-        "ppe":       "🦺 EPP",
-        "quiz":      "📝 Examen Final"
+        "ppe": "🦺 EPP",
+        "quiz": "📝 Examen Final"
       },
       "lifts": {
         "twoPost": {
@@ -1274,10 +1296,10 @@
       "correct": "Correcto",
       "incorrect": "Incorrecto",
       "navPills": {
-        "queue":     "📋 Cola",
-        "rules":     "⚠️ Reglas",
+        "queue": "📋 Cola",
+        "rules": "⚠️ Reglas",
         "scenarios": "🎮 Simulador",
-        "quiz":      "📝 Evaluación"
+        "quiz": "📝 Evaluación"
       },
       "techs": {
         "romel": {
@@ -1714,6 +1736,566 @@
       "overrideDetected": "OVERRIDE DETECTADO",
       "overrideAssignedTo": "Asignado a {{current}}, las reglas dicen {{suggested}}.",
       "noReasonGiven": "Sin razón proporcionada."
+    }
+  },
+  "nav2": {
+    "keyBoard": "Panel de Control",
+    "modules": "Módulos",
+    "tools": "Herramientas",
+    "catalog": "Catálogo",
+    "myTools": "Mis Herramientas",
+    "hr": "Recursos Humanos",
+    "myProfile": "Mi Perfil",
+    "schedule": "Horario",
+    "timesheet": "Registro de Horas",
+    "timeOff": "Tiempo Libre",
+    "benefits": "Beneficios",
+    "team": "Equipo",
+    "manageUsers": "Administrar Usuarios",
+    "manageModules": "Administrar Módulos",
+    "manageContent": "Administrar Contenido",
+    "manageTools": "Administrar Herramientas",
+    "allLoans": "Todos los Préstamos",
+    "toolReports": "Reportes de Herramientas",
+    "suggestions": "Sugerencias",
+    "otherApps": "Otras Apps",
+    "management": "Gerencia"
+  },
+  "tools": {
+    "catalog": {
+      "title": "Catálogo de Herramientas",
+      "subtitle": "Explora y pide prestado herramientas del taller",
+      "searchPlaceholder": "Buscar herramientas...",
+      "allCategories": "Todos",
+      "statusAvailable": "Disponible",
+      "statusBorrowed": "En Préstamo",
+      "statusMaintenance": "Mantenimiento",
+      "statusDamaged": "Dañada",
+      "noToolsFound": "No hay herramientas que coincidan con tu búsqueda",
+      "inUseBy": "En uso por",
+      "available": "disponible",
+      "borrow": "Pedir Prestado",
+      "requestTransfer": "Solicitar Transferencia",
+      "request": "Solicitar",
+      "scanQR": "Escanear QR",
+      "cameraError": "Error de cámara",
+      "scanning": "Escaneando...",
+      "stopScanner": "Detener Escáner",
+      "borrowSuccess": "¡Herramienta prestada exitosamente!",
+      "borrowError": "Error al pedir prestado la herramienta",
+      "transferRequestSent": "¡Solicitud de transferencia enviada!",
+      "transferRequestError": "Error al enviar la solicitud de transferencia",
+      "accountNotLinked": "Cuenta no vinculada al sistema de herramientas",
+      "allStatus": "Todos los Estados",
+      "borrowing": "Prestando...",
+      "confirmBorrow": "Confirmar Préstamo",
+      "duration1h": "1 hora",
+      "duration2h": "2 horas",
+      "duration4h": "4 horas",
+      "duration8h": "8 horas",
+      "duration24h": "24 horas",
+      "duration48h": "48 horas",
+      "failedToRespond": "Error al responder solicitud",
+      "found": "encontradas",
+      "inUse": "En uso",
+      "lookingUpTools": "Buscando herramientas...",
+      "noActiveLoan": "No se encontró préstamo activo",
+      "noVehiclesFound": "No se encontraron vehículos",
+      "otherManualEntry": "Otro / Entrada Manual",
+      "purchaseRequestError": "Error al enviar solicitud de compra",
+      "purpose": "Propósito",
+      "purposePlaceholder": "¿Para qué necesitas esta herramienta?",
+      "reasonOptional": "Razón (opcional)",
+      "reasonPlaceholder": "¿Por qué necesitas esta transferencia?",
+      "recommendedInStock": "Recomendadas — En Inventario",
+      "recommendedNotInStock": "Recomendadas — Sin Inventario",
+      "requestDeclined": "Solicitud rechazada",
+      "requested": "Solicitada",
+      "returnIn": "Devolver en",
+      "selectVehicle": "Seleccionar Vehículo / RO",
+      "sendRequest": "Enviar Solicitud",
+      "sending": "Enviando...",
+      "statsMaintenance": "Mantenimiento",
+      "statsTotal": "Total",
+      "toolNotFoundQR": "Herramienta no encontrada para este código QR",
+      "toolTransferred": "¡Herramienta transferida!",
+      "vehicle": "Vehículo",
+      "vehicleNotListed": "Vehículo no listado",
+      "vehiclePlaceholder": "ej., 2020 Honda Civic"
+    },
+    "detail": {
+      "backToCatalog": "Volver al catálogo",
+      "notFound": "Herramienta no encontrada",
+      "category": "Categoría",
+      "location": "Ubicación",
+      "serialNumber": "Serie #",
+      "partNumber": "Número de Parte #",
+      "cost": "Costo",
+      "purchaseDate": "Compra",
+      "scanQR": "Escanear QR para pedir prestado",
+      "currentlyBorrowed": "Actualmente en Préstamo",
+      "by": "por",
+      "since": "desde",
+      "due": "vencimiento",
+      "purpose": "Propósito",
+      "returnTool": "Devolver Herramienta",
+      "transferTool": "Transferir Herramienta",
+      "loanHistory": "Historial de Préstamos",
+      "noLoans": "Sin historial de préstamos",
+      "returned": "Devuelto",
+      "active": "Activo",
+      "transferred": "Transferido",
+      "condition": "Condición",
+      "returnSuccess": "¡Herramienta devuelta exitosamente!",
+      "transferSuccess": "¡Herramienta transferida exitosamente!",
+      "returnError": "Error al devolver la herramienta",
+      "transferError": "Error al transferir la herramienta",
+      "borrowedOn": "Prestada",
+      "damageDesc": "Descripción del daño",
+      "feedbackHint": "¿Esta herramienta fue necesaria para el trabajo?",
+      "transferTo": "Transferir a",
+      "wasNeeded": "¿Se necesitó esta herramienta?"
+    },
+    "myTools": {
+      "title": "Mis Herramientas",
+      "subtitle": "Herramientas actualmente en tu préstamo",
+      "noTools": "Sin herramientas en préstamo",
+      "browseCatalog": "Explorar catálogo",
+      "borrowedOn": "Prestado",
+      "dueDate": "Vencimiento",
+      "return": "Devolver",
+      "transfer": "Transferir",
+      "incomingRequests": "Solicitudes de Transferencia Entrantes",
+      "accept": "Aceptar",
+      "decline": "Rechazar",
+      "wantsToTransfer": "quiere",
+      "requestAccepted": "Solicitud de transferencia aceptada",
+      "requestDeclined": "Solicitud de transferencia rechazada",
+      "respondError": "Error al responder solicitud",
+      "returnSuccess": "¡Herramienta devuelta exitosamente!",
+      "transferSuccess": "¡Herramienta transferida exitosamente!"
+    },
+    "returnModal": {
+      "title": "Devolver Herramienta",
+      "conditionLabel": "Condición",
+      "conditionGood": "Buena",
+      "conditionDamaged": "Dañada",
+      "notesLabel": "Notas (opcional)",
+      "notesPlaceholder": "Notas sobre la devolución...",
+      "wasToolNeeded": "¿Se necesitaba esta herramienta para el trabajo?",
+      "yes": "Sí",
+      "no": "No",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar Devolución",
+      "returning": "Devolviendo..."
+    },
+    "transferModal": {
+      "title": "Transferir Herramienta",
+      "selectTechnician": "Seleccionar Técnico",
+      "notesLabel": "Notas (opcional)",
+      "notesPlaceholder": "Razón de la transferencia...",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar Transferencia",
+      "transferring": "Transfiriendo..."
+    },
+    "borrowModal": {
+      "title": "Pedir Prestado Herramienta",
+      "purposeLabel": "Propósito",
+      "purposePlaceholder": "¿Para qué usarás esta herramienta?",
+      "dueDateLabel": "Fecha de devolución esperada",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar Préstamo",
+      "borrowing": "Pidiendo prestado..."
+    }
+  },
+  "hr": {
+    "profile": {
+      "title": "Mi Perfil",
+      "subtitle": "Tu información de empleado",
+      "statusActive": "Activo",
+      "statusInactive": "Inactivo",
+      "role": "Puesto",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "startDate": "Fecha de Inicio",
+      "department": "Departamento",
+      "error": "Error al cargar perfil",
+      "name": "Nombre",
+      "payType": "Tipo de Pago",
+      "status": "Estado"
+    },
+    "schedule": {
+      "title": "Mi Horario",
+      "subtitle": "Tu horario de trabajo semanal",
+      "days": {
+        "sun": "Dom",
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mié",
+        "thu": "Jue",
+        "fri": "Vie",
+        "sat": "Sáb"
+      },
+      "daysLong": {
+        "sunday": "Domingo",
+        "monday": "Lunes",
+        "tuesday": "Martes",
+        "wednesday": "Miércoles",
+        "thursday": "Jueves",
+        "friday": "Viernes",
+        "saturday": "Sábado"
+      },
+      "off": "LIBRE",
+      "closed": "Cerrado",
+      "totalHours": "Total de horas",
+      "weeklyHours": "Horas semanales",
+      "noSchedule": "Sin horario publicado esta semana",
+      "approved": "Aprobado",
+      "draft": "Borrador",
+      "approveWeek": "Aprobar Semana",
+      "addShift": "Agregar Turno",
+      "editSchedule": "Editar Horario",
+      "selectEmployee": "Seleccionar Empleado",
+      "allEmployees": "Todos los Empleados",
+      "approving": "Aprobando...",
+      "assignmentInstructions": "Haz clic en una celda para asignar un turno",
+      "draftLegend": "Borrador (aún no visible para empleados)",
+      "mySchedule": "Mi Horario",
+      "shopClosedLegend": "Taller cerrado",
+      "shopHours": "Horario del Taller",
+      "teamSchedule": "Horario del Equipo",
+      "today": "Hoy",
+      "yourApprovedSchedule": "Tu horario aprobado para esta semana"
+    },
+    "timesheet": {
+      "title": "Registro de Horas",
+      "subtitle": "Registra tus horas de trabajo",
+      "clockIn": "Marcar Entrada",
+      "clockOut": "Marcar Salida",
+      "startBreak": "Iniciar Descanso",
+      "endBreak": "Terminar Descanso",
+      "notClockedIn": "No marcado",
+      "workingSince": "Trabajando desde",
+      "onBreak": "En descanso",
+      "breaksTaken": "descanso(s) tomado(s)",
+      "todayHours": "Horas de hoy",
+      "weekHours": "Esta semana",
+      "periodHours": "Este período",
+      "status": "Estado",
+      "date": "Fecha",
+      "hoursWorked": "Horas",
+      "breaks": "Descansos",
+      "active": "Activo",
+      "noEntries": "Sin registros de horas",
+      "overtime": "Horas Extra",
+      "payPeriod": "Período de Pago",
+      "thisMonth": "Este Mes",
+      "thisWeek": "Esta Semana",
+      "thisWeekLabel": "Esta semana"
+    },
+    "timeOff": {
+      "title": "Tiempo Libre",
+      "subtitle": "Solicita y registra tu tiempo libre",
+      "requestTimeOff": "Solicitar Tiempo Libre",
+      "balances": "Saldos",
+      "vacation": "Vacaciones",
+      "sick": "Enfermedad",
+      "personal": "Personal",
+      "usedYTD": "Usado YTD",
+      "available": "Disponible",
+      "requests": "Solicitudes",
+      "type": "Tipo",
+      "dates": "Fechas",
+      "days": "Días",
+      "reason": "Razón",
+      "status": "Estado",
+      "pending": "Pendiente",
+      "approved": "Aprobado",
+      "denied": "Denegado",
+      "noRequests": "Sin solicitudes de tiempo libre",
+      "submitRequest": "Enviar Solicitud",
+      "cancel": "Cancelar",
+      "startDate": "Fecha de Inicio",
+      "endDate": "Fecha de Fin",
+      "typeLabel": "Tipo",
+      "daysTotal": "días en total",
+      "of": "de",
+      "reasonOptional": "Razón (opcional)",
+      "reasonPlaceholder": "¿Por qué necesitas tiempo libre?",
+      "submitting": "Enviando..."
+    },
+    "benefits": {
+      "title": "Beneficios",
+      "subtitle": "Beneficios y recursos de la empresa",
+      "noBenefits": "Información de beneficios próximamente",
+      "learnMore": "Más Información",
+      "enrollment": "Inscripción",
+      "coverage": "Cobertura",
+      "details": "Detalles",
+      "contactAdmin": "Contacta a tu administrador para más detalles."
+    },
+    "team": {
+      "title": "Directorio de Equipo",
+      "subtitle": "Tus colegas en AutoRx",
+      "searchPlaceholder": "Buscar equipo...",
+      "showInactive": "Mostrar inactivos",
+      "hideInactive": "Ocultar inactivos",
+      "noResults": "No se encontraron miembros del equipo",
+      "role": "Puesto",
+      "email": "Correo",
+      "phone": "Teléfono",
+      "startDate": "Fecha de Inicio",
+      "active": "Activo",
+      "inactive": "Inactivo"
+    }
+  },
+  "adminTools": {
+    "title": "Administración de Herramientas",
+    "searchPlaceholder": "Buscar herramientas...",
+    "addTool": "Agregar Herramienta",
+    "tableHeaders": {
+      "tool": "Herramienta",
+      "category": "Categoría",
+      "status": "Estado",
+      "location": "Ubicación",
+      "cost": "Costo",
+      "actions": "Acciones"
+    },
+    "noToolsFound": "No hay herramientas",
+    "deleteTool": "¿Eliminar Herramienta?",
+    "deleteConfirm": "¿Estás seguro? Esta acción no se puede deshacer.",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "toolDeleted": "Herramienta eliminada",
+    "toolCreated": "Herramienta creada",
+    "toolUpdated": "Herramienta actualizada",
+    "addNewTool": "Agregar Nueva Herramienta",
+    "editTool": "Editar Herramienta",
+    "nameLabel": "Nombre",
+    "categoryLabel": "Categoría",
+    "locationLabel": "Ubicación",
+    "serialLabel": "Serie #",
+    "partLabel": "Número de Parte #",
+    "costLabel": "Costo ($)",
+    "purchaseLabel": "Fecha de Compra",
+    "imageLabel": "URL de Imagen",
+    "descriptionLabel": "Descripción",
+    "cancel": "Cancelar",
+    "createTool": "Crear Herramienta",
+    "saveChanges": "Guardar Cambios",
+    "saving": "Guardando...",
+    "deleteTitle": "¿Eliminar Herramienta?",
+    "edit": "Editar",
+    "formLabels": {
+      "category": "Categoría",
+      "cost": "Costo ($)",
+      "description": "Descripción",
+      "imageUrl": "URL de Imagen",
+      "location": "Ubicación",
+      "name": "Nombre",
+      "part": "Número de Parte",
+      "purchaseDate": "Fecha de Compra",
+      "serial": "Número de Serie"
+    }
+  },
+  "adminLoans": {
+    "title": "Todos los Préstamos",
+    "subtitle": "Gestiona toda la actividad de préstamo de herramientas",
+    "searchPlaceholder": "Buscar préstamos...",
+    "all": "Todos",
+    "active": "Activos",
+    "returned": "Devueltos",
+    "transferred": "Transferidos",
+    "tableHeaders": {
+      "tool": "Herramienta",
+      "technician": "Técnico",
+      "purpose": "Propósito",
+      "borrowed": "Prestado",
+      "dueReturned": "Vencimiento / Devuelto",
+      "status": "Estado"
+    },
+    "noLoans": "No hay préstamos",
+    "overdue": "VENCIDO",
+    "statusBadges": {
+      "active": "Activo",
+      "damaged": "Dañada",
+      "overdue": "VENCIDO",
+      "returned": "Devuelta",
+      "transferred": "Transferida"
+    }
+  },
+  "adminProgress2": {
+    "title": "Progreso de Capacitación",
+    "subtitle": "Resumen del equipo: finalización de módulos y calificaciones de evaluaciones",
+    "eyebrow": "Capacitación AutoRx",
+    "activeUsers": "Usuarios activos",
+    "activeThisWeek": "Activos esta semana",
+    "avgCompletion": "Finalización promedio",
+    "allModulesPassed": "Todos los módulos aprobados",
+    "module": "Módulo",
+    "completion": "Finalización",
+    "bestScore": "Mejor calificación",
+    "firstAttempt": "1er intento",
+    "lastAccess": "Último acceso",
+    "required": "Requerido",
+    "passed": "Aprobado",
+    "avgScore": "Calificación promedio",
+    "lastActive": "Último activo",
+    "searchPlaceholder": "Buscar por nombre o correo…",
+    "sort": "Ordenar:",
+    "sortName": "Nombre",
+    "sortCompletion": "Finalización",
+    "sortPassed": "Aprobado",
+    "sortRecent": "Reciente",
+    "noUsers": "No se encontraron usuarios.",
+    "globalStats": {
+      "activeThisWeek": "Activos esta semana",
+      "activeUsers": "Usuarios activos",
+      "allModulesPassed": "Todos los módulos aprobados",
+      "avgCompletion": "Completado promedio"
+    },
+    "sortOptions": {
+      "completion": "Completado",
+      "name": "Nombre",
+      "passed": "Aprobados",
+      "recent": "Reciente"
+    },
+    "stats": {
+      "avgScore": "Puntaje promedio",
+      "completion": "Completado",
+      "lastActive": "Último acceso",
+      "passed": "Aprobados"
+    },
+    "table": {
+      "bestScore": "Mejor puntaje",
+      "completion": "Completado",
+      "firstAttempt": "1er intento",
+      "lastAccess": "Último acceso",
+      "module": "Módulo"
+    }
+  },
+  "adminSuggestions2": {
+    "title": "Sugerencias",
+    "subtitle": "Respuestas de check-in semanal — qué quieren aprender los empleados",
+    "refresh": "Actualizar",
+    "all": "Todos",
+    "technicians": "Técnicos",
+    "serviceAdvisors": "Asesores de Servicio",
+    "loading": "Cargando sugerencias…",
+    "error": "Error al cargar sugerencias.",
+    "errorHint": "Asegúrate de que el endpoint /api/admin/suggestions esté desplegado en el backend.",
+    "empty": "Sin sugerencias aún.",
+    "emptyHint": "Las respuestas de check-in aparecerán aquí cuando los empleados envíen sus encuestas semanales.",
+    "moduleCreated": "Módulo creado",
+    "createModule": "Crear módulo",
+    "topicFrequency": "Frecuencia de temas",
+    "technician": "Técnico",
+    "serviceAdvisor": "Asesor de Servicio",
+    "filterTabs": {
+      "all": "Todos",
+      "serviceAdvisors": "Asesores de Servicio",
+      "technicians": "Técnicos"
+    }
+  },
+  "adminToolReports2": {
+    "title": "Reportes de Herramientas",
+    "subtitle": "Análisis de responsabilidad y uso",
+    "totalTools": "Total de Herramientas",
+    "available": "Disponible",
+    "borrowed": "En Préstamo",
+    "damaged": "Dañada",
+    "lateReturns": "Devoluciones Tardías",
+    "damagedReturns": "Devoluciones Dañadas",
+    "technician": "Técnico",
+    "lateCount": "Conteo de Tardíos",
+    "damageCount": "Conteo de Daños",
+    "avgHoursLate": "Promedio de Horas Tarde",
+    "noData": "Sin datos para este reporte",
+    "unknown": "Desconocido",
+    "stats": {
+      "available": "Disponibles",
+      "borrowed": "Prestadas",
+      "damaged": "Dañadas",
+      "totalTools": "Total Herramientas"
+    },
+    "tableHeaders": {
+      "avgHoursLate": "Horas Tarde Promedio",
+      "damageCount": "Veces Dañada",
+      "lateCount": "Veces Tarde",
+      "technician": "Técnico"
+    },
+    "tabs": {
+      "damagedReturns": "Devoluciones Dañadas",
+      "lateReturns": "Devoluciones Tardías"
+    }
+  },
+  "adminContent": {
+    "title": "Administración de Contenido",
+    "subtitle": "Gestiona recursos de Drive, lecciones interactivas y evaluaciones IA",
+    "syncAll": "Sincronizar Todos los Módulos",
+    "syncing": "Sincronizando",
+    "totalModules": "Total de Módulos",
+    "withDrive": "Con Carpeta Drive",
+    "withLessons": "Con Lecciones",
+    "noDrive": "Sin Carpeta Drive",
+    "lessonsTotal": "lecciones totales",
+    "searchPlaceholder": "Buscar módulos...",
+    "filterAll": "Todos",
+    "filterHasDrive": "Tiene Drive",
+    "filterNoDrive": "Sin Drive",
+    "filterHasLessons": "Tiene Lecciones",
+    "noModules": "No hay módulos que coincidan con tu filtro",
+    "drive": "Drive",
+    "noDriveTag": "Sin Drive",
+    "lesson": "Lección",
+    "lessons": "Lecciones",
+    "syncDrive": "Sincronizar Drive",
+    "syncLessonsAI": "Sincronizar Lecciones para IA",
+    "generateAssessment": "Generar Evaluación",
+    "generating": "Generando...",
+    "viewModule": "Ver Módulo",
+    "interactiveLessons": "Lecciones Interactivas",
+    "noDriveLinked": "Sin carpeta de Google Drive vinculada. Establece la carpeta Drive en Administrar Módulos para habilitar sincronización de recursos.",
+    "noCachedResources": "Sin recursos en caché. Haz clic en \"Sincronizar Drive\" para obtener archivos de Google Drive.",
+    "driveResources": "Recursos de Drive",
+    "textExtracted": "Texto extraído",
+    "noText": "Sin texto",
+    "spanish": "Español",
+    "badges": {
+      "drive": "Drive",
+      "noDrive": "Sin Drive"
+    },
+    "buttons": {
+      "generateAssessment": "Generar Evaluación",
+      "generating": "Generando...",
+      "syncDrive": "Sincronizar Drive",
+      "syncLessons": "Sincronizar Lecciones para IA",
+      "syncing": "Sincronizando...",
+      "viewModule": "Ver Módulo"
+    },
+    "filterButtons": {
+      "all": "Todos",
+      "hasDrive": "Con Drive",
+      "hasLessons": "Con Lecciones",
+      "noDrive": "Sin Drive"
+    },
+    "resourceStatus": {
+      "noText": "Sin texto",
+      "spanish": "Español",
+      "textExtracted": "Texto extraído"
+    },
+    "resourcesSection": {
+      "noCachedResources": "Sin recursos en caché. Haz clic en \"Sincronizar Drive\" para obtener archivos de Google Drive.",
+      "noDriveLinkd": "No hay carpeta de Google Drive vinculada. Configura la carpeta en Administrar Módulos para habilitar la sincronización."
+    },
+    "sections": {
+      "interactiveLessons": "Lecciones Interactivas"
+    },
+    "stats": {
+      "noDrive": "Sin Carpeta Drive",
+      "totalModules": "Total Módulos",
+      "withDrive": "Con Carpeta Drive",
+      "withLessons": "Con Lecciones"
     }
   }
 }

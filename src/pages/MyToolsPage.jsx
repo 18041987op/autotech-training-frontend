@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -11,6 +12,7 @@ import { getMyTools, returnTool, transferTool, getToolsUsers, getTransferRequest
 import { useAuthStore } from "../stores/authStore";
 
 export function MyToolsPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const [returnModal, setReturnModal] = useState(null);
@@ -49,25 +51,25 @@ export function MyToolsPage() {
   const handleRespondTransfer = async (requestId, action) => {
     try {
       await respondTransferRequest(requestId, action);
-      toast.success(action === "accept" ? "Tool transferred!" : "Request declined");
+      toast.success(action === "accept" ? t("tools.myTools.transferSuccess") : t("tools.myTools.requestDeclined"));
       queryClient.invalidateQueries({ queryKey: ["transferRequests"] });
       queryClient.invalidateQueries({ queryKey: ["myTools"] });
       queryClient.invalidateQueries({ queryKey: ["tools"] });
     } catch (err) {
-      toast.error(err.message || "Failed to respond");
+      toast.error(err.message || t("tools.myTools.respondError"));
     }
   };
 
   const handleReturnSuccess = () => {
     setReturnModal(null);
     queryClient.invalidateQueries({ queryKey: ["myTools"] });
-    toast.success("Tool returned!");
+    toast.success(t("tools.myTools.returnSuccess"));
   };
 
   const handleTransferSuccess = () => {
     setTransferModal(null);
     queryClient.invalidateQueries({ queryKey: ["myTools"] });
-    toast.success("Tool transferred!");
+    toast.success(t("tools.myTools.transferSuccess"));
   };
 
   return (
@@ -75,10 +77,10 @@ export function MyToolsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Wrench className="h-6 w-6 text-sky-600" />
-          My Tools
+          {t("tools.myTools.title")}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Tools currently borrowed to you
+          {t("tools.myTools.subtitle")}
         </p>
       </div>
 
@@ -102,13 +104,13 @@ export function MyToolsPage() {
                     onClick={() => handleRespondTransfer(req.id, "accept")}
                     className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1"
                   >
-                    <Check className="h-3 w-3" /> Accept
+                    <Check className="h-3 w-3" /> {t("tools.myTools.accept")}
                   </button>
                   <button
                     onClick={() => handleRespondTransfer(req.id, "decline")}
                     className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-100 flex items-center gap-1"
                   >
-                    <XCircle className="h-3 w-3" /> Decline
+                    <XCircle className="h-3 w-3" /> {t("tools.myTools.decline")}
                   </button>
                 </div>
               </div>
@@ -126,9 +128,9 @@ export function MyToolsPage() {
       ) : loans.length === 0 ? (
         <div className="text-center py-16">
           <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 text-sm mb-2">No tools currently borrowed</p>
+          <p className="text-slate-500 text-sm mb-2">{t("tools.myTools.noTools")}</p>
           <Link to="/tools" className="text-sm text-sky-600 hover:underline">
-            Browse the catalog
+            {t("tools.myTools.browseCatalog")}
           </Link>
         </div>
       ) : (
@@ -170,7 +172,7 @@ export function MyToolsPage() {
                       <p className="text-xs text-slate-400">{loan.vehicle}</p>
                     )}
                     <p className="text-xs text-slate-400 mt-1">
-                      Return by: {new Date(loan.expected_return).toLocaleString()}
+                      {t("tools.myTools.dueDate")}: {new Date(loan.expected_return).toLocaleString()}
                     </p>
                   </div>
                   <div className="flex flex-col gap-1.5 shrink-0">
@@ -178,13 +180,13 @@ export function MyToolsPage() {
                       onClick={() => setReturnModal(loan)}
                       className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1"
                     >
-                      <CheckCircle className="h-3 w-3" /> Return
+                      <CheckCircle className="h-3 w-3" /> {t("tools.myTools.return")}
                     </button>
                     <button
                       onClick={() => setTransferModal(loan)}
                       className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1"
                     >
-                      <ArrowRightLeft className="h-3 w-3" /> Transfer
+                      <ArrowRightLeft className="h-3 w-3" /> {t("tools.myTools.transfer")}
                     </button>
                   </div>
                 </div>
@@ -214,6 +216,7 @@ export function MyToolsPage() {
 }
 
 function QuickReturnModal({ loan, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [condition, setCondition] = useState("good");
   const [damageDesc, setDamageDesc] = useState("");
   const [wasNeeded, setWasNeeded] = useState(null);
@@ -239,7 +242,7 @@ function QuickReturnModal({ loan, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold mb-4">Return: {loan.tool_name}</h3>
+        <h3 className="text-lg font-bold mb-4">{t("tools.myTools.return")}: {loan.tool_name}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-3">
             {["good", "damaged"].map((v) => (
@@ -268,7 +271,7 @@ function QuickReturnModal({ loan, onClose, onSuccess }) {
           {/* Was this tool needed? feedback */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Was this tool needed for the job?
+              {t("tools.detail.wasNeeded")}
             </label>
             <div className="flex gap-3">
               <button
@@ -310,6 +313,7 @@ function QuickReturnModal({ loan, onClose, onSuccess }) {
 }
 
 function QuickTransferModal({ loan, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [toId, setToId] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -328,7 +332,7 @@ function QuickTransferModal({ loan, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold mb-4">Transfer: {loan.tool_name}</h3>
+        <h3 className="text-lg font-bold mb-4">{t("tools.myTools.transfer")}: {loan.tool_name}</h3>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate({ targetTechnicianId: toId, notes }); }} className="space-y-4">
           <select value={toId} onChange={(e) => setToId(e.target.value)} required className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
             <option value="">Select technician...</option>

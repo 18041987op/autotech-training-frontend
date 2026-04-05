@@ -70,14 +70,14 @@ export function Layout({ user, onSignOut }) {
       label: null, // no header for top section
       items: [
         { to: "/",         label: t("nav.home"), icon: HomeIcon, end: true },
-        { to: "/keyboard", label: "Key Board",   icon: KeyRound },
+        { to: "/keyboard", label: t("nav2.keyBoard"),   icon: KeyRound },
       ],
     },
     {
       key: "training",
       label: t("nav.training"),
       items: [
-        { to: "/training",    label: "Modules",           icon: GraduationCap },
+        { to: "/training",    label: t("nav2.modules"),           icon: GraduationCap },
         { to: "/assessments", label: t("nav.assessments"), icon: Layers },
         { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
         { to: "/scorecard",   label: t("nav.myScorecard"), icon: Gauge },
@@ -87,22 +87,22 @@ export function Layout({ user, onSignOut }) {
     },
     {
       key: "tools",
-      label: "Tools",
+      label: t("nav2.tools"),
       items: [
-        { to: "/tools",    label: "Catalog",  icon: Wrench },
-        { to: "/my-tools", label: "My Tools", icon: Package },
+        { to: "/tools",    label: t("nav2.catalog"),  icon: Wrench },
+        { to: "/my-tools", label: t("nav2.myTools"), icon: Package },
       ],
     },
     {
       key: "hr",
-      label: "HR",
+      label: t("nav2.hr"),
       items: [
-        { to: "/profile",   label: "My Profile", icon: User },
-        { to: "/schedule",  label: "Schedule",   icon: CalendarDays },
-        { to: "/timesheet", label: "Timesheet",  icon: Clock },
-        { to: "/time-off",  label: "Time Off",   icon: CalendarOff },
-        { to: "/benefits",  label: "Benefits",   icon: Heart },
-        { to: "/team",      label: "Team",       icon: Users },
+        { to: "/profile",   label: t("nav2.myProfile"), icon: User },
+        { to: "/schedule",  label: t("nav2.schedule"),   icon: CalendarDays },
+        { to: "/timesheet", label: t("nav2.timesheet"),  icon: Clock },
+        { to: "/time-off",  label: t("nav2.timeOff"),   icon: CalendarOff },
+        { to: "/benefits",  label: t("nav2.benefits"),   icon: Heart },
+        { to: "/team",      label: t("nav2.team"),       icon: Users },
       ],
     },
     // Admin section — only visible to admins
@@ -113,12 +113,12 @@ export function Layout({ user, onSignOut }) {
             label: t("nav.admin"),
             items: [
               { to: "/admin/progress",     label: t("nav.dashboard"), icon: BarChart2 },
-              { to: "/admin/users",        label: "Manage Users",     icon: UserCog },
-              { to: "/admin/modules",      label: "Manage Modules",   icon: GraduationCap },
-              { to: "/admin/tools",        label: "Manage Tools",     icon: Wrench },
-              { to: "/admin/loans",        label: "All Loans",        icon: ClipboardList },
-              { to: "/admin/tool-reports", label: "Tool Reports",     icon: BarChart2 },
-              { to: "/admin/suggestions",  label: "Suggestions",      icon: Lightbulb },
+              { to: "/admin/users",        label: t("nav2.manageUsers"),     icon: UserCog },
+              { to: "/admin/modules",      label: t("nav2.manageModules"),   icon: GraduationCap },
+              { to: "/admin/tools",        label: t("nav2.manageTools"),     icon: Wrench },
+              { to: "/admin/loans",        label: t("nav2.allLoans"),        icon: ClipboardList },
+              { to: "/admin/tool-reports", label: t("nav2.toolReports"),     icon: BarChart2 },
+              { to: "/admin/suggestions",  label: t("nav2.suggestions"),      icon: Lightbulb },
               { to: "/settings",           label: t("nav.settings"),  icon: SettingsIcon },
             ],
           },
@@ -397,11 +397,12 @@ function SideItem({ to, label, icon: Icon, end }) {
 
 // ─── CrossAppNav ─────────────────────────────────────────────────────────────
 function CrossAppNav({ isAdmin }) {
+  const { t } = useTranslation();
   if (!isAdmin) return null;
   return (
     <div className="border-t border-slate-200 pt-3 mt-3">
       <p className="mb-2 px-3 text-xs font-semibold uppercase text-slate-400 tracking-wider">
-        Other Apps
+        {t("nav2.otherApps")}
       </p>
       <div className="flex flex-col gap-1.5">
         {/* Management — admin only */}
@@ -414,7 +415,7 @@ function CrossAppNav({ isAdmin }) {
           <span className="w-6 h-6 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
             <BarChart2 className="w-3.5 h-3.5 text-white" />
           </span>
-          <span className="flex-1 text-left">Management</span>
+          <span className="flex-1 text-left">{t("nav2.management")}</span>
           <ExternalLink className="w-3 h-3 opacity-50" />
         </a>
       </div>

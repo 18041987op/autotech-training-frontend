@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   CalendarDays, ChevronLeft, ChevronRight, X, Save,
   CheckCircle, ShieldCheck, Lock
@@ -12,7 +13,6 @@ import {
   getShopHours
 } from "../lib/hrApi";
 
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function getWeekDates(offset = 0) {
@@ -54,6 +54,7 @@ function fmt12(t) {
 }
 
 export function SchedulePage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const isAdmin = useAuthStore((s) => s.isAdmin());
   const queryClient = useQueryClient();
@@ -194,9 +195,9 @@ export function SchedulePage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <CalendarDays className="h-6 w-6 text-sky-600" />
-            My Schedule
+            {t("hr.schedule.mySchedule")}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Your approved weekly work schedule</p>
+          <p className="text-sm text-slate-500 mt-1">{t("hr.schedule.yourApprovedSchedule")}</p>
         </div>
 
         <WeekNav weekDates={weekDates} weekOffset={weekOffset} setWeekOffset={setWeekOffset} />
@@ -223,14 +224,14 @@ export function SchedulePage() {
                 <p className={`text-xs font-bold ${
                   isClosed ? "text-slate-300" : isToday ? "text-sky-600" : "text-slate-400"
                 }`}>
-                  {DAYS[i]}
+                  {t(`hr.schedule.days.${DAY_KEYS[i]}`)}
                 </p>
                 <p className={`text-lg font-bold mt-0.5 ${isClosed ? "text-slate-300" : "text-slate-900"}`}>
                   {date.getDate()}
                 </p>
                 {isClosed ? (
                   <p className="text-[10px] text-slate-300 mt-2 flex items-center justify-center gap-0.5">
-                    <Lock className="h-2.5 w-2.5" /> Closed
+                    <Lock className="h-2.5 w-2.5" /> {t("hr.schedule.closed")}
                   </p>
                 ) : isLoading ? (
                   <div className="h-4 bg-slate-100 animate-pulse rounded mt-2" />
@@ -241,7 +242,7 @@ export function SchedulePage() {
                     </span>
                   </div>
                 ) : (
-                  <p className="text-[10px] text-slate-300 mt-2">Off</p>
+                  <p className="text-[10px] text-slate-300 mt-2">{t("hr.schedule.off")}</p>
                 )}
               </div>
             );
@@ -261,10 +262,10 @@ export function SchedulePage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <CalendarDays className="h-6 w-6 text-sky-600" />
-            Team Schedule
+            {t("hr.schedule.teamSchedule")}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Click any open cell to assign a shift. Gray columns = shop closed.
+            {t("hr.schedule.assignmentInstructions")}
           </p>
         </div>
 
@@ -277,7 +278,7 @@ export function SchedulePage() {
                        bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
           >
             <ShieldCheck className="h-4 w-4" />
-            {approveMut.isPending ? "Approving..." : `Approve Week (${unapprovedCount})`}
+            {approveMut.isPending ? t("hr.schedule.approving") : `${t("hr.schedule.approveWeek")} (${unapprovedCount})`}
           </button>
         )}
       </div>
@@ -308,11 +309,11 @@ export function SchedulePage() {
                             : "text-slate-600"
                       }`}
                     >
-                      <div className="text-[10px] uppercase">{DAYS[i]}</div>
+                      <div className="text-[10px] uppercase">{t(`hr.schedule.days.${DAY_KEYS[i]}`)}</div>
                       <div className="text-sm">{date.getDate()}</div>
                       {isClosed ? (
                         <div className="text-[9px] text-slate-400 flex items-center justify-center gap-0.5 mt-0.5">
-                          <Lock className="h-2.5 w-2.5" /> Closed
+                          <Lock className="h-2.5 w-2.5" /> {t("hr.schedule.closed")}
                         </div>
                       ) : shopDay ? (
                         <div className="text-[9px] text-slate-400 mt-0.5">
@@ -427,7 +428,7 @@ export function SchedulePage() {
                               {shift.approved ? (
                                 <CheckCircle className="h-3 w-3 text-emerald-500" />
                               ) : (
-                                <span className="text-[9px] text-amber-500 font-medium">Draft</span>
+                                <span className="text-[9px] text-amber-500 font-medium">{t("hr.schedule.draft")}</span>
                               )}
                             </div>
                           ) : (
@@ -448,15 +449,15 @@ export function SchedulePage() {
       <div className="flex flex-wrap gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300" />
-          Approved
+          {t("hr.schedule.approved")}
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded-full bg-amber-100 border border-amber-300" />
-          Draft (not visible to employees)
+          {t("hr.schedule.draftLegend")}
         </span>
         <span className="flex items-center gap-1">
           <span className="w-3 h-3 rounded bg-slate-200/60 border border-slate-300" />
-          Shop closed
+          {t("hr.schedule.shopClosedLegend")}
         </span>
       </div>
 
@@ -468,6 +469,7 @@ export function SchedulePage() {
 // ─── Sub-components ───────────────────────────────────────────────────────
 
 function WeekNav({ weekDates, weekOffset, setWeekOffset }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3">
       <button onClick={() => setWeekOffset((o) => o - 1)} className="btn-outline-sm px-2">
@@ -482,7 +484,7 @@ function WeekNav({ weekDates, weekOffset, setWeekOffset }) {
       </button>
       {weekOffset !== 0 && (
         <button onClick={() => setWeekOffset(0)} className="text-xs text-sky-600 hover:underline">
-          Today
+          {t("hr.schedule.today")}
         </button>
       )}
     </div>
@@ -507,13 +509,14 @@ function TimeSelect({ value, options, onChange, label }) {
 
 /** Shows the shop's weekly operating hours at the bottom */
 function ShopHoursLegend({ shopHours }) {
+  const { t } = useTranslation();
   if (!shopHours || Object.keys(shopHours).length === 0) return null;
-  const labels = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
+  const labels = { mon: t("hr.schedule.days.mon"), tue: t("hr.schedule.days.tue"), wed: t("hr.schedule.days.wed"), thu: t("hr.schedule.days.thu"), fri: t("hr.schedule.days.fri"), sat: t("hr.schedule.days.sat"), sun: t("hr.schedule.days.sun") };
   const order = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
   return (
     <div className="card p-4">
-      <p className="text-xs font-semibold text-slate-500 mb-2">Shop Operating Hours</p>
+      <p className="text-xs font-semibold text-slate-500 mb-2">{t("hr.schedule.shopHours")}</p>
       <div className="flex flex-wrap gap-3">
         {order.map((key) => {
           const h = shopHours[key];
@@ -526,7 +529,7 @@ function ShopHoursLegend({ shopHours }) {
               }`}
             >
               <span className="font-bold">{labels[key]}</span>{" "}
-              {isClosed ? "Closed" : `${fmt12(h.open)} – ${fmt12(h.close)}`}
+              {isClosed ? t("hr.schedule.closed") : `${fmt12(h.open)} – ${fmt12(h.close)}`}
             </div>
           );
         })}

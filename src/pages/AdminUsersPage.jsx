@@ -6,6 +6,7 @@ import { apiFetch } from "../lib/api";
 
 // ─── Inline reset-password widget ────────────────────────────────────────────
 function ResetPasswordInline({ userId, onClose }) {
+  const { t } = useTranslation();
   const [pwd, setPwd]       = useState("");
   const [show, setShow]     = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,7 @@ function ResetPasswordInline({ userId, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (pwd.length < 8) return setError("Minimum 8 characters.");
+    if (pwd.length < 8) return setError(t("adminUsers.passwordValidation"));
     setLoading(true);
     try {
       await apiFetch(`/api/admin/users/${userId}/password`, {
@@ -42,7 +43,7 @@ function ResetPasswordInline({ userId, onClose }) {
           type={show ? "text" : "password"}
           value={pwd}
           onChange={(e) => setPwd(e.target.value)}
-          placeholder="New password (min 8)"
+          placeholder={t("adminUsers.newPasswordPlaceholder")}
           autoFocus
           className="w-full rounded-lg border border-slate-200 bg-white px-3 py-1.5 pr-9 text-sm outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-soft transition"
         />
@@ -58,7 +59,7 @@ function ResetPasswordInline({ userId, onClose }) {
 
       {success ? (
         <span className="flex items-center gap-1 text-xs font-semibold text-green-600">
-          <CheckCircle2 className="h-3.5 w-3.5" /> Updated!
+          <CheckCircle2 className="h-3.5 w-3.5" /> {t("adminUsers.updated")}
         </span>
       ) : (
         <>
@@ -67,13 +68,13 @@ function ResetPasswordInline({ userId, onClose }) {
             disabled={loading || pwd.length < 8}
             className="btn-primary btn-sm disabled:opacity-50"
           >
-            {loading ? "Saving…" : "Save"}
+            {loading ? t("adminUsers.saving") : t("adminUsers.save")}
           </button>
           <button
             type="button"
             onClick={onClose}
             className="btn-outline-sm px-2"
-            title="Cancel"
+            title={t("actions.cancel")}
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -198,10 +199,10 @@ export function AdminUsersPage() {
     const email = (newUser.email || "").trim();
     const password = newUser.password || "";
 
-    if (!name) return alert("Name is required");
-    if (!email) return alert("Email is required");
+    if (!name) return alert(t("adminUsers.nameRequired"));
+    if (!email) return alert(t("adminUsers.emailRequired"));
     if (!password || password.length < 6)
-      return alert("Password must be at least 6 characters");
+      return alert(t("adminUsers.passwordRequired"));
 
     setCreating(true);
     try {
@@ -252,7 +253,7 @@ export function AdminUsersPage() {
 
           <div className="flex flex-wrap items-center gap-2">
             <button className="btn-primary btn-sm" onClick={openCreateUser} type="button">
-              + Add User
+              + {t("adminUsers.addUser")}
             </button>
 
             {stats.inactive > 0 && (
@@ -261,7 +262,7 @@ export function AdminUsersPage() {
                 onClick={() => setShowInactive((v) => !v)}
                 type="button"
               >
-                {showInactive ? `Hide inactive (${stats.inactive})` : `Show inactive (${stats.inactive})`}
+                {showInactive ? `${t("adminUsers.hideInactive")} (${stats.inactive})` : `${t("adminUsers.showInactive")} (${stats.inactive})`}
               </button>
             )}
 
@@ -407,9 +408,9 @@ export function AdminUsersPage() {
           <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-extrabold">Add User</h2>
+                <h2 className="text-xl font-extrabold">{t("adminUsers.addUserTitle")}</h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Create a new user and assign a role.
+                  {t("adminUsers.addUserSubtitle")}
                 </p>
               </div>
 
@@ -420,41 +421,41 @@ export function AdminUsersPage() {
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="text-xs font-semibold text-slate-600">Full name</label>
+                <label className="text-xs font-semibold text-slate-600">{t("adminUsers.formLabels.fullName")}</label>
                 <input
                   className="mt-1 input"
                   value={newUser.name}
                   onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))}
-                  placeholder="e.g., Juan Perez"
+                  placeholder={t("adminUsers.formPlaceholders.name")}
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-600">Email</label>
+                <label className="text-xs font-semibold text-slate-600">{t("adminUsers.formLabels.email")}</label>
                 <input
                   className="mt-1 input"
                   value={newUser.email}
                   onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
-                  placeholder="name@autorxcenter.com"
+                  placeholder={t("adminUsers.formPlaceholders.email")}
                 />
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-slate-600">
-                  Temporary password
+                  {t("adminUsers.formLabels.temporaryPassword")}
                 </label>
                 <input
                   className="mt-1 input"
                   value={newUser.password}
                   onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
-                  placeholder="Min 6 characters"
+                  placeholder={t("adminUsers.formPlaceholders.password")}
                   type="password"
                 />
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-xs font-semibold text-slate-600">Role</label>
+                  <label className="text-xs font-semibold text-slate-600">{t("adminUsers.formLabels.role")}</label>
                   <select
                     className="mt-1 input bg-white"
                     value={newUser.role}
@@ -476,7 +477,7 @@ export function AdminUsersPage() {
                         setNewUser((p) => ({ ...p, approved: e.target.checked }))
                       }
                     />
-                    Approved
+                    {t("adminUsers.formLabels.approved")}
                   </label>
                 </div>
               </div>
@@ -493,7 +494,7 @@ export function AdminUsersPage() {
                 type="button"
                 disabled={creating}
               >
-                {creating ? "Creating…" : "Create user"}
+                {creating ? t("adminUsers.creating") : t("adminUsers.createUser")}
               </button>
             </div>
           </div>

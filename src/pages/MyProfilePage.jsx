@@ -1,10 +1,12 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { User, Mail, Phone, Briefcase, Calendar, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "../stores/authStore";
 import { getMyProfile } from "../lib/hrApi";
 
 export function MyProfilePage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
 
   const { data, isLoading } = useQuery({
@@ -20,10 +22,10 @@ export function MyProfilePage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <User className="h-6 w-6 text-sky-600" />
-          My Profile
+          {t("hr.profile.title")}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Your employee information
+          {t("hr.profile.subtitle")}
         </p>
       </div>
 
@@ -40,14 +42,14 @@ export function MyProfilePage() {
         </div>
       ) : (
         <div className="card divide-y divide-slate-100">
-          <ProfileRow icon={User} label="Name" value={profile.employee_name} />
-          <ProfileRow icon={Mail} label="Email" value={profile.work_email || user?.email} />
-          <ProfileRow icon={Phone} label="Phone" value={profile.phone || "—"} />
-          <ProfileRow icon={Briefcase} label="Role" value={profile.role || user?.role} />
-          <ProfileRow icon={Shield} label="Department" value={profile.department || "—"} />
-          <ProfileRow icon={Calendar} label="Start Date" value={profile.start_date ? new Date(profile.start_date).toLocaleDateString() : "—"} />
-          <ProfileRow icon={Briefcase} label="Pay Type" value={profile.pay_type || "—"} />
-          <ProfileRow icon={Briefcase} label="Status" value={profile.active ? "Active" : "Inactive"} />
+          <ProfileRow icon={User} label={t("hr.profile.name")} value={profile.employee_name} />
+          <ProfileRow icon={Mail} label={t("hr.profile.email")} value={profile.work_email || user?.email} />
+          <ProfileRow icon={Phone} label={t("hr.profile.phone")} value={profile.phone || "—"} />
+          <ProfileRow icon={Briefcase} label={t("hr.profile.role")} value={profile.role || user?.role} />
+          <ProfileRow icon={Shield} label={t("hr.profile.department")} value={profile.department || "—"} />
+          <ProfileRow icon={Calendar} label={t("hr.profile.startDate")} value={profile.start_date ? new Date(profile.start_date).toLocaleDateString() : "—"} />
+          <ProfileRow icon={Briefcase} label={t("hr.profile.payType")} value={profile.pay_type || "—"} />
+          <ProfileRow icon={Briefcase} label={t("hr.profile.status")} value={profile.active ? t("hr.profile.statusActive") : t("hr.profile.statusInactive")} />
         </div>
       )}
     </div>

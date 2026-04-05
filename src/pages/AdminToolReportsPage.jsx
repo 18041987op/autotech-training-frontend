@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { BarChart3, AlertTriangle, Clock, Users } from "lucide-react";
 import { getToolsReport, getToolStats } from "../lib/toolsApi";
 
 export function AdminToolReportsPage() {
+  const { t } = useTranslation();
   const [reportType, setReportType] = useState("late-returns");
 
   const { data: statsData } = useQuery({
@@ -24,29 +26,29 @@ export function AdminToolReportsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <BarChart3 className="h-6 w-6 text-sky-600" />
-          Tool Reports
+          {t("adminToolReports2.title")}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Accountability and usage analytics
+          {t("adminToolReports2.subtitle")}
         </p>
       </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Total Tools</p>
+          <p className="text-xs font-medium text-slate-400">{t("adminToolReports2.stats.totalTools")}</p>
           <p className="text-2xl font-bold text-slate-900">{stats.total || 0}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-emerald-500">Available</p>
+          <p className="text-xs font-medium text-emerald-500">{t("adminToolReports2.stats.available")}</p>
           <p className="text-2xl font-bold text-emerald-700">{stats.available || 0}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-amber-500">Borrowed</p>
+          <p className="text-xs font-medium text-amber-500">{t("adminToolReports2.stats.borrowed")}</p>
           <p className="text-2xl font-bold text-amber-700">{stats.borrowed || 0}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-red-500">Damaged</p>
+          <p className="text-xs font-medium text-red-500">{t("adminToolReports2.stats.damaged")}</p>
           <p className="text-2xl font-bold text-red-700">{stats.damaged || 0}</p>
         </div>
       </div>
@@ -59,7 +61,7 @@ export function AdminToolReportsPage() {
             reportType === "late-returns" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
           }`}
         >
-          <Clock className="h-3.5 w-3.5" /> Late Returns
+          <Clock className="h-3.5 w-3.5" /> {t("adminToolReports2.tabs.lateReturns")}
         </button>
         <button
           onClick={() => setReportType("damaged-returns")}
@@ -67,7 +69,7 @@ export function AdminToolReportsPage() {
             reportType === "damaged-returns" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
           }`}
         >
-          <AlertTriangle className="h-3.5 w-3.5" /> Damaged Returns
+          <AlertTriangle className="h-3.5 w-3.5" /> {t("adminToolReports2.tabs.damagedReturns")}
         </button>
       </div>
 
@@ -78,14 +80,14 @@ export function AdminToolReportsPage() {
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
                 <th className="text-left px-4 py-3 font-semibold text-slate-600">
-                  <Users className="h-4 w-4 inline mr-1" /> Technician
+                  <Users className="h-4 w-4 inline mr-1" /> {t("adminToolReports2.tableHeaders.technician")}
                 </th>
                 <th className="text-right px-4 py-3 font-semibold text-slate-600">
-                  {reportType === "late-returns" ? "Late Count" : "Damage Count"}
+                  {reportType === "late-returns" ? t("adminToolReports2.tableHeaders.lateCount") : t("adminToolReports2.tableHeaders.damageCount")}
                 </th>
                 {reportType === "late-returns" && (
                   <th className="text-right px-4 py-3 font-semibold text-slate-600">
-                    Avg Hours Late
+                    {t("adminToolReports2.tableHeaders.avgHoursLate")}
                   </th>
                 )}
               </tr>
@@ -102,14 +104,14 @@ export function AdminToolReportsPage() {
               ) : report.length === 0 ? (
                 <tr>
                   <td colSpan={3} className="text-center py-12 text-slate-400">
-                    No data for this report
+                    {t("adminToolReports2.noData")}
                   </td>
                 </tr>
               ) : (
                 report.map((row, i) => (
                   <tr key={i} className="hover:bg-slate-50/50">
                     <td className="px-4 py-3 font-medium text-slate-900">
-                      {row.technician_name || "Unknown"}
+                      {row.technician_name || t("adminToolReports2.unknown")}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className={`inline-block min-w-[32px] text-center font-bold text-xs px-2 py-0.5 rounded-full ${

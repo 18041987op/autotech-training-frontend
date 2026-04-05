@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   ArrowLeft, Wrench, Clock,
@@ -20,6 +21,7 @@ const STATUS_COLORS = {
 };
 
 export function ToolDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -67,9 +69,9 @@ export function ToolDetailPage() {
   if (!tool) {
     return (
       <div className="text-center py-16">
-        <p className="text-slate-500">Tool not found</p>
+        <p className="text-slate-500">{t("tools.detail.notFound")}</p>
         <Link to="/tools" className="text-sm text-sky-600 hover:underline mt-2 inline-block">
-          Back to catalog
+          {t("tools.detail.backToCatalog")}
         </Link>
       </div>
     );
@@ -82,7 +84,7 @@ export function ToolDetailPage() {
         onClick={() => navigate("/tools")}
         className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-sky-600"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to catalog
+        <ArrowLeft className="h-4 w-4" /> {t("tools.detail.backToCatalog")}
       </button>
 
       {/* Tool header */}
@@ -110,12 +112,12 @@ export function ToolDetailPage() {
               <p className="text-sm text-slate-600 mt-2">{tool.description}</p>
             )}
             <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
-              <InfoRow label="Category" value={tool.category} />
-              <InfoRow label="Location" value={tool.location} />
-              <InfoRow label="Serial #" value={tool.serial_number || "—"} />
-              <InfoRow label="Part #" value={tool.part_number || "—"} />
-              <InfoRow label="Cost" value={`$${Number(tool.cost || 0).toFixed(2)}`} />
-              <InfoRow label="Purchase" value={tool.purchase_date || "—"} />
+              <InfoRow label={t("tools.detail.category")} value={tool.category} />
+              <InfoRow label={t("tools.detail.location")} value={tool.location} />
+              <InfoRow label={t("tools.detail.serialNumber")} value={tool.serial_number || "—"} />
+              <InfoRow label={t("tools.detail.partNumber")} value={tool.part_number || "—"} />
+              <InfoRow label={t("tools.detail.cost")} value={`$${Number(tool.cost || 0).toFixed(2)}`} />
+              <InfoRow label={t("tools.detail.purchaseDate")} value={tool.purchase_date || "—"} />
             </div>
           </div>
           {/* QR Code */}
@@ -126,7 +128,7 @@ export function ToolDetailPage() {
                 alt="QR Code"
                 className="w-24 h-24 rounded-lg border border-slate-200"
               />
-              <span className="text-xs text-slate-400">Scan QR</span>
+              <span className="text-xs text-slate-400">{t("tools.detail.scanQR")}</span>
             </div>
           )}
         </div>
@@ -136,15 +138,15 @@ export function ToolDetailPage() {
       {activeLoan && (
         <div className="card p-5 border-l-4 border-l-amber-400 bg-amber-50/50">
           <h3 className="font-semibold text-slate-900 text-sm mb-3 flex items-center gap-2">
-            <Clock className="h-4 w-4 text-amber-500" /> Currently Borrowed
+            <Clock className="h-4 w-4 text-amber-500" /> {t("tools.detail.currentlyBorrowed")}
           </h3>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <InfoRow label="Technician" value={activeLoan.technician?.name || activeLoan.technician_name || activeLoan.technician_id} />
-            <InfoRow label="Purpose" value={activeLoan.purpose} />
+            <InfoRow label={t("tools.detail.purpose")} value={activeLoan.purpose} />
             <InfoRow label="Vehicle" value={activeLoan.vehicle || "—"} />
-            <InfoRow label="Borrowed" value={new Date(activeLoan.borrowed_at).toLocaleDateString()} />
+            <InfoRow label={t("tools.detail.borrowedOn")} value={new Date(activeLoan.borrowed_at).toLocaleDateString()} />
             <InfoRow
-              label="Expected Return"
+              label={t("tools.detail.due")}
               value={new Date(activeLoan.expected_return).toLocaleString()}
             />
             <InfoRow
@@ -162,13 +164,13 @@ export function ToolDetailPage() {
                 onClick={() => setReturnModal(activeLoan)}
                 className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1.5"
               >
-                <CheckCircle className="h-3.5 w-3.5" /> Return Tool
+                <CheckCircle className="h-3.5 w-3.5" /> {t("tools.detail.returnTool")}
               </button>
               <button
                 onClick={() => setTransferModal(activeLoan)}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
               >
-                <ArrowRightLeft className="h-3.5 w-3.5" /> Transfer
+                <ArrowRightLeft className="h-3.5 w-3.5" /> {t("tools.detail.transferTool")}
               </button>
             </div>
           )}
@@ -178,10 +180,10 @@ export function ToolDetailPage() {
       {/* Loan history */}
       <div className="card">
         <h3 className="font-semibold text-slate-900 text-sm p-4 border-b border-slate-100">
-          Loan History
+          {t("tools.detail.loanHistory")}
         </h3>
         {loans.length === 0 ? (
-          <p className="text-sm text-slate-400 p-4">No loan history</p>
+          <p className="text-sm text-slate-400 p-4">{t("tools.detail.noLoans")}</p>
         ) : (
           <div className="divide-y divide-slate-100">
             {loans.map((loan) => (
@@ -200,7 +202,10 @@ export function ToolDetailPage() {
                   loan.status === "returned" ? "bg-emerald-100 text-emerald-700" :
                   "bg-blue-100 text-blue-700"
                 }`}>
-                  {loan.status}
+                  {loan.status === "active" ? t("tools.detail.active") :
+                   loan.status === "returned" ? t("tools.detail.returned") :
+                   loan.status === "transferred" ? t("tools.detail.transferred") :
+                   loan.status}
                 </span>
               </div>
             ))}
@@ -247,6 +252,7 @@ function InfoRow({ label, value }) {
 }
 
 function ReturnModal({ loan, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [condition, setCondition] = useState("good");
   const [damageDesc, setDamageDesc] = useState("");
   const [wasNeeded, setWasNeeded] = useState(null);
@@ -254,7 +260,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
   const mutation = useMutation({
     mutationFn: (data) => returnTool(loan.id, data),
     onSuccess: () => {
-      toast.success("Tool returned successfully");
+      toast.success(t("tools.detail.returnSuccess"));
       onSuccess();
     },
     onError: (err) => toast.error(err.message),
@@ -275,10 +281,10 @@ function ReturnModal({ loan, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Return Tool</h3>
+        <h3 className="text-lg font-bold text-slate-900 mb-4">{t("tools.detail.returnTool")}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Condition</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">{t("tools.detail.condition")}</label>
             <div className="flex gap-3">
               <label className={`flex-1 p-3 rounded-xl border-2 cursor-pointer text-center text-sm font-medium transition ${
                 condition === "good" ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-slate-200 text-slate-600"
@@ -298,7 +304,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
           </div>
           {condition === "damaged" && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Damage Description *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t("tools.detail.damageDesc")}</label>
               <textarea
                 value={damageDesc}
                 onChange={(e) => setDamageDesc(e.target.value)}
@@ -313,7 +319,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
           {/* Was this tool needed? feedback */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Was this tool needed for the job?
+              {t("tools.detail.wasNeeded")}
             </label>
             <div className="flex gap-3">
               <button
@@ -339,7 +345,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
                 <ThumbsDown className="h-4 w-4" /> No
               </button>
             </div>
-            <p className="text-xs text-slate-400 mt-1">This helps improve future tool recommendations</p>
+            <p className="text-xs text-slate-400 mt-1">{t("tools.detail.feedbackHint")}</p>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -357,6 +363,7 @@ function ReturnModal({ loan, onClose, onSuccess }) {
 }
 
 function TransferModal({ loan, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [toId, setToId] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -370,7 +377,7 @@ function TransferModal({ loan, onClose, onSuccess }) {
   const mutation = useMutation({
     mutationFn: (data) => transferTool(loan.id, data),
     onSuccess: () => {
-      toast.success("Tool transferred");
+      toast.success(t("tools.detail.transferSuccess"));
       onSuccess();
     },
     onError: (err) => toast.error(err.message),
@@ -384,10 +391,10 @@ function TransferModal({ loan, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Transfer Tool</h3>
+        <h3 className="text-lg font-bold text-slate-900 mb-4">{t("tools.detail.transferTool")}</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Transfer to *</label>
+            <label className="block text-xs font-medium text-slate-600 mb-1">{t("tools.detail.transferTo")}</label>
             <select
               value={toId}
               onChange={(e) => setToId(e.target.value)}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { CalendarOff, Plus } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import { getMyTimeOff, requestTimeOff, getTimeOffBalance } from "../lib/hrApi";
@@ -20,6 +21,7 @@ const STATUS_STYLES = {
 };
 
 export function TimeOffPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -45,39 +47,39 @@ export function TimeOffPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <CalendarOff className="h-6 w-6 text-sky-600" />
-            Time Off
+            {t("hr.timeOff.title")}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Request and track your time off</p>
+          <p className="text-sm text-slate-500 mt-1">{t("hr.timeOff.subtitle")}</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 flex items-center gap-2 self-start"
         >
-          <Plus className="h-4 w-4" /> Request Time Off
+          <Plus className="h-4 w-4" /> {t("hr.timeOff.requestTimeOff")}
         </button>
       </div>
 
       {/* Balance cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Vacation</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.vacation")}</p>
           <p className="text-2xl font-bold text-sky-700">{balance.vacation_remaining ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">of {balance.vacation_total ?? "—"} days</p>
+          <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.vacation_total ?? "—"} {t("hr.timeOff.days")}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Sick</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.sick")}</p>
           <p className="text-2xl font-bold text-amber-700">{balance.sick_remaining ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">of {balance.sick_total ?? "—"} days</p>
+          <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.sick_total ?? "—"} {t("hr.timeOff.days")}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Personal</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.personal")}</p>
           <p className="text-2xl font-bold text-purple-700">{balance.personal_remaining ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">of {balance.personal_total ?? "—"} days</p>
+          <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.personal_total ?? "—"} {t("hr.timeOff.days")}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Used YTD</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.usedYTD")}</p>
           <p className="text-2xl font-bold text-slate-700">{balance.used_ytd ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">days total</p>
+          <p className="text-[10px] text-slate-400">{t("hr.timeOff.daysTotal")}</p>
         </div>
       </div>
 
@@ -87,11 +89,11 @@ export function TimeOffPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Type</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Dates</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">Days</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">Reason</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Status</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.type")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.dates")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("hr.timeOff.days")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("hr.timeOff.reason")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.status")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -106,7 +108,7 @@ export function TimeOffPage() {
               ) : requests.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-slate-400">
-                    No time-off requests yet
+                    {t("hr.timeOff.noRequests")}
                   </td>
                 </tr>
               ) : (
@@ -149,6 +151,7 @@ export function TimeOffPage() {
 }
 
 function TimeOffRequestModal({ email, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     type: "vacation",
     start_date: "",
@@ -167,32 +170,32 @@ function TimeOffRequestModal({ email, onClose, onSuccess }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-bold text-slate-900 mb-4">Request Time Off</h3>
+        <h3 className="text-lg font-bold text-slate-900 mb-4">{t("hr.timeOff.requestTimeOff")}</h3>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(form); }} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Type</label>
+            <label className="block text-xs font-medium text-slate-600 mb-1">{t("hr.timeOff.type")}</label>
             <select value={form.type} onChange={set("type")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
               {REQUEST_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Start Date</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("hr.timeOff.startDate")}</label>
               <input type="date" value={form.start_date} onChange={set("start_date")} required className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">End Date</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("hr.timeOff.endDate")}</label>
               <input type="date" value={form.end_date} onChange={set("end_date")} required className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-600 mb-1">Reason (optional)</label>
-            <textarea value={form.reason} onChange={set("reason")} rows={2} placeholder="Brief description..." className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
+            <label className="block text-xs font-medium text-slate-600 mb-1">{t("hr.timeOff.reasonOptional")}</label>
+            <textarea value={form.reason} onChange={set("reason")} rows={2} placeholder={t("hr.timeOff.reasonPlaceholder")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
           </div>
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium hover:bg-slate-50">Cancel</button>
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium hover:bg-slate-50">{t("hr.timeOff.cancel")}</button>
             <button type="submit" disabled={mutation.isPending || !form.start_date || !form.end_date} className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50">
-              {mutation.isPending ? "Submitting..." : "Submit Request"}
+              {mutation.isPending ? t("hr.timeOff.submitting") : t("hr.timeOff.submitRequest")}
             </button>
           </div>
         </form>

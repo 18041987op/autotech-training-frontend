@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   Wrench, Plus, Pencil, Trash2, Search,
@@ -36,6 +37,7 @@ const STATUS_COLORS = {
 };
 
 export function AdminToolsPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [editModal, setEditModal] = useState(null); // null | 'new' | tool object
@@ -57,7 +59,7 @@ export function AdminToolsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id) => deleteTool(id),
     onSuccess: () => {
-      toast.success("Tool deleted");
+      toast.success(t("adminTools.toolDeleted"));
       queryClient.invalidateQueries({ queryKey: ["tools"] });
       queryClient.invalidateQueries({ queryKey: ["toolStats"] });
       setDeleteConfirm(null);
@@ -80,7 +82,7 @@ export function AdminToolsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Settings className="h-6 w-6 text-sky-600" />
-            Tool Management
+            {t("adminTools.title")}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
             {stats.total || 0} tools · ${Number(stats.total_value || 0).toLocaleString()} inventory value
@@ -90,7 +92,7 @@ export function AdminToolsPage() {
           onClick={() => setEditModal("new")}
           className="px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 flex items-center gap-2 self-start"
         >
-          <Plus className="h-4 w-4" /> Add Tool
+          <Plus className="h-4 w-4" /> {t("adminTools.addTool")}
         </button>
       </div>
 
@@ -99,7 +101,7 @@ export function AdminToolsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input
           type="text"
-          placeholder="Search tools..."
+          placeholder={t("adminTools.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
@@ -112,12 +114,12 @@ export function AdminToolsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Tool</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">Category</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Status</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Location</th>
-                <th className="text-right px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Cost</th>
-                <th className="text-right px-4 py-3 font-semibold text-slate-600">Actions</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("adminTools.tableHeaders.tool")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("adminTools.tableHeaders.category")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("adminTools.tableHeaders.status")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">{t("adminTools.tableHeaders.location")}</th>
+                <th className="text-right px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">{t("adminTools.tableHeaders.cost")}</th>
+                <th className="text-right px-4 py-3 font-semibold text-slate-600">{t("adminTools.tableHeaders.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -133,7 +135,7 @@ export function AdminToolsPage() {
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-slate-400">
                     <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    No tools found
+                    {t("adminTools.noToolsFound")}
                   </td>
                 </tr>
               ) : (
@@ -217,20 +219,20 @@ export function AdminToolsPage() {
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Delete Tool?</h3>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">{t("adminTools.deleteTitle")}</h3>
             <p className="text-sm text-slate-500 mb-4">
-              Are you sure you want to delete <strong>{deleteConfirm.name}</strong>? This action cannot be undone.
+              {t("adminTools.deleteMessage", { name: deleteConfirm.name })}
             </p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteConfirm(null)} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium hover:bg-slate-50">
-                Cancel
+                {t("adminTools.cancel")}
               </button>
               <button
                 onClick={() => deleteMutation.mutate(deleteConfirm.id)}
                 disabled={deleteMutation.isPending}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-50"
               >
-                {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                {deleteMutation.isPending ? t("adminTools.deleting") : t("adminTools.delete")}
               </button>
             </div>
           </div>
@@ -241,6 +243,7 @@ export function AdminToolsPage() {
 }
 
 function ToolFormModal({ tool, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const isNew = !tool;
   const [form, setForm] = useState({
     name: tool?.name || "",
@@ -258,7 +261,7 @@ function ToolFormModal({ tool, onClose, onSuccess }) {
   const mutation = useMutation({
     mutationFn: (data) => isNew ? createTool(data) : updateTool(tool.id, data),
     onSuccess: () => {
-      toast.success(isNew ? "Tool created" : "Tool updated");
+      toast.success(isNew ? t("adminTools.toolCreated") : t("adminTools.toolUpdated"));
       onSuccess();
     },
     onError: (err) => toast.error(err.message),
@@ -270,55 +273,55 @@ function ToolFormModal({ tool, onClose, onSuccess }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-y-auto py-8" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-bold text-slate-900 mb-4">
-          {isNew ? "Add New Tool" : `Edit: ${tool.name}`}
+          {isNew ? t("adminTools.addNewTool") : `${t("adminTools.edit")}: ${tool.name}`}
         </h3>
         <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(form); }} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Name *</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.name")} *</label>
               <input type="text" value={form.name} onChange={set("name")} required className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Category *</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.category")} *</label>
               <select value={form.category} onChange={set("category")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
                 {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Location *</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.location")} *</label>
               <input type="text" value={form.location} onChange={set("location")} required className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Serial #</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.serial")}</label>
               <input type="text" value={form.serial_number} onChange={set("serial_number")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Part #</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.part")}</label>
               <input type="text" value={form.part_number} onChange={set("part_number")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Cost ($)</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.cost")}</label>
               <input type="number" step="0.01" value={form.cost} onChange={set("cost")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Purchase Date</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.purchaseDate")}</label>
               <input type="date" value={form.purchase_date} onChange={set("purchase_date")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Image URL</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.imageUrl")}</label>
               <input type="url" value={form.image_url} onChange={set("image_url")} placeholder="https://..." className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.description")}</label>
               <textarea value={form.description} onChange={set("description")} rows={2} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
           </div>
           <div className="flex gap-3 pt-3">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium hover:bg-slate-50">
-              Cancel
+              {t("adminTools.cancel")}
             </button>
             <button type="submit" disabled={mutation.isPending || !form.name} className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50">
-              {mutation.isPending ? "Saving..." : isNew ? "Create Tool" : "Save Changes"}
+              {mutation.isPending ? t("adminTools.saving") : isNew ? t("adminTools.createTool") : t("adminTools.saveChanges")}
             </button>
           </div>
         </form>

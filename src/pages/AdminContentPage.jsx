@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   FileText, FolderSync, Search, BookOpen, Brain,
@@ -32,6 +33,7 @@ function formatDate(d) {
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 export function AdminContentPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all"); // all, has-resources, no-resources, has-lessons
@@ -172,10 +174,10 @@ export function AdminContentPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <FileText className="h-6 w-6 text-sky-600" />
-            Content Management
+            {t("adminContent.title")}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Manage Drive resources, interactive lessons, and AI assessments
+            {t("adminContent.subtitle")}
           </p>
         </div>
         <button
@@ -184,17 +186,17 @@ export function AdminContentPage() {
           className="px-4 py-2 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50 flex items-center gap-2"
         >
           <FolderSync className={`h-4 w-4 ${bulkSyncing ? "animate-spin" : ""}`} />
-          {bulkSyncing ? `Syncing ${bulkProgress?.done}/${bulkProgress?.total}...` : "Sync All Modules"}
+          {bulkSyncing ? `${t("adminContent.syncing")} ${bulkProgress?.done}/${bulkProgress?.total}...` : t("adminContent.syncAll")}
         </button>
       </div>
 
       {/* Stats cards */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard label="Total Modules" value={stats.total} icon={<Layers className="h-5 w-5 text-sky-500" />} />
-          <StatCard label="With Drive Folder" value={stats.withDrive} icon={<FolderSync className="h-5 w-5 text-emerald-500" />} />
-          <StatCard label="With Lessons" value={stats.withLessons} sub={`${stats.totalLessons} lessons total`} icon={<BookOpen className="h-5 w-5 text-violet-500" />} />
-          <StatCard label="No Drive Folder" value={stats.noDrive} icon={<AlertTriangle className="h-5 w-5 text-amber-500" />} />
+          <StatCard label={t("adminContent.stats.totalModules")} value={stats.total} icon={<Layers className="h-5 w-5 text-sky-500" />} />
+          <StatCard label={t("adminContent.stats.withDrive")} value={stats.withDrive} icon={<FolderSync className="h-5 w-5 text-emerald-500" />} />
+          <StatCard label={t("adminContent.stats.withLessons")} value={stats.withLessons} sub={t("adminContent.lessonsTotal", { count: stats.totalLessons })} icon={<BookOpen className="h-5 w-5 text-violet-500" />} />
+          <StatCard label={t("adminContent.stats.noDrive")} value={stats.noDrive} icon={<AlertTriangle className="h-5 w-5 text-amber-500" />} />
         </div>
       )}
 
@@ -206,16 +208,16 @@ export function AdminContentPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search modules..."
+            placeholder={t("adminContent.searchPlaceholder")}
             className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
           />
         </div>
         <div className="flex gap-2">
           {[
-            { value: "all", label: "All" },
-            { value: "has-resources", label: "Has Drive" },
-            { value: "no-resources", label: "No Drive" },
-            { value: "has-lessons", label: "Has Lessons" },
+            { value: "all", label: t("adminContent.filterButtons.all") },
+            { value: "has-resources", label: t("adminContent.filterButtons.hasDrive") },
+            { value: "no-resources", label: t("adminContent.filterButtons.noDrive") },
+            { value: "has-lessons", label: t("adminContent.filterButtons.hasLessons") },
           ].map((f) => (
             <button
               key={f.value}
@@ -241,7 +243,7 @@ export function AdminContentPage() {
         </div>
       ) : filteredModules.length === 0 ? (
         <div className="text-center py-16 text-slate-400 text-sm">
-          No modules match your filter
+          {t("adminContent.noModules")}
         </div>
       ) : (
         <div className="space-y-2">
@@ -284,16 +286,16 @@ export function AdminContentPage() {
                   <div className="flex items-center gap-2 shrink-0">
                     {mod.drive_folder_id ? (
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                        <FolderSync className="h-3 w-3" /> Drive
+                        <FolderSync className="h-3 w-3" /> {t("adminContent.badges.drive")}
                       </span>
                     ) : (
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-600 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> No Drive
+                        <AlertTriangle className="h-3 w-3" /> {t("adminContent.badges.noDrive")}
                       </span>
                     )}
                     {lessons.length > 0 && (
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 flex items-center gap-1">
-                        <BookOpen className="h-3 w-3" /> {lessons.length} Lesson{lessons.length > 1 ? "s" : ""}
+                        <BookOpen className="h-3 w-3" /> {lessons.length} {t("adminContent.badges.lesson", { count: lessons.length })}
                       </span>
                     )}
                   </div>
@@ -318,7 +320,7 @@ export function AdminContentPage() {
                           className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1"
                         >
                           <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin" : ""}`} />
-                          {isSyncing ? "Syncing..." : "Sync Drive"}
+                          {isSyncing ? t("adminContent.buttons.syncing") : t("adminContent.buttons.syncDrive")}
                         </button>
                       )}
                       {lessons.length > 0 && (
@@ -328,7 +330,7 @@ export function AdminContentPage() {
                           className="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-700 disabled:opacity-50 flex items-center gap-1"
                         >
                           <Zap className={`h-3 w-3 ${isLessonSyncing ? "animate-spin" : ""}`} />
-                          {isLessonSyncing ? "Syncing..." : "Sync Lessons for AI"}
+                          {isLessonSyncing ? t("adminContent.buttons.syncing") : t("adminContent.buttons.syncLessons")}
                         </button>
                       )}
                       <button
@@ -337,14 +339,14 @@ export function AdminContentPage() {
                         className="px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold hover:bg-sky-700 disabled:opacity-50 flex items-center gap-1"
                       >
                         <Brain className={`h-3 w-3 ${isAssessing ? "animate-spin" : ""}`} />
-                        {isAssessing ? "Generating..." : "Generate Assessment"}
+                        {isAssessing ? t("adminContent.buttons.generating") : t("adminContent.buttons.generateAssessment")}
                       </button>
                       <Link
                         to={`/modules/${mod.id}`}
                         className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-white flex items-center gap-1"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <ExternalLink className="h-3 w-3" /> View Module
+                        <ExternalLink className="h-3 w-3" /> {t("adminContent.buttons.viewModule")}
                       </Link>
                     </div>
 
@@ -352,7 +354,7 @@ export function AdminContentPage() {
                     {lessons.length > 0 && (
                       <div>
                         <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                          Interactive Lessons
+                          {t("adminContent.sections.interactiveLessons")}
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {lessons.map((lesson) => (
@@ -400,10 +402,11 @@ export function AdminContentPage() {
 // ─── Resources Section (inside expanded module) ─────────────────────────────
 
 function ResourcesSection({ moduleId, resources, loading, hasDrive }) {
+  const { t } = useTranslation();
   if (!hasDrive) {
     return (
       <div className="text-xs text-slate-400 italic">
-        No Google Drive folder linked. Set the Drive folder in Manage Modules to enable resource sync.
+        {t("adminContent.resourcesSection.noDriveLinkd")}
       </div>
     );
   }
@@ -421,7 +424,7 @@ function ResourcesSection({ moduleId, resources, loading, hasDrive }) {
   if (!resources || resources.length === 0) {
     return (
       <div className="text-xs text-slate-400 italic">
-        No cached resources. Click "Sync Drive" to pull files from Google Drive.
+        {t("adminContent.resourcesSection.noCachedResources")}
       </div>
     );
   }
@@ -429,7 +432,7 @@ function ResourcesSection({ moduleId, resources, loading, hasDrive }) {
   return (
     <div>
       <h4 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-        Drive Resources ({resources.length})
+        {t("adminContent.sections.driveResources", { count: resources.length })}
       </h4>
       <div className="space-y-1 max-h-60 overflow-y-auto">
         {resources.map((res) => (
@@ -438,8 +441,8 @@ function ResourcesSection({ moduleId, resources, loading, hasDrive }) {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-slate-700 truncate">{res.name}</p>
               <p className="text-[10px] text-slate-400">
-                {res.hasText ? "Text extracted" : "No text"}
-                {res.hasTextEs ? " | Spanish" : ""}
+                {res.hasText ? t("adminContent.resourceStatus.textExtracted") : t("adminContent.resourceStatus.noText")}
+                {res.hasTextEs ? ` | ${t("adminContent.resourceStatus.spanish")}` : ""}
                 {res.extractedAt ? ` | ${formatDate(res.extractedAt)}` : ""}
               </p>
             </div>

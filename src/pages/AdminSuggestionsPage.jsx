@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Lightbulb, ArrowRight, RefreshCw, PlusCircle, User, Calendar } from "lucide-react";
 import { apiFetch } from "../lib/api";
 
@@ -54,6 +55,7 @@ const CATEGORY_TO_MODULE = {
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export function AdminSuggestionsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all"); // "all" | "tech" | "sa"
 
@@ -82,10 +84,10 @@ export function AdminSuggestionsPage() {
           </div>
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
-              Suggestions
+              {t("adminSuggestions2.title")}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-              Weekly check-in responses — what employees want to learn
+              {t("adminSuggestions2.subtitle")}
             </p>
           </div>
         </div>
@@ -95,16 +97,16 @@ export function AdminSuggestionsPage() {
           className="btn-outline-sm flex items-center gap-1.5"
         >
           <RefreshCw className="h-3.5 w-3.5" />
-          Refresh
+          {t("adminSuggestions2.refresh")}
         </button>
       </div>
 
       {/* ── Filter tabs ── */}
       <div className="flex gap-2">
         {[
-          { key: "all", label: "All" },
-          { key: "tech", label: "Technicians" },
-          { key: "sa",   label: "Service Advisors" },
+          { key: "all", label: t("adminSuggestions2.filterTabs.all") },
+          { key: "tech", label: t("adminSuggestions2.filterTabs.technicians") },
+          { key: "sa",   label: t("adminSuggestions2.filterTabs.serviceAdvisors") },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -129,7 +131,7 @@ export function AdminSuggestionsPage() {
       {/* ── Content ── */}
       {isLoading ? (
         <div className="card p-10 text-center">
-          <p className="text-slate-500 text-sm animate-pulse">Loading suggestions…</p>
+          <p className="text-slate-500 text-sm animate-pulse">{t("adminSuggestions2.loading")}</p>
         </div>
       ) : error ? (
         <div className="card p-6 text-center">
@@ -187,7 +189,7 @@ export function AdminSuggestionsPage() {
                     </div>
                     {moduleCreated && (
                       <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-medium shrink-0">
-                        ✅ Module created
+                        ✅ {t("adminSuggestions2.moduleCreated")}
                       </span>
                     )}
                   </div>
@@ -207,7 +209,7 @@ export function AdminSuggestionsPage() {
                         ? "bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-400"
                         : "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
                     }`}>
-                      {s.is_tech ? "Technician" : "Service Advisor"}
+                      {s.is_tech ? t("adminSuggestions2.technician") : t("adminSuggestions2.serviceAdvisor")}
                     </span>
                   </div>
                 </div>
@@ -222,7 +224,7 @@ export function AdminSuggestionsPage() {
                     className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary text-xs font-semibold transition-colors"
                   >
                     <PlusCircle className="h-3.5 w-3.5" />
-                    Create module
+                    {t("adminSuggestions2.createModule")}
                     <ArrowRight className="h-3 w-3" />
                   </button>
                 )}
@@ -236,7 +238,7 @@ export function AdminSuggestionsPage() {
       {suggestions.length > 0 && (
         <div className="card p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-3">
-            Topic frequency
+            {t("adminSuggestions2.topicFrequency")}
           </p>
           <div className="space-y-1.5">
             {computeTopicFrequency(suggestions).map(({ label, count, pct }) => (

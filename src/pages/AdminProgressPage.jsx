@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
@@ -57,6 +58,7 @@ function CompletionBar({ value }) {
 
 // ─── User detail row (expandable) ────────────────────────────────────────────
 function UserRow({ user }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   const statusColor =
@@ -93,23 +95,23 @@ function UserRow({ user }) {
         {/* Stats chips */}
         <div className="hidden sm:flex items-center gap-4 shrink-0">
           <div className="text-center">
-            <div className="text-xs text-slate-400 uppercase tracking-wide">Completion</div>
+            <div className="text-xs text-slate-400 uppercase tracking-wide">{t("adminProgress2.stats.completion")}</div>
             <div className="text-sm font-extrabold text-slate-700">{user.avgCompletion}%</div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-slate-400 uppercase tracking-wide">Passed</div>
+            <div className="text-xs text-slate-400 uppercase tracking-wide">{t("adminProgress2.stats.passed")}</div>
             <div className="text-sm font-extrabold text-slate-700">
               {user.passed}/{user.totalModules}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-slate-400 uppercase tracking-wide">Avg score</div>
+            <div className="text-xs text-slate-400 uppercase tracking-wide">{t("adminProgress2.stats.avgScore")}</div>
             <div className="text-sm font-extrabold text-slate-700">
               {user.avgScore !== null ? `${user.avgScore}%` : "—"}
             </div>
           </div>
           <div className="text-center">
-            <div className="text-xs text-slate-400 uppercase tracking-wide">Last active</div>
+            <div className="text-xs text-slate-400 uppercase tracking-wide">{t("adminProgress2.stats.lastActive")}</div>
             <div className="text-sm font-semibold text-slate-500">{fmtDate(user.lastActivity)}</div>
           </div>
         </div>
@@ -140,11 +142,11 @@ function UserRow({ user }) {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-slate-400 uppercase tracking-wide">
-                      <th className="text-left pb-2 font-semibold pr-4">Module</th>
-                      <th className="text-left pb-2 font-semibold pr-4">Completion</th>
-                      <th className="text-center pb-2 font-semibold pr-4">Best score</th>
-                      <th className="text-center pb-2 font-semibold pr-4">1st attempt</th>
-                      <th className="text-left pb-2 font-semibold">Last access</th>
+                      <th className="text-left pb-2 font-semibold pr-4">{t("adminProgress2.table.module")}</th>
+                      <th className="text-left pb-2 font-semibold pr-4">{t("adminProgress2.table.completion")}</th>
+                      <th className="text-center pb-2 font-semibold pr-4">{t("adminProgress2.table.bestScore")}</th>
+                      <th className="text-center pb-2 font-semibold pr-4">{t("adminProgress2.table.firstAttempt")}</th>
+                      <th className="text-left pb-2 font-semibold">{t("adminProgress2.table.lastAccess")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -156,7 +158,7 @@ function UserRow({ user }) {
                           </div>
                           {m.required && (
                             <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wide">
-                              Required
+                              {t("adminProgress2.required")}
                             </span>
                           )}
                         </td>
@@ -185,6 +187,7 @@ function UserRow({ user }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export function AdminProgressPage() {
+  const { t } = useTranslation();
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState("");
@@ -262,9 +265,9 @@ export function AdminProgressPage() {
   return (
     <div className="space-y-5">
       <PageHero
-        eyebrow="AutoRx Training"
-        title="Training Progress"
-        subtitle="Team-wide overview of module completion and assessment scores."
+        eyebrow={t("adminProgress2.eyebrow")}
+        title={t("adminProgress2.title")}
+        subtitle={t("adminProgress2.subtitle")}
       />
 
       {/* Global stats */}
@@ -273,28 +276,28 @@ export function AdminProgressPage() {
           {[
             {
               icon: Users,
-              label: "Active users",
+              label: t("adminProgress2.globalStats.activeUsers"),
               value: globalStats.total,
               color: "#1E6FAE",
               bg: "#EFF6FF",
             },
             {
               icon: Clock,
-              label: "Active this week",
+              label: t("adminProgress2.globalStats.activeThisWeek"),
               value: globalStats.activeThisWeek,
               color: "#F59E0B",
               bg: "#FFFBEB",
             },
             {
               icon: TrendingUp,
-              label: "Avg completion",
+              label: t("adminProgress2.globalStats.avgCompletion"),
               value: `${globalStats.avgCompletion}%`,
               color: "#3B82F6",
               bg: "#EFF6FF",
             },
             {
               icon: Award,
-              label: "All modules passed",
+              label: t("adminProgress2.globalStats.allModulesPassed"),
               value: globalStats.fullyPassed,
               color: "#22C55E",
               bg: "#F0FDF4",
@@ -339,12 +342,12 @@ export function AdminProgressPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-500 font-medium">Sort:</span>
+            <span className="text-xs text-slate-500 font-medium">{t("adminProgress2.sort")}:</span>
             {[
-              { key: "name", label: "Name" },
-              { key: "completion", label: "Completion" },
-              { key: "passed", label: "Passed" },
-              { key: "activity", label: "Recent" },
+              { key: "name", label: t("adminProgress2.sortOptions.name") },
+              { key: "completion", label: t("adminProgress2.sortOptions.completion") },
+              { key: "passed", label: t("adminProgress2.sortOptions.passed") },
+              { key: "activity", label: t("adminProgress2.sortOptions.recent") },
             ].map((opt) => (
               <button
                 key={opt.key}
@@ -369,7 +372,7 @@ export function AdminProgressPage() {
         {/* User rows */}
         <div className="space-y-2">
           {visibleUsers.length === 0 ? (
-            <p className="text-sm text-slate-500 text-center py-6">No users found.</p>
+            <p className="text-sm text-slate-500 text-center py-6">{t("adminProgress2.noUsers")}</p>
           ) : (
             visibleUsers.map((u) => <UserRow key={u.id} user={u} />)
           )}

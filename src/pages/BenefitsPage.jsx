@@ -1,9 +1,11 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Heart, FileText, ExternalLink } from "lucide-react";
 import { getBenefits } from "../lib/hrApi";
 
 export function BenefitsPage() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ["benefits"],
     queryFn: getBenefits,
@@ -16,9 +18,9 @@ export function BenefitsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Heart className="h-6 w-6 text-sky-600" />
-          Benefits
+          {t("hr.benefits.title")}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">Company benefits and resources</p>
+        <p className="text-sm text-slate-500 mt-1">{t("hr.benefits.subtitle")}</p>
       </div>
 
       {isLoading ? (
@@ -30,8 +32,8 @@ export function BenefitsPage() {
       ) : benefits.length === 0 ? (
         <div className="card p-8 text-center">
           <Heart className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 text-sm">No benefits information available yet.</p>
-          <p className="text-slate-400 text-xs mt-1">Contact your administrator for details.</p>
+          <p className="text-slate-500 text-sm">{t("hr.benefits.noBenefits")}</p>
+          <p className="text-slate-400 text-xs mt-1">{t("hr.benefits.contactAdmin")}</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -51,7 +53,7 @@ export function BenefitsPage() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs text-sky-600 hover:underline mt-2"
                     >
-                      Learn more <ExternalLink className="h-3 w-3" />
+                      {t("hr.benefits.learnMore")} <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                 </div>

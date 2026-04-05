@@ -44,7 +44,9 @@
     "search": "Search",
     "comingSoon": "Coming soon",
     "view": "View",
-    "optionAHelp": "Option A: layout + navigation + i18n only. Next step is wiring real data and role rules."
+    "optionAHelp": "Option A: layout + navigation + i18n only. Next step is wiring real data and role rules.",
+    "back": "Back",
+    "cancel": "Cancel"
   },
   "auth": {
     "welcomeTitle": "Welcome back",
@@ -112,19 +114,19 @@
     "blurbTraining": "Role-specific learning paths with job-ready resources.",
     "blurbCulture": "How we work: communication, quality, safety, and customer experience.",
     "blurbEvaluations": "Low-pressure assessments to confirm understanding.",
-    "greeting":          "Good morning, {{firstName}}!",
+    "greeting": "Good morning, {{firstName}}!",
     "greetingAfternoon": "Good afternoon, {{firstName}}!",
-    "greetingEvening":   "Good evening, {{firstName}}!",
-    "greetingAdmin":     "Welcome back, {{firstName}}",
-    "roleSubtitleTech":  "Technician — keep your streak going",
+    "greetingEvening": "Good evening, {{firstName}}!",
+    "greetingAdmin": "Welcome back, {{firstName}}",
+    "roleSubtitleTech": "Technician — keep your streak going",
     "roleSubtitleAdmin": "Admin Dashboard",
-    "roleSubtitleSA":    "Service Advisor — stay sharp",
-    "continueLearning":  "Continue Learning",
-    "viewAllProgress":   "View all progress →",
-    "statsCompletion":   "Avg Completion",
-    "statsPassed":       "Passed Checks",
-    "statsFirstTry":     "First-Try Accuracy",
-    "statsBadges":       "Badges Earned"
+    "roleSubtitleSA": "Service Advisor — stay sharp",
+    "continueLearning": "Continue Learning",
+    "viewAllProgress": "View all progress →",
+    "statsCompletion": "Avg Completion",
+    "statsPassed": "Passed Checks",
+    "statsFirstTry": "First-Try Accuracy",
+    "statsBadges": "Badges Earned"
   },
   "pages": {
     "onboardingTitle": "Onboarding",
@@ -251,7 +253,6 @@
     "noAssessments": "No assessments found for this module yet.",
     "passingScore": "Passing score",
     "startAssessment": "Start",
-
     "admin": {
       "generateAssessment": "Generate Assessment",
       "appendQuestions10": "Append more questions (10)",
@@ -325,7 +326,6 @@
     "firstTryAccuracy": "First-try accuracy",
     "firstTryAccuracyHelp": "How you did before any retry questions",
     "firstTryAccuracyAvg": "Avg first-try accuracy",
-
     "summary": {
       "assignedModules": "Assigned modules"
     },
@@ -397,7 +397,34 @@
     "activate": "Activate",
     "deactivate": "Deactivate",
     "deactivateConfirm": "Deactivate this user? They will lose access immediately.",
-    "lastLogin": "Last login"
+    "lastLogin": "Last login",
+    "addUser": "+ Add User",
+    "addUserSubtitle": "Create a new user and assign a role.",
+    "addUserTitle": "Add User",
+    "createUser": "Create user",
+    "creating": "Creating…",
+    "emailRequired": "Email is required",
+    "formLabels": {
+      "approved": "Approved",
+      "email": "Email",
+      "fullName": "Full name",
+      "role": "Role",
+      "temporaryPassword": "Temporary password"
+    },
+    "formPlaceholders": {
+      "email": "name@autorxcenter.com",
+      "name": "e.g., Juan Perez",
+      "password": "Min 6 characters"
+    },
+    "hideInactive": "Hide inactive",
+    "nameRequired": "Name is required",
+    "newPasswordPlaceholder": "New password (min 8)",
+    "passwordRequired": "Password must be at least 6 characters",
+    "passwordValidation": "Minimum 8 characters.",
+    "save": "Save",
+    "saving": "Saving…",
+    "showInactive": "Show inactive",
+    "updated": "Updated!"
   },
   "roles": {
     "technician": "Technician",
@@ -518,7 +545,6 @@
     "scoreReview": "Review the previous sections and try again. You can do it!",
     "diagTip": "Diagnosis tip",
     "tipPrefix": "Tip",
-
     "electricalCircuitBasics": {
       "title": "Basic Lamp Circuit",
       "description": "How a car lamp circuit works and how to diagnose faults with a Power Probe.",
@@ -644,7 +670,6 @@
         "q3exp": "12V at the input and 0V at the output with the switch ON is the definitive diagnosis of a defective switch. The component that has voltage at its input but does not pass it to its output is the failed component."
       }
     },
-
     "alternatorAndBattery": {
       "title": "Alternator & Battery",
       "description": "How the charging system works, how to test a battery with a voltmeter, and how to diagnose alternator output.",
@@ -663,10 +688,10 @@
       "section1Tip": "A healthy charging system reads 13.8–14.8V at the battery with the engine running.",
       "altDiagTip": "Test alternator output at the battery terminals with engine running. Load test by turning on headlights, AC blower, and rear defroster.",
       "navPills": {
-        "system":  "🔋 Charging System",
+        "system": "🔋 Charging System",
         "battery": "🔌 Battery Test",
-        "alt":     "⚡ Alternator Test",
-        "quiz":    "📝 Final Quiz"
+        "alt": "⚡ Alternator Test",
+        "quiz": "📝 Final Quiz"
       },
       "components": {
         "battery": {
@@ -743,7 +768,6 @@
         "q3exp": "If the battery cranks well (holds voltage under load) but dies after driving, the alternator is not recharging it. Check the serpentine belt, alternator output voltage, and alternator connections."
       }
     },
-
     "oilChange": {
       "title": "Oil Change & Fluid Services",
       "description": "Oil viscosity selection, drain and fill procedure, and fluid inspection checklist.",
@@ -770,8 +794,8 @@
       "navPills": {
         "viscosity": "🛢️ Oil Specs",
         "procedure": "🔧 Procedure",
-        "fluids":    "🔍 Fluid Check",
-        "quiz":      "📝 Final Quiz"
+        "fluids": "🔍 Fluid Check",
+        "quiz": "📝 Final Quiz"
       },
       "specs": {
         "0w20": {
@@ -851,7 +875,6 @@
         "q3exp": "The MIN mark is the absolute minimum acceptable level, not the target. Add enough oil to bring the level to the middle or upper portion of the safe zone (between MIN and MAX). Do not overfill above MAX."
       }
     },
-
     "brakeSystem": {
       "title": "Brake System Inspection & Service",
       "description": "Disc brake components, pad and rotor measurement, and brake bleeding procedure.",
@@ -875,10 +898,10 @@
       "statusReplace": "🔴 Replace",
       "bleedOrder": "Bleed Order",
       "navPills": {
-        "components":  "🛑 Components",
+        "components": "🛑 Components",
         "measurement": "📏 Measurement",
-        "bleeding":    "💧 Bleeding",
-        "quiz":        "📝 Final Quiz"
+        "bleeding": "💧 Bleeding",
+        "quiz": "📝 Final Quiz"
       },
       "parts": {
         "rotor": {
@@ -940,7 +963,6 @@
         "q3exp": "Bleed from the farthest wheel from the master cylinder (RR) to the closest (LF): RR → LR → RF → LF. This purges air completely through the longest brake lines first."
       }
     },
-
     "tireService": {
       "title": "Tire Service, TPMS & Rotation",
       "description": "Reading tire sidewalls, TPMS inflation, and rotation patterns.",
@@ -960,17 +982,17 @@
       "pressureIssues": "Pressure Issue Detected",
       "pressureIssuesDesc": "One or more tires outside of recommended range. Target: {{spec}} PSI per door jamb sticker.",
       "pressureStatus": {
-        "ok":     "✅ OK",
-        "warn":   "⚠️ Check",
-        "low":    "⬇️ Low",
-        "high":   "⬆️ High",
+        "ok": "✅ OK",
+        "warn": "⚠️ Check",
+        "low": "⬇️ Low",
+        "high": "⬆️ High",
         "danger": "🔴 Danger"
       },
       "navPills": {
-        "sizing":   "🔵 Tire Sizing",
-        "tpms":     "💨 TPMS",
+        "sizing": "🔵 Tire Sizing",
+        "tpms": "💨 TPMS",
         "rotation": "🔄 Rotation",
-        "quiz":     "📝 Final Quiz"
+        "quiz": "📝 Final Quiz"
       },
       "sidewall": {
         "width": {
@@ -1025,7 +1047,6 @@
         "q3exp": "FWD vehicles use a forward cross pattern: front tires move straight to the rear, and rear tires cross to the front (RR→FL, LR→FR). This evens out wear since FWD front tires wear faster from steering and acceleration."
       }
     },
-
     "engineCooling": {
       "title": "Engine Cooling System Service",
       "description": "Cooling system components, coolant types and mixing, and pressure testing procedure.",
@@ -1052,9 +1073,9 @@
       "mixWarn": "Adjust ratio — outside ideal range",
       "navPills": {
         "components": "🌡️ Components",
-        "coolants":   "🧪 Coolant Types",
-        "pressure":   "🔧 Pressure Test",
-        "quiz":       "📝 Final Quiz"
+        "coolants": "🧪 Coolant Types",
+        "pressure": "🔧 Pressure Test",
+        "quiz": "📝 Final Quiz"
       },
       "parts": {
         "radiator": {
@@ -1143,7 +1164,6 @@
         "q3exp": "Mixing IAT (green silicate) with OAT (organic acid) coolants causes a chemical reaction that can create a gel-like sludge. This sludge can clog small passages in the heater core, radiator, and water pump. Never mix without verifying compatibility. Use universal coolant or flush and refill completely."
       }
     },
-
     "vehicleSafety": {
       "title": "Vehicle Safety & Lift Operation",
       "description": "Lift types, safe vehicle lifting procedure, and PPE requirements for shop safety.",
@@ -1163,10 +1183,10 @@
       "ppeReady": "All PPE Checked",
       "ppeReadyDesc": "You are equipped and ready. Proceed with the job safely.",
       "navPills": {
-        "lifts":     "🏗️ Lift Types",
+        "lifts": "🏗️ Lift Types",
         "procedure": "⬆️ Lift Procedure",
-        "ppe":       "🦺 PPE",
-        "quiz":      "📝 Final Quiz"
+        "ppe": "🦺 PPE",
+        "quiz": "📝 Final Quiz"
       },
       "lifts": {
         "twoPost": {
@@ -1276,10 +1296,10 @@
       "correct": "Correct",
       "incorrect": "Incorrect",
       "navPills": {
-        "queue":     "📋 Queue",
-        "rules":     "⚠️ Rules",
+        "queue": "📋 Queue",
+        "rules": "⚠️ Rules",
         "scenarios": "🎮 Simulator",
-        "quiz":      "📝 Quiz"
+        "quiz": "📝 Quiz"
       },
       "techs": {
         "romel": {
@@ -1716,6 +1736,566 @@
       "overrideDetected": "OVERRIDE DETECTED",
       "overrideAssignedTo": "Assigned to {{current}}, rules say {{suggested}}.",
       "noReasonGiven": "No reason given."
+    }
+  },
+  "nav2": {
+    "keyBoard": "Key Board",
+    "modules": "Modules",
+    "tools": "Tools",
+    "catalog": "Catalog",
+    "myTools": "My Tools",
+    "hr": "HR",
+    "myProfile": "My Profile",
+    "schedule": "Schedule",
+    "timesheet": "Timesheet",
+    "timeOff": "Time Off",
+    "benefits": "Benefits",
+    "team": "Team",
+    "manageUsers": "Manage Users",
+    "manageModules": "Manage Modules",
+    "manageContent": "Manage Content",
+    "manageTools": "Manage Tools",
+    "allLoans": "All Loans",
+    "toolReports": "Tool Reports",
+    "suggestions": "Suggestions",
+    "otherApps": "Other Apps",
+    "management": "Management"
+  },
+  "tools": {
+    "catalog": {
+      "title": "Tool Catalog",
+      "subtitle": "Browse and borrow shop tools",
+      "searchPlaceholder": "Search tools...",
+      "allCategories": "All",
+      "statusAvailable": "Available",
+      "statusBorrowed": "Borrowed",
+      "statusMaintenance": "Maintenance",
+      "statusDamaged": "Damaged",
+      "noToolsFound": "No tools match your search",
+      "inUseBy": "In use by",
+      "available": "available",
+      "borrow": "Borrow",
+      "requestTransfer": "Request Transfer",
+      "request": "Request",
+      "scanQR": "Scan QR",
+      "cameraError": "Camera error",
+      "scanning": "Scanning...",
+      "stopScanner": "Stop Scanner",
+      "borrowSuccess": "Tool borrowed successfully!",
+      "borrowError": "Failed to borrow tool",
+      "transferRequestSent": "Transfer request sent!",
+      "transferRequestError": "Failed to send transfer request",
+      "accountNotLinked": "Account not linked to tools system",
+      "allStatus": "All Status",
+      "borrowing": "Borrowing...",
+      "confirmBorrow": "Confirm Borrow",
+      "duration1h": "1 hour",
+      "duration2h": "2 hours",
+      "duration4h": "4 hours",
+      "duration8h": "8 hours",
+      "duration24h": "24 hours",
+      "duration48h": "48 hours",
+      "failedToRespond": "Failed to respond to request",
+      "found": "found",
+      "inUse": "In use",
+      "lookingUpTools": "Looking up tools...",
+      "noActiveLoan": "No active loan found",
+      "noVehiclesFound": "No vehicles found",
+      "otherManualEntry": "Other / Manual Entry",
+      "purchaseRequestError": "Failed to submit purchase request",
+      "purpose": "Purpose",
+      "purposePlaceholder": "What do you need this tool for?",
+      "reasonOptional": "Reason (optional)",
+      "reasonPlaceholder": "Why do you need this transfer?",
+      "recommendedInStock": "Recommended — In Stock",
+      "recommendedNotInStock": "Recommended — Not In Stock",
+      "requestDeclined": "Request declined",
+      "requested": "Requested",
+      "returnIn": "Return in",
+      "selectVehicle": "Select Vehicle / RO",
+      "sendRequest": "Send Request",
+      "sending": "Sending...",
+      "statsMaintenance": "Maintenance",
+      "statsTotal": "Total",
+      "toolNotFoundQR": "Tool not found for this QR code",
+      "toolTransferred": "Tool transferred!",
+      "vehicle": "Vehicle",
+      "vehicleNotListed": "Vehicle not listed",
+      "vehiclePlaceholder": "e.g., 2020 Honda Civic"
+    },
+    "detail": {
+      "backToCatalog": "Back to catalog",
+      "notFound": "Tool not found",
+      "category": "Category",
+      "location": "Location",
+      "serialNumber": "Serial #",
+      "partNumber": "Part #",
+      "cost": "Cost",
+      "purchaseDate": "Purchase",
+      "scanQR": "Scan QR to borrow",
+      "currentlyBorrowed": "Currently Borrowed",
+      "by": "by",
+      "since": "since",
+      "due": "due",
+      "purpose": "Purpose",
+      "returnTool": "Return Tool",
+      "transferTool": "Transfer Tool",
+      "loanHistory": "Loan History",
+      "noLoans": "No loan history",
+      "returned": "Returned",
+      "active": "Active",
+      "transferred": "Transferred",
+      "condition": "Condition",
+      "returnSuccess": "Tool returned successfully!",
+      "transferSuccess": "Tool transferred successfully!",
+      "returnError": "Failed to return tool",
+      "transferError": "Failed to transfer tool",
+      "borrowedOn": "Borrowed",
+      "damageDesc": "Damage description",
+      "feedbackHint": "Was this tool needed for the job?",
+      "transferTo": "Transfer to",
+      "wasNeeded": "Was this tool needed?"
+    },
+    "myTools": {
+      "title": "My Tools",
+      "subtitle": "Tools currently borrowed to you",
+      "noTools": "No tools currently borrowed",
+      "browseCatalog": "Browse the catalog",
+      "borrowedOn": "Borrowed",
+      "dueDate": "Due",
+      "return": "Return",
+      "transfer": "Transfer",
+      "incomingRequests": "Incoming Transfer Requests",
+      "accept": "Accept",
+      "decline": "Decline",
+      "wantsToTransfer": "wants",
+      "requestAccepted": "Transfer request accepted",
+      "requestDeclined": "Transfer request declined",
+      "respondError": "Failed to respond to request",
+      "returnSuccess": "Tool returned successfully!",
+      "transferSuccess": "Tool transferred successfully!"
+    },
+    "returnModal": {
+      "title": "Return Tool",
+      "conditionLabel": "Condition",
+      "conditionGood": "Good",
+      "conditionDamaged": "Damaged",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Any notes about the return...",
+      "wasToolNeeded": "Was this tool needed for the job?",
+      "yes": "Yes",
+      "no": "No",
+      "cancel": "Cancel",
+      "confirm": "Confirm Return",
+      "returning": "Returning..."
+    },
+    "transferModal": {
+      "title": "Transfer Tool",
+      "selectTechnician": "Select Technician",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Reason for transfer...",
+      "cancel": "Cancel",
+      "confirm": "Confirm Transfer",
+      "transferring": "Transferring..."
+    },
+    "borrowModal": {
+      "title": "Borrow Tool",
+      "purposeLabel": "Purpose",
+      "purposePlaceholder": "What will you use this tool for?",
+      "dueDateLabel": "Expected return date",
+      "cancel": "Cancel",
+      "confirm": "Confirm Borrow",
+      "borrowing": "Borrowing..."
+    }
+  },
+  "hr": {
+    "profile": {
+      "title": "My Profile",
+      "subtitle": "Your employee information",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "role": "Role",
+      "email": "Email",
+      "phone": "Phone",
+      "startDate": "Start Date",
+      "department": "Department",
+      "error": "Failed to load profile",
+      "name": "Name",
+      "payType": "Pay Type",
+      "status": "Status"
+    },
+    "schedule": {
+      "title": "My Schedule",
+      "subtitle": "Your weekly work schedule",
+      "days": {
+        "sun": "Sun",
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat"
+      },
+      "daysLong": {
+        "sunday": "Sunday",
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday"
+      },
+      "off": "OFF",
+      "closed": "Closed",
+      "totalHours": "Total hours",
+      "weeklyHours": "Weekly hours",
+      "noSchedule": "No schedule published for this week",
+      "approved": "Approved",
+      "draft": "Draft",
+      "approveWeek": "Approve Week",
+      "addShift": "Add Shift",
+      "editSchedule": "Edit Schedule",
+      "selectEmployee": "Select Employee",
+      "allEmployees": "All Employees",
+      "approving": "Approving...",
+      "assignmentInstructions": "Click on a cell to assign a shift",
+      "draftLegend": "Draft (not yet visible to employees)",
+      "mySchedule": "My Schedule",
+      "shopClosedLegend": "Shop closed",
+      "shopHours": "Shop Hours",
+      "teamSchedule": "Team Schedule",
+      "today": "Today",
+      "yourApprovedSchedule": "Your approved schedule for this week"
+    },
+    "timesheet": {
+      "title": "Timesheet",
+      "subtitle": "Track your work hours",
+      "clockIn": "Clock In",
+      "clockOut": "Clock Out",
+      "startBreak": "Start Break",
+      "endBreak": "End Break",
+      "notClockedIn": "Not clocked in",
+      "workingSince": "Working since",
+      "onBreak": "On break",
+      "breaksTaken": "break(s) taken",
+      "todayHours": "Today's hours",
+      "weekHours": "This week",
+      "periodHours": "This period",
+      "status": "Status",
+      "date": "Date",
+      "hoursWorked": "Hours",
+      "breaks": "Breaks",
+      "active": "Active",
+      "noEntries": "No timesheet entries",
+      "overtime": "Overtime",
+      "payPeriod": "Pay Period",
+      "thisMonth": "This Month",
+      "thisWeek": "This Week",
+      "thisWeekLabel": "This week"
+    },
+    "timeOff": {
+      "title": "Time Off",
+      "subtitle": "Request and track your time off",
+      "requestTimeOff": "Request Time Off",
+      "balances": "Balances",
+      "vacation": "Vacation",
+      "sick": "Sick",
+      "personal": "Personal",
+      "usedYTD": "Used YTD",
+      "available": "Available",
+      "requests": "Requests",
+      "type": "Type",
+      "dates": "Dates",
+      "days": "Days",
+      "reason": "Reason",
+      "status": "Status",
+      "pending": "Pending",
+      "approved": "Approved",
+      "denied": "Denied",
+      "noRequests": "No time-off requests",
+      "submitRequest": "Submit Request",
+      "cancel": "Cancel",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "typeLabel": "Type",
+      "daysTotal": "days total",
+      "of": "of",
+      "reasonOptional": "Reason (optional)",
+      "reasonPlaceholder": "Why do you need time off?",
+      "submitting": "Submitting..."
+    },
+    "benefits": {
+      "title": "Benefits",
+      "subtitle": "Company benefits and resources",
+      "noBenefits": "Benefits information coming soon",
+      "learnMore": "Learn More",
+      "enrollment": "Enrollment",
+      "coverage": "Coverage",
+      "details": "Details",
+      "contactAdmin": "Contact your administrator for details."
+    },
+    "team": {
+      "title": "Team Directory",
+      "subtitle": "Your colleagues at AutoRx",
+      "searchPlaceholder": "Search team...",
+      "showInactive": "Show inactive",
+      "hideInactive": "Hide inactive",
+      "noResults": "No team members found",
+      "role": "Role",
+      "email": "Email",
+      "phone": "Phone",
+      "startDate": "Start Date",
+      "active": "Active",
+      "inactive": "Inactive"
+    }
+  },
+  "adminTools": {
+    "title": "Tool Management",
+    "searchPlaceholder": "Search tools...",
+    "addTool": "Add Tool",
+    "tableHeaders": {
+      "tool": "Tool",
+      "category": "Category",
+      "status": "Status",
+      "location": "Location",
+      "cost": "Cost",
+      "actions": "Actions"
+    },
+    "noToolsFound": "No tools found",
+    "deleteTool": "Delete Tool?",
+    "deleteConfirm": "Are you sure you want to delete this tool? This action cannot be undone.",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "toolDeleted": "Tool deleted",
+    "toolCreated": "Tool created",
+    "toolUpdated": "Tool updated",
+    "addNewTool": "Add New Tool",
+    "editTool": "Edit Tool",
+    "nameLabel": "Name",
+    "categoryLabel": "Category",
+    "locationLabel": "Location",
+    "serialLabel": "Serial #",
+    "partLabel": "Part #",
+    "costLabel": "Cost ($)",
+    "purchaseLabel": "Purchase Date",
+    "imageLabel": "Image URL",
+    "descriptionLabel": "Description",
+    "cancel": "Cancel",
+    "createTool": "Create Tool",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "deleteTitle": "Delete Tool?",
+    "edit": "Edit",
+    "formLabels": {
+      "category": "Category",
+      "cost": "Cost ($)",
+      "description": "Description",
+      "imageUrl": "Image URL",
+      "location": "Location",
+      "name": "Name",
+      "part": "Part #",
+      "purchaseDate": "Purchase Date",
+      "serial": "Serial #"
+    }
+  },
+  "adminLoans": {
+    "title": "All Loans",
+    "subtitle": "Manage all tool borrowing activity",
+    "searchPlaceholder": "Search loans...",
+    "all": "All",
+    "active": "Active",
+    "returned": "Returned",
+    "transferred": "Transferred",
+    "tableHeaders": {
+      "tool": "Tool",
+      "technician": "Technician",
+      "purpose": "Purpose",
+      "borrowed": "Borrowed",
+      "dueReturned": "Due / Returned",
+      "status": "Status"
+    },
+    "noLoans": "No loans found",
+    "overdue": "OVERDUE",
+    "statusBadges": {
+      "active": "Active",
+      "damaged": "Damaged",
+      "overdue": "OVERDUE",
+      "returned": "Returned",
+      "transferred": "Transferred"
+    }
+  },
+  "adminProgress2": {
+    "title": "Training Progress",
+    "subtitle": "Team-wide overview of module completion and assessment scores.",
+    "eyebrow": "AutoRx Training",
+    "activeUsers": "Active users",
+    "activeThisWeek": "Active this week",
+    "avgCompletion": "Avg completion",
+    "allModulesPassed": "All modules passed",
+    "module": "Module",
+    "completion": "Completion",
+    "bestScore": "Best score",
+    "firstAttempt": "1st attempt",
+    "lastAccess": "Last access",
+    "required": "Required",
+    "passed": "Passed",
+    "avgScore": "Avg score",
+    "lastActive": "Last active",
+    "searchPlaceholder": "Search by name or email…",
+    "sort": "Sort:",
+    "sortName": "Name",
+    "sortCompletion": "Completion",
+    "sortPassed": "Passed",
+    "sortRecent": "Recent",
+    "noUsers": "No users found.",
+    "globalStats": {
+      "activeThisWeek": "Active this week",
+      "activeUsers": "Active users",
+      "allModulesPassed": "All modules passed",
+      "avgCompletion": "Avg completion"
+    },
+    "sortOptions": {
+      "completion": "Completion",
+      "name": "Name",
+      "passed": "Passed",
+      "recent": "Recent"
+    },
+    "stats": {
+      "avgScore": "Avg score",
+      "completion": "Completion",
+      "lastActive": "Last active",
+      "passed": "Passed"
+    },
+    "table": {
+      "bestScore": "Best score",
+      "completion": "Completion",
+      "firstAttempt": "1st attempt",
+      "lastAccess": "Last access",
+      "module": "Module"
+    }
+  },
+  "adminSuggestions2": {
+    "title": "Suggestions",
+    "subtitle": "Weekly check-in responses — what employees want to learn",
+    "refresh": "Refresh",
+    "all": "All",
+    "technicians": "Technicians",
+    "serviceAdvisors": "Service Advisors",
+    "loading": "Loading suggestions…",
+    "error": "Failed to load suggestions.",
+    "errorHint": "Make sure the /api/admin/suggestions endpoint is deployed on the backend.",
+    "empty": "No suggestions yet.",
+    "emptyHint": "Check-in responses will appear here when employees submit their weekly surveys.",
+    "moduleCreated": "Module created",
+    "createModule": "Create module",
+    "topicFrequency": "Topic frequency",
+    "technician": "Technician",
+    "serviceAdvisor": "Service Advisor",
+    "filterTabs": {
+      "all": "All",
+      "serviceAdvisors": "Service Advisors",
+      "technicians": "Technicians"
+    }
+  },
+  "adminToolReports2": {
+    "title": "Tool Reports",
+    "subtitle": "Accountability and usage analytics",
+    "totalTools": "Total Tools",
+    "available": "Available",
+    "borrowed": "Borrowed",
+    "damaged": "Damaged",
+    "lateReturns": "Late Returns",
+    "damagedReturns": "Damaged Returns",
+    "technician": "Technician",
+    "lateCount": "Late Count",
+    "damageCount": "Damage Count",
+    "avgHoursLate": "Avg Hours Late",
+    "noData": "No data for this report",
+    "unknown": "Unknown",
+    "stats": {
+      "available": "Available",
+      "borrowed": "Borrowed",
+      "damaged": "Damaged",
+      "totalTools": "Total Tools"
+    },
+    "tableHeaders": {
+      "avgHoursLate": "Avg Hours Late",
+      "damageCount": "Damage Count",
+      "lateCount": "Late Count",
+      "technician": "Technician"
+    },
+    "tabs": {
+      "damagedReturns": "Damaged Returns",
+      "lateReturns": "Late Returns"
+    }
+  },
+  "adminContent": {
+    "title": "Content Management",
+    "subtitle": "Manage Drive resources, interactive lessons, and AI assessments",
+    "syncAll": "Sync All Modules",
+    "syncing": "Syncing",
+    "totalModules": "Total Modules",
+    "withDrive": "With Drive Folder",
+    "withLessons": "With Lessons",
+    "noDrive": "No Drive Folder",
+    "lessonsTotal": "lessons total",
+    "searchPlaceholder": "Search modules...",
+    "filterAll": "All",
+    "filterHasDrive": "Has Drive",
+    "filterNoDrive": "No Drive",
+    "filterHasLessons": "Has Lessons",
+    "noModules": "No modules match your filter",
+    "drive": "Drive",
+    "noDriveTag": "No Drive",
+    "lesson": "Lesson",
+    "lessons": "Lessons",
+    "syncDrive": "Sync Drive",
+    "syncLessonsAI": "Sync Lessons for AI",
+    "generateAssessment": "Generate Assessment",
+    "generating": "Generating...",
+    "viewModule": "View Module",
+    "interactiveLessons": "Interactive Lessons",
+    "noDriveLinked": "No Google Drive folder linked. Set the Drive folder in Manage Modules to enable resource sync.",
+    "noCachedResources": "No cached resources. Click \"Sync Drive\" to pull files from Google Drive.",
+    "driveResources": "Drive Resources",
+    "textExtracted": "Text extracted",
+    "noText": "No text",
+    "spanish": "Spanish",
+    "badges": {
+      "drive": "Drive",
+      "noDrive": "No Drive"
+    },
+    "buttons": {
+      "generateAssessment": "Generate Assessment",
+      "generating": "Generating...",
+      "syncDrive": "Sync Drive",
+      "syncLessons": "Sync Lessons for AI",
+      "syncing": "Syncing...",
+      "viewModule": "View Module"
+    },
+    "filterButtons": {
+      "all": "All",
+      "hasDrive": "Has Drive",
+      "hasLessons": "Has Lessons",
+      "noDrive": "No Drive"
+    },
+    "resourceStatus": {
+      "noText": "No text",
+      "spanish": "Spanish",
+      "textExtracted": "Text extracted"
+    },
+    "resourcesSection": {
+      "noCachedResources": "No cached resources. Click \"Sync Drive\" to pull files from Google Drive.",
+      "noDriveLinkd": "No Google Drive folder linked. Set the Drive folder in Manage Modules to enable resource sync."
+    },
+    "sections": {
+      "interactiveLessons": "Interactive Lessons"
+    },
+    "stats": {
+      "noDrive": "No Drive Folder",
+      "totalModules": "Total Modules",
+      "withDrive": "With Drive Folder",
+      "withLessons": "With Lessons"
     }
   }
 }

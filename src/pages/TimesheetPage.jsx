@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Clock, Play, Square, Pause, CalendarDays, Coffee } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import { getMyTimesheet, clockIn, clockOut, takeBreak, endBreak } from "../lib/hrApi";
 
 export function TimesheetPage() {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState("week");
@@ -55,9 +57,9 @@ export function TimesheetPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <Clock className="h-6 w-6 text-sky-600" />
-          Timesheet
+          {t("hr.timesheet.title")}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">Track your work hours</p>
+        <p className="text-sm text-slate-500 mt-1">{t("hr.timesheet.subtitle")}</p>
       </div>
 
       {/* Status banner + action buttons */}
@@ -71,16 +73,16 @@ export function TimesheetPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             {status === "not_clocked_in" && (
-              <p className="text-sm font-semibold text-slate-600">Not clocked in</p>
+              <p className="text-sm font-semibold text-slate-600">{t("hr.timesheet.notClockedIn")}</p>
             )}
             {status === "working" && (
               <>
                 <p className="text-sm font-semibold text-emerald-800">
-                  Working since {new Date(activeEntry.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {t("hr.timesheet.workingSince")} {new Date(activeEntry.clock_in).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
                 {activeEntry.timesheet_breaks?.length > 0 && (
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {activeEntry.timesheet_breaks.length} break{activeEntry.timesheet_breaks.length > 1 ? "s" : ""} taken
+                    {activeEntry.timesheet_breaks.length} {t("hr.timesheet.breaksTaken")}
                   </p>
                 )}
               </>
@@ -88,7 +90,7 @@ export function TimesheetPage() {
             {status === "on_break" && (
               <p className="text-sm font-semibold text-amber-800 flex items-center gap-1.5">
                 <Coffee className="h-4 w-4" />
-                On break
+                {t("hr.timesheet.onBreak")}
               </p>
             )}
           </div>
@@ -99,7 +101,7 @@ export function TimesheetPage() {
                 onClick={() => clockInMut.mutate()}
                 loading={clockInMut.isPending}
                 icon={Play}
-                label="Clock In"
+                label={t("hr.timesheet.clockIn")}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               />
             )}
@@ -109,14 +111,14 @@ export function TimesheetPage() {
                   onClick={() => takeBreakMut.mutate()}
                   loading={takeBreakMut.isPending}
                   icon={Pause}
-                  label="Take Break"
+                  label={t("hr.timesheet.startBreak")}
                   className="bg-amber-500 hover:bg-amber-600 text-white"
                 />
                 <ActionBtn
                   onClick={() => clockOutMut.mutate()}
                   loading={clockOutMut.isPending}
                   icon={Square}
-                  label="Clock Out"
+                  label={t("hr.timesheet.clockOut")}
                   className="bg-red-600 hover:bg-red-700 text-white"
                 />
               </>
@@ -126,7 +128,7 @@ export function TimesheetPage() {
                 onClick={() => endBreakMut.mutate()}
                 loading={endBreakMut.isPending}
                 icon={Play}
-                label="End Break"
+                label={t("hr.timesheet.endBreak")}
                 className="bg-sky-600 hover:bg-sky-700 text-white"
               />
             )}
@@ -137,26 +139,26 @@ export function TimesheetPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">This Week</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timesheet.thisWeek")}</p>
           <p className="text-2xl font-bold text-slate-900">{summary.weekHours || 0}h</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Pay Period</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timesheet.payPeriod")}</p>
           <p className="text-2xl font-bold text-slate-900">{summary.periodHours || 0}h</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Breaks</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timesheet.breaks")}</p>
           <p className="text-2xl font-bold text-slate-500">{summary.breakMinutes || 0}m</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">Overtime</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timesheet.overtime")}</p>
           <p className="text-2xl font-bold text-amber-700">{summary.overtimeHours || 0}h</p>
         </div>
       </div>
 
       {/* Date range toggle */}
       <div className="flex gap-1 bg-slate-100 rounded-xl p-1 w-fit">
-        {[{ value: "week", label: "This Week" }, { value: "month", label: "This Month" }].map((tab) => (
+        {[{ value: "week", label: t("hr.timesheet.thisWeekLabel") }, { value: "month", label: t("hr.timesheet.thisMonth") }].map((tab) => (
           <button
             key={tab.value}
             onClick={() => setDateRange(tab.value)}
@@ -196,7 +198,7 @@ export function TimesheetPage() {
               ) : entries.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-slate-400">
-                    No timesheet entries for this period
+                    {t("hr.timesheet.noEntries")}
                   </td>
                 </tr>
               ) : (
@@ -215,7 +217,7 @@ export function TimesheetPage() {
                       <td className="px-4 py-3 text-slate-600">
                         {entry.clock_out
                           ? new Date(entry.clock_out).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                          : <span className="text-emerald-600 font-semibold">Active</span>
+                          : <span className="text-emerald-600 font-semibold">{t("hr.timesheet.active")}</span>
                         }
                       </td>
                       <td className="px-4 py-3 text-right text-slate-500 hidden sm:table-cell">

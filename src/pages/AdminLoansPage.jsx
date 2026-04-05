@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ClipboardList, Clock, AlertTriangle, CheckCircle,
   ArrowRightLeft, Search,
@@ -15,6 +16,7 @@ const STATUS_TABS = [
 ];
 
 export function AdminLoansPage() {
+  const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState("active");
   const [search, setSearch] = useState("");
 
@@ -38,10 +40,10 @@ export function AdminLoansPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
           <ClipboardList className="h-6 w-6 text-sky-600" />
-          All Loans
+          {t("adminLoans.title")}
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Manage all tool borrowing activity
+          {t("adminLoans.subtitle")}
         </p>
       </div>
 
@@ -67,7 +69,7 @@ export function AdminLoansPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
         <input
           type="text"
-          placeholder="Search loans..."
+          placeholder={t("adminLoans.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
@@ -80,12 +82,12 @@ export function AdminLoansPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Tool</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Technician</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">Purpose</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">Borrowed</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Due / Returned</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Status</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("adminLoans.tableHeaders.tool")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("adminLoans.tableHeaders.technician")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("adminLoans.tableHeaders.purpose")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden md:table-cell">{t("adminLoans.tableHeaders.borrowed")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("adminLoans.tableHeaders.dueReturned")}</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("adminLoans.tableHeaders.status")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -100,7 +102,7 @@ export function AdminLoansPage() {
               ) : loans.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-12 text-slate-400">
-                    No loans found
+                    {t("adminLoans.noLoans")}
                   </td>
                 </tr>
               ) : (
@@ -146,17 +148,18 @@ export function AdminLoansPage() {
 }
 
 function LoanStatusBadge({ status, isOverdue, condition }) {
+  const { t } = useTranslation();
   if (status === "active" && isOverdue) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded-full">
-        <AlertTriangle className="h-3 w-3" /> OVERDUE
+        <AlertTriangle className="h-3 w-3" /> {t("adminLoans.statusBadges.overdue")}
       </span>
     );
   }
   if (status === "active") {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-        <Clock className="h-3 w-3" /> Active
+        <Clock className="h-3 w-3" /> {t("adminLoans.statusBadges.active")}
       </span>
     );
   }
@@ -166,13 +169,13 @@ function LoanStatusBadge({ status, isOverdue, condition }) {
         condition === "damaged" ? "text-red-700 bg-red-100" : "text-emerald-700 bg-emerald-100"
       }`}>
         {condition === "damaged" ? <AlertTriangle className="h-3 w-3" /> : <CheckCircle className="h-3 w-3" />}
-        {condition === "damaged" ? "Damaged" : "Returned"}
+        {condition === "damaged" ? t("adminLoans.statusBadges.damaged") : t("adminLoans.statusBadges.returned")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
-      <ArrowRightLeft className="h-3 w-3" /> Transferred
+      <ArrowRightLeft className="h-3 w-3" /> {t("adminLoans.statusBadges.transferred")}
     </span>
   );
 }

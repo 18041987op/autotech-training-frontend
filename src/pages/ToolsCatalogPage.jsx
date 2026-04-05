@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   Wrench, Search, Plus, Package,
@@ -11,21 +12,22 @@ import { getTools, getToolStats, borrowTool, getToolsUsers, getTool, getMyAssign
 import { useAuthStore } from "../stores/authStore";
 import { QRScannerButton } from "../components/QRScanner";
 
-const CATEGORIES = [
-  { value: "", label: "All Categories" },
-  { value: "diagnostico", label: "Diagnóstico" },
-  { value: "manuales", label: "Manuales" },
-  { value: "electricas", label: "Eléctricas" },
-  { value: "neumaticas", label: "Neumáticas" },
-  { value: "electricas_neumaticas", label: "Eléctricas/Neumáticas" },
-  { value: "medicion", label: "Medición" },
-  { value: "motor_transmision", label: "Motor/Transmisión" },
-  { value: "suspension_frenos", label: "Suspensión/Frenos" },
-  { value: "aire_acondicionado", label: "Aire Acondicionado" },
-  { value: "neumaticos_ruedas", label: "Neumáticos/Ruedas" },
-  { value: "manejo_fluidos", label: "Manejo de Fluidos" },
-  { value: "elevacion_soporte", label: "Elevación/Soporte" },
-  { value: "otros", label: "Otros" },
+// Category values are kept as API keys, labels will be translated in component
+const CATEGORY_VALUES = [
+  { value: "", key: "allCategories" },
+  { value: "diagnostico", key: "diagnostico" },
+  { value: "manuales", key: "manuales" },
+  { value: "electricas", key: "electricas" },
+  { value: "neumaticas", key: "neumaticas" },
+  { value: "electricas_neumaticas", key: "electricasNeumaticas" },
+  { value: "medicion", key: "medicion" },
+  { value: "motor_transmision", key: "motorTransmision" },
+  { value: "suspension_frenos", key: "suspensionFrenas" },
+  { value: "aire_acondicionado", key: "aireAcondicionado" },
+  { value: "neumaticos_ruedas", key: "neumaticosRuedas" },
+  { value: "manejo_fluidos", key: "manejoFluidos" },
+  { value: "elevacion_soporte", key: "elevacionSoporte" },
+  { value: "otros", key: "otros" },
 ];
 
 const STATUS_COLORS = {
@@ -35,14 +37,10 @@ const STATUS_COLORS = {
   damaged: "bg-red-100 text-red-700",
 };
 
-const STATUS_LABELS = {
-  available: "Available",
-  borrowed: "Borrowed",
-  maintenance: "Maintenance",
-  damaged: "Damaged",
-};
+// STATUS_LABELS will be generated dynamically using t() in the component
 
 export function ToolsCatalogPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -56,13 +54,13 @@ export function ToolsCatalogPage() {
       // Validate it's a real tool
       const data = await getTool(toolId);
       if (data?.data) {
-        toast.success(`Found: ${data.data.name}`);
+        toast.success(`${t("tools.catalog.found")}: ${data.data.name}`);
         navigate(`/tools/${toolId}`);
       } else {
-        toast.error("Tool not found for this QR code");
+        toast.error(t("tools.catalog.toolNotFoundQR"));
       }
     } catch {
-      toast.error("Could not find a tool with this QR code");
+      toast.error(t("tools.catalog.toolNotFoundQR"));
     }
   };
   const [statusFilter, setStatusFilter] = useState("");
@@ -95,12 +93,12 @@ export function ToolsCatalogPage() {
   const handleRespondTransfer = async (requestId, action) => {
     try {
       await respondTransferRequest(requestId, action);
-      toast.success(action === "accept" ? "Tool transferred!" : "Request declined");
+      toast.success(action === "accept" ? t("tools.catalog.toolTransferred") : t("tools.catalog.requestDeclined"));
       queryClient.invalidateQueries({ queryKey: ["transferRequests"] });
       queryClient.invalidateQueries({ queryKey: ["tools"] });
       queryClient.invalidateQueries({ queryKey: ["myTools"] });
     } catch (err) {
-      toast.error(err.message || "Failed to respond");
+      toast.error(err.message || t("tools.catalog.failedToRespond"));
     }
   };
 
@@ -130,10 +128,10 @@ export function ToolsCatalogPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Wrench className="h-6 w-6 text-sky-600" />
-            Tool Catalog
+            {t("tools.catalog.title")}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Browse and borrow shop tools
+            {t("tools.catalog.subtitle")}
           </p>
         </div>
         <QRScannerButton onScan={handleQRScan} />
@@ -176,10 +174,10 @@ export function ToolsCatalogPage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Total" value={stats.total || 0} color="slate" />
-        <StatCard label="Available" value={stats.available || 0} color="emerald" />
-        <StatCard label="Borrowed" value={stats.borrowed || 0} color="amber" />
-        <StatCard label="Maintenance" value={(stats.maintenance || 0) + (stats.damaged || 0)} color="red" />
+        <StatCard label={t("tools.catalog.statsTotal")} value={stats.total || 0} color="slate" />
+        <StatCard label={t("tools.catalog.statusAvailable")} value={stats.available || 0} color="emerald" />
+        <StatCard label={t("tools.catalog.statusBorrowed")} value={stats.borrowed || 0} color="amber" />
+        <StatCard label={t("tools.catalog.statsMaintenance")} value={(stats.maintenance || 0) + (stats.damaged || 0)} color="red" />
       </div>
 
       {/* Filters */}
@@ -188,7 +186,7 @@ export function ToolsCatalogPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search tools..."
+            placeholder={t("tools.catalog.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-400"
@@ -204,8 +202,8 @@ export function ToolsCatalogPage() {
           onChange={(e) => setCategory(e.target.value)}
           className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
         >
-          {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
+          {CATEGORY_VALUES.map((c) => (
+            <option key={c.value} value={c.value}>{t(`tools.catalog.categories.${c.key}`)}</option>
           ))}
         </select>
         <select
@@ -213,11 +211,11 @@ export function ToolsCatalogPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
         >
-          <option value="">All Status</option>
-          <option value="available">Available</option>
-          <option value="borrowed">Borrowed</option>
-          <option value="maintenance">Maintenance</option>
-          <option value="damaged">Damaged</option>
+          <option value="">{t("tools.catalog.allStatus")}</option>
+          <option value="available">{t("tools.catalog.statusAvailable")}</option>
+          <option value="borrowed">{t("tools.catalog.statusBorrowed")}</option>
+          <option value="maintenance">{t("tools.catalog.statusMaintenance")}</option>
+          <option value="damaged">{t("tools.catalog.statusDamaged")}</option>
         </select>
       </div>
 
@@ -231,7 +229,7 @@ export function ToolsCatalogPage() {
       ) : tools.length === 0 ? (
         <div className="text-center py-16">
           <Package className="h-12 w-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500 text-sm">No tools found</p>
+          <p className="text-slate-500 text-sm">{t("tools.catalog.noToolsFound")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -242,6 +240,7 @@ export function ToolsCatalogPage() {
               currentUserId={currentToolsUser?.id}
               onBorrow={() => setBorrowModal(tool)}
               onRequestTransfer={(t) => setTransferRequestModal(t)}
+              t={t}
             />
           ))}
         </div>
@@ -269,7 +268,7 @@ export function ToolsCatalogPage() {
           onClose={() => setTransferRequestModal(null)}
           onSuccess={() => {
             setTransferRequestModal(null);
-            toast.success("Transfer request sent!");
+            toast.success(t("tools.catalog.transferRequestSent"));
           }}
         />
       )}
@@ -292,7 +291,7 @@ function StatCard({ label, value, color }) {
   );
 }
 
-function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer }) {
+function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer, t }) {
   const activeLoans = tool.active_loans || [];
   const quantity = tool.quantity || 1;
   const availableCount = tool.available_count ?? (quantity - activeLoans.length);
@@ -336,16 +335,18 @@ function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer }) {
               <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                 availableCount > 0 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
               }`}>
-                {availableCount}/{quantity} avail
+                {availableCount}/{quantity} {t("tools.catalog.available")}
               </span>
             ) : (
               <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[realStatus]}`}>
-                {activeLoans.length > 0 ? "Borrowed" : STATUS_LABELS[realStatus]}
+                {activeLoans.length > 0 ? t("tools.catalog.statusBorrowed") : t(`tools.catalog.status${realStatus.charAt(0).toUpperCase()}${realStatus.slice(1)}`)}
               </span>
             )}
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            {CATEGORIES.find((c) => c.value === tool.category)?.label || tool.category}
+            {CATEGORY_VALUES.find((c) => c.value === tool.category)
+              ? t(`tools.catalog.categories.${CATEGORY_VALUES.find((c) => c.value === tool.category).key}`)
+              : tool.category}
           </p>
           {tool.serial_number && (
             <p className="text-xs text-slate-400 mt-0.5">SN: {tool.serial_number}</p>
@@ -380,7 +381,7 @@ function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer }) {
               onClick={onBorrow}
               className="text-xs font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1"
             >
-              <Plus className="h-3 w-3" /> Borrow
+              <Plus className="h-3 w-3" /> {t("tools.catalog.borrow")}
             </button>
           )}
           {!canBorrow && activeLoans.length > 0 && !currentUserHasTool && (
@@ -388,7 +389,7 @@ function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer }) {
               onClick={() => onRequestTransfer(tool)}
               className="text-xs font-semibold text-amber-600 hover:text-amber-800 flex items-center gap-1"
             >
-              <ArrowRightLeft className="h-3 w-3" /> Request
+              <ArrowRightLeft className="h-3 w-3" /> {t("tools.catalog.request")}
             </button>
           )}
         </div>
@@ -398,6 +399,7 @@ function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer }) {
 }
 
 function BorrowModal({ tool, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState("select-ro"); // select-ro | recommendations | manual | confirm
   const [selectedRO, setSelectedRO] = useState(null);
   const [purpose, setPurpose] = useState("");
@@ -432,10 +434,10 @@ function BorrowModal({ tool, onClose, onSuccess }) {
   const mutation = useMutation({
     mutationFn: (data) => borrowTool(data),
     onSuccess: () => {
-      toast.success(`Borrowed ${tool.name}`);
+      toast.success(t("tools.catalog.borrowSuccess", { toolName: tool.name }));
       onSuccess();
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(err.message || t("tools.catalog.borrowError")),
   });
 
   // When user selects an RO, auto-fill purpose/vehicle and fetch recommendations
@@ -473,7 +475,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!currentToolsUser) {
-      toast.error("Your account is not linked to a tools user. Contact admin.");
+      toast.error(t("tools.catalog.accountNotLinked"));
       return;
     }
     mutation.mutate({
@@ -503,9 +505,9 @@ function BorrowModal({ tool, onClose, onSuccess }) {
         requested_by_name: user?.name || user?.email,
       });
       setPurchaseRequested((prev) => ({ ...prev, [rec.toolName]: true }));
-      toast.success(`Purchase request sent for ${rec.toolName}`);
+      toast.success(t("tools.catalog.purchaseRequestSent", { toolName: rec.toolName }));
     } catch (err) {
-      toast.error("Failed to submit request");
+      toast.error(t("tools.catalog.purchaseRequestError"));
     }
   };
 
@@ -514,13 +516,13 @@ function BorrowModal({ tool, onClose, onSuccess }) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="p-5">
           <h3 className="text-lg font-bold text-slate-900 mb-1">
-            Borrow: {tool.name}
+            {t("tools.catalog.borrow")}: {tool.name}
           </h3>
 
           {/* ── Step 1: Select RO or Manual ────────────────────────────── */}
           {step === "select-ro" && (
             <div className="mt-4 space-y-3">
-              <p className="text-sm text-slate-500">Select the vehicle you're working on:</p>
+              <p className="text-sm text-slate-500">{t("tools.catalog.selectVehicle")}</p>
 
               {loadingROs ? (
                 <div className="space-y-2">
@@ -556,7 +558,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                 </div>
               ) : (
                 <div className="text-center py-4 text-sm text-slate-400">
-                  No assigned vehicles found
+                  {t("tools.catalog.noVehiclesFound")}
                 </div>
               )}
 
@@ -570,14 +572,14 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                     <Plus className="h-4 w-4 text-slate-500" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-700">Other / Manual Entry</p>
-                    <p className="text-xs text-slate-400">Vehicle not listed or not yet assigned</p>
+                    <p className="text-sm font-semibold text-slate-700">{t("tools.catalog.otherManualEntry")}</p>
+                    <p className="text-xs text-slate-400">{t("tools.catalog.vehicleNotListed")}</p>
                   </div>
                 </div>
               </button>
 
               <button type="button" onClick={onClose} className="w-full mt-2 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
-                Cancel
+                {t("common.cancel")}
               </button>
             </div>
           )}
@@ -586,41 +588,41 @@ function BorrowModal({ tool, onClose, onSuccess }) {
           {step === "manual" && (
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Purpose *</label>
+                <label className="block text-sm font-medium text-slate-600 mb-1">{t("tools.catalog.purpose")} *</label>
                 <input
                   type="text" value={purpose} onChange={(e) => setPurpose(e.target.value)} required
-                  placeholder="e.g., Brake diagnostics"
+                  placeholder={t("tools.catalog.purposePlaceholder")}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Vehicle</label>
+                <label className="block text-sm font-medium text-slate-600 mb-1">{t("tools.catalog.vehicle")}</label>
                 <input
                   type="text" value={vehicle} onChange={(e) => setVehicle(e.target.value)}
-                  placeholder="e.g., 2020 Honda Civic"
+                  placeholder={t("tools.catalog.vehiclePlaceholder")}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Return in</label>
+                <label className="block text-sm font-medium text-slate-600 mb-1">{t("tools.catalog.returnIn")}</label>
                 <select value={hours} onChange={(e) => setHours(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm">
-                  <option value="1">1 hour</option>
-                  <option value="2">2 hours</option>
-                  <option value="4">4 hours</option>
-                  <option value="8">8 hours (1 shift)</option>
-                  <option value="24">24 hours</option>
-                  <option value="48">48 hours</option>
+                  <option value="1">{t("tools.catalog.duration1h")}</option>
+                  <option value="2">{t("tools.catalog.duration2h")}</option>
+                  <option value="4">{t("tools.catalog.duration4h")}</option>
+                  <option value="8">{t("tools.catalog.duration8h")}</option>
+                  <option value="24">{t("tools.catalog.duration24h")}</option>
+                  <option value="48">{t("tools.catalog.duration48h")}</option>
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setStep("select-ro")}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
-                  Back
+                  {t("common.back")}
                 </button>
                 <button type="submit" disabled={mutation.isPending || !purpose}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50">
-                  {mutation.isPending ? "Borrowing..." : "Confirm Borrow"}
+                  {mutation.isPending ? t("tools.catalog.borrowing") : t("tools.catalog.confirmBorrow")}
                 </button>
               </div>
             </form>
@@ -637,15 +639,15 @@ function BorrowModal({ tool, onClose, onSuccess }) {
 
               {/* Duration selector */}
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Return in</label>
+                <label className="block text-sm font-medium text-slate-600 mb-1">{t("tools.catalog.returnIn")}</label>
                 <select value={hours} onChange={(e) => setHours(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm">
-                  <option value="1">1 hour</option>
-                  <option value="2">2 hours</option>
-                  <option value="4">4 hours</option>
-                  <option value="8">8 hours (1 shift)</option>
-                  <option value="24">24 hours</option>
-                  <option value="48">48 hours</option>
+                  <option value="1">{t("tools.catalog.duration1h")}</option>
+                  <option value="2">{t("tools.catalog.duration2h")}</option>
+                  <option value="4">{t("tools.catalog.duration4h")}</option>
+                  <option value="8">{t("tools.catalog.duration8h")}</option>
+                  <option value="24">{t("tools.catalog.duration24h")}</option>
+                  <option value="48">{t("tools.catalog.duration48h")}</option>
                 </select>
               </div>
 
@@ -653,7 +655,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
               {loadingRecs && (
                 <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
                   <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-                  Looking up recommended tools...
+                  {t("tools.catalog.lookingUpTools")}
                 </div>
               )}
 
@@ -663,7 +665,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                   {recommendations.inInventory?.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                        Recommended tools (in stock)
+                        {t("tools.catalog.recommendedInStock")}
                       </p>
                       <div className="space-y-1.5">
                         {recommendations.inInventory.map((rec, i) => (
@@ -674,9 +676,9 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                               <p className="text-[10px] text-emerald-600 truncate">{rec.description}</p>
                             </div>
                             {rec.available !== false ? (
-                              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">Available</span>
+                              <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">{t("tools.catalog.statusAvailable")}</span>
                             ) : (
-                              <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">In Use</span>
+                              <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">{t("tools.catalog.inUse")}</span>
                             )}
                           </div>
                         ))}
@@ -688,7 +690,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                   {recommendations.notInInventory?.length > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                        Recommended but not in stock
+                        {t("tools.catalog.recommendedNotInStock")}
                       </p>
                       <div className="space-y-1.5">
                         {recommendations.notInInventory.map((rec, i) => (
@@ -699,13 +701,13 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                               <p className="text-[10px] text-amber-600 truncate">{rec.description}</p>
                             </div>
                             {purchaseRequested[rec.toolName] ? (
-                              <span className="text-[10px] font-semibold text-emerald-600">Requested</span>
+                              <span className="text-[10px] font-semibold text-emerald-600">{t("tools.catalog.requested")}</span>
                             ) : (
                               <button
                                 onClick={() => handleRequestPurchase(rec)}
                                 className="shrink-0 text-[10px] font-semibold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors"
                               >
-                                <ShoppingCart className="h-2.5 w-2.5" /> Request
+                                <ShoppingCart className="h-2.5 w-2.5" /> {t("tools.catalog.request")}
                               </button>
                             )}
                           </div>
@@ -720,11 +722,11 @@ function BorrowModal({ tool, onClose, onSuccess }) {
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => { setStep("select-ro"); setSelectedRO(null); setRecommendations(null); }}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
-                  Back
+                  {t("common.back")}
                 </button>
                 <button onClick={handleSubmit} disabled={mutation.isPending}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-sky-600 text-white text-sm font-semibold hover:bg-sky-700 disabled:opacity-50">
-                  {mutation.isPending ? "Borrowing..." : "Confirm Borrow"}
+                  {mutation.isPending ? t("tools.catalog.borrowing") : t("tools.catalog.confirmBorrow")}
                 </button>
               </div>
             </div>
@@ -738,6 +740,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
 /* ─── Transfer Request Modal ───────────────────────────────────────────────── */
 
 function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -746,11 +749,11 @@ function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuc
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!currentToolsUser) {
-      toast.error("Your account is not linked. Contact admin.");
+      toast.error(t("tools.catalog.accountNotLinked"));
       return;
     }
     if (!activeLoan?.loan_id) {
-      toast.error("Could not find active loan for this tool.");
+      toast.error(t("tools.catalog.noActiveLoan"));
       return;
     }
 
@@ -764,7 +767,7 @@ function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuc
       });
       onSuccess();
     } catch (err) {
-      toast.error(err.message || "Failed to send request");
+      toast.error(err.message || t("tools.catalog.transferRequestError"));
     }
     setSending(false);
   };
@@ -773,11 +776,13 @@ function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuc
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-5" onClick={(e) => e.stopPropagation()}>
         <h3 className="text-lg font-bold text-slate-900 mb-1">
-          Request Transfer
+          {t("tools.catalog.requestTransfer")}
         </h3>
         <p className="text-sm text-slate-500 mb-4">
-          Ask <span className="font-semibold text-slate-700">{activeLoan?.technician_name}</span> to
-          transfer <span className="font-semibold text-slate-700">{tool.name}</span> to you.
+          {t("tools.catalog.askToTransfer", {
+            technician: activeLoan?.technician_name,
+            tool: tool.name
+          })}
         </p>
 
         {/* Current holder info */}
@@ -785,7 +790,7 @@ function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuc
           <div className="flex items-center gap-2 text-sm">
             <ArrowRightLeft className="h-4 w-4 text-amber-500" />
             <span className="font-medium text-amber-800">
-              Currently with {activeLoan?.technician_name}
+              {t("tools.catalog.currentlyWith", { technician: activeLoan?.technician_name })}
             </span>
           </div>
           {activeLoan?.purpose && (
@@ -796,25 +801,25 @@ function TransferRequestModal({ tool, currentToolsUser, userName, onClose, onSuc
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-600 mb-1">
-              Reason (optional)
+              {t("tools.catalog.reasonOptional")}
             </label>
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g., Need it for brake job on bay 3"
+              placeholder={t("tools.catalog.reasonPlaceholder")}
               className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500/20"
             />
           </div>
           <p className="text-xs text-slate-400">
-            {activeLoan?.technician_name} will get a notification and can accept or decline.
+            {t("tools.catalog.notificationText", { technician: activeLoan?.technician_name })}
           </p>
           <div className="flex gap-3">
             <button type="button" onClick={onClose} className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
-              Cancel
+              {t("common.cancel")}
             </button>
             <button type="submit" disabled={sending} className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 disabled:opacity-50">
-              {sending ? "Sending..." : "Send Request"}
+              {sending ? t("tools.catalog.sending") : t("tools.catalog.sendRequest")}
             </button>
           </div>
         </form>
