@@ -1,17 +1,15 @@
 import React, { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import {
   FileText, FolderSync, Search, BookOpen, Brain,
   ChevronDown, ChevronUp, RefreshCw, CheckCircle,
-  AlertTriangle, Clock, Filter, BarChart2, Layers,
+  AlertTriangle, Layers,
   ExternalLink, Globe, Zap,
 } from "lucide-react";
-import { apiFetch, getToken } from "../lib/api";
+import { apiFetch } from "../lib/api";
 import { lessonRegistry, lessonRegistryByTitle } from "../lessons/registry";
-
-const API_BASE = process.env.REACT_APP_API_BASE_URL;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -45,7 +43,7 @@ export function AdminContentPage() {
     queryKey: ["adminModules"],
     queryFn: () => apiFetch("/api/admin/modules"),
   });
-  const modules = modulesData?.modules || modulesData || [];
+  const modules = useMemo(() => modulesData?.modules || modulesData || [], [modulesData]);
 
   // Fetch resource stats for all modules — we get resources-cache per expanded module
   const { data: expandedResources, isLoading: resourcesLoading } = useQuery({
