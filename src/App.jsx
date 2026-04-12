@@ -37,6 +37,9 @@ import { AdminLoansPage } from "./pages/AdminLoansPage";
 import { AdminToolReportsPage } from "./pages/AdminToolReportsPage";
 import { AdminContentPage } from "./pages/AdminContentPage";
 
+// Cabinet / Smart Lock pages
+import DoorAccessPage from "./pages/DoorAccessPage";
+
 // HR pages
 import { MyProfilePage } from "./pages/MyProfilePage";
 import { SchedulePage } from "./pages/SchedulePage";
@@ -149,6 +152,9 @@ function AppRoutes() {
 
         {/* Key Board — visible to all employees */}
         <Route path="keyboard" element={<KeyBoardPage />} />
+
+        {/* Cabinet door access — QR code landing page */}
+        <Route path="cabinet/door/:doorCode/access" element={<DoorAccessPage />} />
 
         {/* Tools — visible to all employees */}
         <Route path="tools" element={<ToolsCatalogPage />} />
