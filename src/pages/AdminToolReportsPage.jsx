@@ -19,7 +19,10 @@ export function AdminToolReportsPage() {
   });
 
   const stats = statsData?.data || {};
-  const report = reportData?.data || [];
+  // API returns { data: { reportType, items: [...], totalCount, summary } }
+  const report = Array.isArray(reportData?.data)
+    ? reportData.data
+    : reportData?.data?.items || [];
 
   return (
     <div className="space-y-6">
