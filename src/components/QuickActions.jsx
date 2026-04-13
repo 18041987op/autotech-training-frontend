@@ -64,10 +64,19 @@ export function QuickActions() {
     ? getElapsed(activeEntry.clock_in)
     : null;
 
-  // QR scan handler
+  // QR scan handler — handles both tool QR codes and cabinet door QR codes
   const handleQRScan = async (text) => {
     setQrOpen(false);
     try {
+      // Cabinet door QR: URL contains /cabinet/door/{doorCode}/access
+      const cabinetMatch = text.match(/\/cabinet\/door\/([^/]+)\/access/);
+      if (cabinetMatch) {
+        const doorCode = cabinetMatch[1];
+        navigate(`/cabinet/door/${doorCode}/access`);
+        return;
+      }
+
+      // Tool QR: UUID directly or URL ending in a UUID
       const toolId = text.includes("/") ? text.split("/").pop() : text;
       const data = await getTool(toolId);
       if (data?.data) {
