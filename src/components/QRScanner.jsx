@@ -54,9 +54,13 @@ export function QRScanner({ onScan, onClose }) {
     startScanner();
 
     return () => {
-      if (html5QrRef.current) {
-        html5QrRef.current.stop().catch(() => {});
-        html5QrRef.current.clear().catch(() => {});
+      const s = html5QrRef.current;
+      if (s) {
+        // MUST stop first (async), only clear after stop resolves.
+        // Calling clear() while scan is in progress throws and crashes ErrorBoundary.
+        s.stop()
+          .catch(() => {})
+          .then(() => { try { s.clear(); } catch { /* ignore */ } });
       }
     };
   }, [onScan]);
