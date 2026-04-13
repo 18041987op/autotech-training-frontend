@@ -1,15 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   Wrench, Plus, Pencil, Trash2, Search,
-  Package, Settings,
+  Package, Settings, Camera, X, Loader2, ImageIcon,
 } from "lucide-react";
 import {
   getTools, createTool, updateTool, deleteTool,
   updateToolStatus, getToolStats,
 } from "../lib/toolsApi";
+
+const MGMT_BASE = process.env.REACT_APP_MANAGEMENT_API_URL;
+
+async function uploadToolImage(file) {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${MGMT_BASE}/api/tools/upload-image`, {
+    method: "POST",
+    body: formData,
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) throw new Error(data.error || "Upload failed");
+  return data; // { url, path }
+}
+
+async function deleteToolImage(path) {
+  await fetch(`${MGMT_BASE}/api/tools/upload-image?path=${encodeURIComponent(path)}`, {
+    method: "DELETE",
+  });
+}
 
 const CATEGORIES = [
   { value: "diagnostico", label: "Diagnóstico" },
@@ -242,6 +262,91 @@ export function AdminToolsPage() {
   );
 }
 
+function ToolImageUpload({ imageUrl, onChange, storagePath, onStoragePathChange }) {
+  const inputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    setUploading(true);
+
+    // Delete old image from storage if replacing
+    if (storagePath) {
+      await deleteToolImage(storagePath).catch(() => {});
+      onStoragePathChange?.("");
+    }
+
+    try {
+      const data = await uploadToolImage(file);
+      onChange(data.url);
+      onStoragePathChange?.(data.path);
+    } catch (err) {
+      setError(err.message || "Upload failed");
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const handleRemove = async () => {
+    if (storagePath) {
+      await deleteToolImage(storagePath).catch(() => {});
+      onStoragePathChange?.("");
+    }
+    onChange("");
+  };
+
+  return (
+    <div className="col-span-2">
+      <label className="block text-xs font-medium text-slate-600 mb-2">Foto de la herramienta</label>
+
+      {imageUrl ? (
+        <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group" style={{ maxHeight: "180px" }}>
+          <img src={imageUrl} alt="Tool" className="w-full h-44 object-contain" />
+          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              disabled={uploading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-semibold hover:bg-sky-700 disabled:opacity-50"
+            >
+              {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+              {uploading ? "Subiendo..." : "Cambiar foto"}
+            </button>
+            <button
+              type="button"
+              onClick={handleRemove}
+              disabled={uploading}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50"
+            >
+              <X className="h-3.5 w-3.5" /> Eliminar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="w-full h-28 flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-sky-400 hover:bg-sky-50 transition-colors text-slate-400 hover:text-sky-500 disabled:opacity-50"
+        >
+          {uploading ? (
+            <><Loader2 className="h-6 w-6 animate-spin" /><span className="text-xs">Subiendo foto...</span></>
+          ) : (
+            <><ImageIcon className="h-6 w-6" /><span className="text-xs font-medium">Subir foto</span><span className="text-[10px] text-slate-400">Toca para seleccionar o tomar foto</span></>
+          )}
+        </button>
+      )}
+
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      <input ref={inputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+    </div>
+  );
+}
+
 function ToolFormModal({ tool, onClose, onSuccess }) {
   const { t } = useTranslation();
   const isNew = !tool;
@@ -256,6 +361,13 @@ function ToolFormModal({ tool, onClose, onSuccess }) {
     purchase_date: tool?.purchase_date || "",
     image_url: tool?.image_url || "",
     comments: tool?.comments || "",
+  });
+
+  // Track storage path for delete-on-replace
+  const [imagePath, setImagePath] = useState(() => {
+    const url = tool?.image_url || "";
+    const match = url.match(/\/tool-images\/([^?#]+)/);
+    return match ? match[1] : "";
   });
 
   const mutation = useMutation({
@@ -307,10 +419,12 @@ function ToolFormModal({ tool, onClose, onSuccess }) {
               <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.purchaseDate")}</label>
               <input type="date" value={form.purchase_date} onChange={set("purchase_date")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
             </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.imageUrl")}</label>
-              <input type="url" value={form.image_url} onChange={set("image_url")} placeholder="https://..." className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
-            </div>
+            <ToolImageUpload
+              imageUrl={form.image_url}
+              onChange={(url) => setForm((f) => ({ ...f, image_url: url }))}
+              storagePath={imagePath}
+              onStoragePathChange={setImagePath}
+            />
             <div className="col-span-2">
               <label className="block text-xs font-medium text-slate-600 mb-1">{t("adminTools.formLabels.description")}</label>
               <textarea value={form.description} onChange={set("description")} rows={2} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm" />
