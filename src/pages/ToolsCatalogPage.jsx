@@ -46,12 +46,19 @@ export function ToolsCatalogPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
 
-  // QR scan handler — QR code contains the tool UUID
+  // QR scan handler — handles both tool QR codes and cabinet door QR codes
   const handleQRScan = async (text) => {
     try {
-      // The QR code might be a UUID directly, or a URL containing the UUID
+      // Cabinet door QR: URL contains /cabinet/door/{doorCode}/access
+      const cabinetMatch = text.match(/\/cabinet\/door\/([^/]+)\/access/);
+      if (cabinetMatch) {
+        const doorCode = cabinetMatch[1];
+        navigate(`/cabinet/door/${doorCode}/access`);
+        return;
+      }
+
+      // Tool QR: UUID directly or URL ending in a UUID
       const toolId = text.includes("/") ? text.split("/").pop() : text;
-      // Validate it's a real tool
       const data = await getTool(toolId);
       if (data?.data) {
         toast.success(`${t("tools.catalog.found")}: ${data.data.name}`);
