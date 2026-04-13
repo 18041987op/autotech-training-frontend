@@ -10,6 +10,7 @@ import { apiFetch, clearToken } from "./lib/api";
 import { useAuthStore } from "./stores/authStore";
 
 import { Layout } from "./components/Layout";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AuthScreen } from "./pages/AuthScreen";
 import { Home } from "./pages/Home";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -56,14 +57,16 @@ function Protected({ user, children }) {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nextProvider i18n={i18n}>
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster position="top-right" richColors />
-        </BrowserRouter>
-      </I18nextProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <BrowserRouter>
+            <AppRoutes />
+            <Toaster position="top-right" richColors />
+          </BrowserRouter>
+        </I18nextProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

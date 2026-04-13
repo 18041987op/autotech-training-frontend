@@ -30,9 +30,9 @@ export function QRScanner({ onScan, onClose }) {
             qrbox: { width: 250, height: 250 },
             aspectRatio: 1.0,
           },
-          (decodedText) => {
-            // Success — stop scanning and call parent
-            scanner.stop().catch(() => {});
+          async (decodedText) => {
+            // Success — stop scanning first, then call parent
+            try { await scanner.stop(); } catch { /* ignore */ }
             setScanning(false);
             onScan(decodedText);
           },
