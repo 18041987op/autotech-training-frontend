@@ -48,6 +48,8 @@ export function ToolsCatalogPage() {
 
   // QR scan handler — handles both tool QR codes and cabinet door QR codes
   const handleQRScan = async (text) => {
+    // DEBUG: show raw scanned text (remove after confirming URL format)
+    toast(`📷 QR: ${text.substring(0, 80)}`, { duration: 6000 });
     try {
       // Cabinet door QR: URL contains /cabinet/door/{doorCode}/access
       const cabinetMatch = text.match(/\/cabinet\/door\/([^/]+)\/access/);
