@@ -13,8 +13,14 @@ import { Camera, X } from "lucide-react";
 export function QRScanner({ onScan, onClose }) {
   const scannerRef = useRef(null);
   const html5QrRef = useRef(null);
+  // Store onScan in a ref so the scanner effect never needs to restart
+  // when the parent re-renders (which would cause clear() to run while scanning)
+  const onScanRef = useRef(onScan);
   const [error, setError] = useState(null);
   const [scanning, setScanning] = useState(false);
+
+  // Keep the ref current without triggering scanner restart
+  useEffect(() => { onScanRef.current = onScan; }, [onScan]);
 
   useEffect(() => {
     let scanner;
@@ -24,21 +30,15 @@ export function QRScanner({ onScan, onClose }) {
         html5QrRef.current = scanner;
 
         await scanner.start(
-          { facingMode: "environment" }, // Back camera
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
           async (decodedText) => {
-            // Success — stop scanning first, then call parent
+            // Stop first, then call parent via ref (always latest handler)
             try { await scanner.stop(); } catch { /* ignore */ }
             setScanning(false);
-            onScan(decodedText);
+            onScanRef.current(decodedText);
           },
-          () => {
-            // QR code not found in frame — ignore
-          }
+          () => { /* QR not found in frame — ignore */ }
         );
         setScanning(true);
       } catch (err) {
@@ -54,16 +54,12 @@ export function QRScanner({ onScan, onClose }) {
     startScanner();
 
     return () => {
-      const s = html5QrRef.current;
-      if (s) {
-        // MUST stop first (async), only clear after stop resolves.
-        // Calling clear() while scan is in progress throws and crashes ErrorBoundary.
-        s.stop()
-          .catch(() => {})
-          .then(() => { try { s.clear(); } catch { /* ignore */ } });
-      }
+      // Only stop — no clear() needed since the DOM element is being removed
+      // clear() throws "Cannot clear while scan is ongoing" if called before stop() resolves
+      html5QrRef.current?.stop().catch(() => {});
     };
-  }, [onScan]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps: scanner starts once, never restarts on parent re-renders
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
