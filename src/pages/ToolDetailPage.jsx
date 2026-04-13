@@ -133,17 +133,6 @@ export function ToolDetailPage() {
               <InfoRow label={t("tools.detail.purchaseDate")} value={tool.purchase_date || "—"} />
             </div>
           </div>
-          {/* QR Code */}
-          {tool.qr_code_url && (
-            <div className="flex flex-col items-center gap-1">
-              <img
-                src={tool.qr_code_url}
-                alt="QR Code"
-                className="w-24 h-24 rounded-lg border border-slate-200"
-              />
-              <span className="text-xs text-slate-400">{t("tools.detail.scanQR")}</span>
-            </div>
-          )}
         </div>
       </div>
 
