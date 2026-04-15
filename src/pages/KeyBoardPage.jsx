@@ -1477,7 +1477,7 @@ export function KeyBoardPage() {
       console.log(`[AutoSync] Board: ${finalCards.length} cards (${newCards.length} new, ${toDelete.length} removed)`);
       return finalCards;
     });
-  }, [tekmetricROs]);
+  }, [tekmetricROs, unavailableTechs]);
 
   useEffect(() => {
     fetchTechnicians(); fetchShopHours(); // Load from Management app on mount
