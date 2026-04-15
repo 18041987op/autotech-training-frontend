@@ -448,10 +448,23 @@ function BorrowModal({ tool, onClose, onSuccess }) {
   });
 
   // When user selects an RO, auto-fill purpose/vehicle and fetch recommendations
+  const [selectedJob, setSelectedJob] = useState(null);
+
   const handleSelectRO = async (ro) => {
     setSelectedRO(ro);
-    setPurpose(ro.jobsDisplay);
     setVehicle(ro.vehicleDisplay);
+
+    // If RO has multiple jobs → show job selection step
+    // If only 1 job → auto-select and go to confirm
+    if (ro.jobs && ro.jobs.length > 1) {
+      setStep("select-job");
+      return;
+    }
+
+    // Single job or no jobs → auto-select first
+    const job = ro.jobs?.[0] || null;
+    setSelectedJob(job);
+    setPurpose(job?.name || ro.jobsDisplay);
     setStep("confirm");
 
     // Fetch tool recommendations in background
@@ -479,6 +492,29 @@ function BorrowModal({ tool, onClose, onSuccess }) {
     setStep("manual");
   };
 
+  const handleSelectJob = async (job) => {
+    setSelectedJob(job);
+    setPurpose(job.name);
+    setStep("confirm");
+
+    // Fetch tool recommendations for this specific job
+    setLoadingRecs(true);
+    try {
+      const res = await getToolRecommendations({
+        job_name: job.name,
+        vehicle_make: selectedRO?.vehicle?.make || "",
+        vehicle_model: selectedRO?.vehicle?.model || "",
+        vehicle_year: selectedRO?.vehicle?.year?.toString() || "",
+        canned_job_id: job.cannedJobId?.toString() || "",
+      });
+      setRecommendations(res?.data || null);
+    } catch (err) {
+      console.error("Error fetching recommendations:", err);
+    } finally {
+      setLoadingRecs(false);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!currentToolsUser) {
@@ -492,7 +528,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
       vehicle,
       loanDuration: `${hours}h`,
       repair_order_tekmetric_id: selectedRO?.repairOrderId || null,
-      job_tekmetric_id: selectedRO?.jobs?.[0]?.id || null,
+      job_tekmetric_id: selectedJob?.id || selectedRO?.jobs?.[0]?.id || null,
     });
   };
 
@@ -591,6 +627,43 @@ function BorrowModal({ tool, onClose, onSuccess }) {
             </div>
           )}
 
+          {/* ── Step 1b: Select Job (when RO has multiple jobs) ────────── */}
+          {step === "select-job" && selectedRO && (
+            <div className="mt-4 space-y-3">
+              <div className="p-3 rounded-xl bg-sky-50 border border-sky-200 mb-2">
+                <p className="text-sm font-semibold text-sky-900">{selectedRO.vehicleDisplay}</p>
+                <p className="text-xs text-sky-700">RO #{selectedRO.repairOrderNumber} — {selectedRO.customer?.name || ""}</p>
+              </div>
+              <p className="text-sm text-slate-500">{t("tools.catalog.selectJob") || "Select the job you need this tool for:"}</p>
+              <div className="space-y-2">
+                {selectedRO.jobs.map((job) => (
+                  <button
+                    key={job.id}
+                    onClick={() => handleSelectJob(job)}
+                    className="w-full text-left p-3 rounded-xl border border-slate-200 hover:border-sky-400 hover:bg-sky-50/50 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                        <span className="text-base">🔧</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{job.name}</p>
+                        <p className="text-xs text-slate-500">
+                          {job.category ? `${job.category} — ` : ""}{job.laborHours ? `${job.laborHours}h labor` : ""}
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-slate-300 shrink-0" />
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={() => setStep("select-ro")}
+                className="w-full mt-2 px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50">
+                {t("common.back")}
+              </button>
+            </div>
+          )}
+
           {/* ── Step 2: Manual entry form ──────────────────────────────── */}
           {step === "manual" && (
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
@@ -641,7 +714,8 @@ function BorrowModal({ tool, onClose, onSuccess }) {
               {/* Selected RO summary */}
               <div className="p-3 rounded-xl bg-sky-50 border border-sky-200">
                 <p className="text-sm font-semibold text-sky-900">{selectedRO?.vehicleDisplay}</p>
-                <p className="text-xs text-sky-700">RO #{selectedRO?.repairOrderNumber} — {selectedRO?.jobsDisplay}</p>
+                <p className="text-xs text-sky-700">RO #{selectedRO?.repairOrderNumber} — {selectedJob?.name || selectedRO?.jobsDisplay}</p>
+                {selectedJob?.category && <p className="text-xs text-sky-500">{selectedJob.category}</p>}
               </div>
 
               {/* Duration selector */}
