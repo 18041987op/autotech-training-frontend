@@ -217,6 +217,7 @@ function fromDbRow(row) {
     addedAt:      row.added_at      || Date.now(),
     overrideNote: row.override_note || "",
     skill:        row.skill         || "",
+    ruleWarning:  row.rule_warning  || "",
   };
 }
 
@@ -1249,17 +1250,46 @@ export function KeyBoardPage() {
   const [panelOpen,        setPanelOpen]        = useState(false);
   const pollRef = useRef(null);
 
+  // Recalculate dispatch rule warnings for all cards
+  // Called after loading cards from DB since ruleWarning isn't persisted
+  const recalcWarnings = useCallback((loadedCards) => {
+    return loadedCards.map(card => {
+      if (!card.tech) return { ...card, ruleWarning: "" };
+      const tech = TECHS.find(t => t.key === card.tech);
+      if (!tech) return { ...card, ruleWarning: "" };
+
+      const techJobs = loadedCards.filter(c =>
+        c.tech === card.tech && c.col !== "ready" && c.col !== "shop" && c.id !== card.id
+      );
+      const existingHours = techJobs.reduce((s, c) => s + (c.hours || 0), 0);
+      const totalHours = existingHours + (card.hours || 0);
+      const warnings = [];
+
+      // R5: Tech absent
+      if (unavailableTechs.has(card.tech)) {
+        warnings.push(`R5: ${tech.name} is marked absent`);
+      }
+      // R6: Overload (>8h)
+      if (totalHours > MAX_HOURS) {
+        warnings.push(`R6: ${tech.name} at ${totalHours.toFixed(1)}h/${MAX_HOURS}h`);
+      }
+
+      return { ...card, ruleWarning: warnings.join(" | ") };
+    });
+  }, [unavailableTechs]);
+
   const fetchCards = useCallback(async () => {
     try {
       const data = await apiFetch("/api/keyboard/cards");
-      setCards((data || []).map(fromDbRow));
+      const loaded = (data || []).map(fromDbRow);
+      setCards(recalcWarnings(loaded));
       setSyncErr(null);
     } catch (e) {
       setSyncErr("Sync error — " + e.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [recalcWarnings]);
 
   // Fetch technicians from Management app (via Training backend proxy)
   const fetchTechnicians = useCallback(async () => {
