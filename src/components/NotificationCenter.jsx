@@ -148,7 +148,19 @@ export function NotificationCenter() {
     return () => document.removeEventListener('mousedown', h);
   }, [open]);
 
-  // Load when panel opens
+  // Load on mount + periodically for badge count (every 2 min)
+  useEffect(() => {
+    const load = () => {
+      fetchNotifications()
+        .then(all => setNotifs(all.filter(n => !dismissed.includes(n.id))))
+        .catch(() => {});
+    };
+    load(); // initial load for badge
+    const interval = setInterval(load, 120000); // refresh every 2 min
+    return () => clearInterval(interval);
+  }, []); // eslint-disable-line
+
+  // Reload when panel opens (for freshest data)
   useEffect(() => {
     if (!open) return;
     setLoading(true);
