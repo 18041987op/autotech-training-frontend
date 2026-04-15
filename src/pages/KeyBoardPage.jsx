@@ -1321,13 +1321,33 @@ export function KeyBoardPage() {
   useEffect(() => {
     if (tekmetricROs.length === 0) return;
 
-    // Map Tekmetric status → KeyBoard column
-    const STATUS_TO_COL = {
-      "REPAIR_IN_PROGRESS": "repair",
-      "WAITING_ON_PARTS":   "waiting",
-      "WAITING_FOR_PICKUP": "ready",
-      "COMPLETE":           "ready",
-    };
+    // Determine KeyBoard column from Tekmetric status + labels
+    // ro_label = Tekmetric's internal label ("In-Progress", "Work Not Started")
+    // custom_label = Shop's custom label ("Waiting on Parts", "Cur-or-Fut-Appointment", etc.)
+    function getTargetCol(ro) {
+      const status = ro.status;
+      const label = (ro.ro_label || "").toLowerCase();
+      const custom = (ro.custom_label || "").toLowerCase();
+
+      // Completed / ready for pickup → always "ready"
+      if (status === "WAITING_FOR_PICKUP" || status === "COMPLETE") return "ready";
+      // Waiting on parts → always "waiting"
+      if (status === "WAITING_ON_PARTS") return "waiting";
+      if (custom.includes("waiting on parts") || custom.includes("need to order")) return "waiting";
+      // Closed → remove
+      if (status === "INVOICE" || status === "POSTED" || status === "VOID") return "_delete";
+      // Shop/warranty → "shop" column
+      if (custom.includes("warranty") && custom.includes("shop")) return "shop";
+      // In-Progress label → actively working → "repair"
+      if (label.includes("in-progress") || label.includes("in progress")) return "repair";
+      // Work Not Started → vehicle dropped off but not started → "dropoff"
+      if (label.includes("not started")) return "dropoff";
+      // Appointment-related → "dropoff" (they have an appointment, vehicle is there)
+      if (custom.includes("appointment")) return "dropoff";
+      // Default for REPAIR_IN_PROGRESS
+      if (status === "REPAIR_IN_PROGRESS") return "dropoff";
+      return null;
+    }
 
     setCards(prev => {
       let updated = [...prev];
@@ -1337,29 +1357,29 @@ export function KeyBoardPage() {
       tekmetricROs.forEach(ro => {
         const roNumber = String(ro.repair_order_number);
         const idx = updated.findIndex(c => String(c.ro) === roNumber);
-        const targetCol = STATUS_TO_COL[ro.status];
+        const targetCol = getTargetCol(ro);
+
+        if (!targetCol) return; // Skip (estimate, etc.)
 
         if (idx !== -1) {
           // Card already exists on the board
-          if (ro.status === "INVOICE" || ro.status === "POSTED" || ro.status === "VOID") {
-            // Paid/closed → remove from board
+          if (targetCol === "_delete") {
             console.log(`[AutoSync] Removing RO #${roNumber} (${ro.status})`);
             toDelete.push(updated[idx].id);
-          } else if (targetCol && updated[idx].col !== targetCol) {
-            // Status changed → move to correct column (but don't override manual SA moves)
-            // Only auto-move to "ready" (work completed) — SA controls waiting/dropoff/repair
-            if (targetCol === "ready" || targetCol === "waiting") {
+          } else if (updated[idx].col !== targetCol) {
+            // Auto-move to "ready" and "waiting" always; others only if label changed
+            if (targetCol === "ready" || targetCol === "waiting" || targetCol === "shop") {
               console.log(`[AutoSync] Moving RO #${roNumber} to ${targetCol} (was ${updated[idx].col})`);
               updated[idx] = { ...updated[idx], col: targetCol };
             }
           }
-        } else if (targetCol) {
+        } else if (targetCol !== "_delete") {
           // New RO with approved work → auto-create card
           const matchedTech = matchTech(ro.technician_email, ro.technician_name);
           const newCard = {
             id: uid(),
             col: targetCol,
-            status: ro.status === "WAITING_ON_PARTS" ? "onhold" : "repairing",
+            status: targetCol === "waiting" ? "onhold" : "repairing",
             name: ro.customer_name || "",
             vehicle: ro.vehicle_description || "",
             ro: roNumber,
@@ -1371,10 +1391,9 @@ export function KeyBoardPage() {
             overrideNote: "",
             skill: "",
           };
-          console.log(`[AutoSync] New card RO #${roNumber} → ${targetCol}, tech: ${matchedTech ? matchedTech.name : "unassigned"}`);
+          console.log(`[AutoSync] New card RO #${roNumber} → ${targetCol}, tech: ${matchedTech ? matchedTech.name : "unassigned"}, label: ${ro.ro_label}/${ro.custom_label}`);
           newCards.push(newCard);
         }
-        // else: ESTIMATE, WAITING_FOR_AUTHORIZATION → skip (no approved work)
       });
 
       // Clean up stale cards: remove cards whose RO is no longer in the active Tekmetric list
