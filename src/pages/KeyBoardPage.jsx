@@ -1277,7 +1277,10 @@ export function KeyBoardPage() {
   const fetchAppointments = useCallback(async () => {
     try {
       const data = await getAppointments();
-      setAppointments(Array.isArray(data) ? data : []);
+      // Backend returns { appointments: [...] } — extract the array
+      const appts = Array.isArray(data) ? data : (data?.appointments || data?.data || []);
+      console.log(`[Tekmetric] Fetched ${appts.length} appointments`);
+      setAppointments(appts);
     } catch (e) {
       console.warn("[Tekmetric] Appointment fetch failed:", e);
       setAppointments([]);
@@ -1287,7 +1290,10 @@ export function KeyBoardPage() {
   const fetchActiveROs = useCallback(async () => {
     try {
       const data = await getActiveRepairOrders();
-      setTekmetricROs(Array.isArray(data) ? data : []);
+      // Backend returns { repairOrders: [...] } — extract the array
+      const ros = Array.isArray(data) ? data : (data?.repairOrders || data?.data || []);
+      console.log(`[Tekmetric] Fetched ${ros.length} active repair orders`);
+      setTekmetricROs(ros);
     } catch (e) {
       console.warn("[Tekmetric] Active RO fetch failed:", e);
       setTekmetricROs([]);
