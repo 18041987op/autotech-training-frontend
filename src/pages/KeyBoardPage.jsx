@@ -597,7 +597,7 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
 
 // ─── Key Card ─────────────────────────────────────────────────────────────────
 
-function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
+function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards, unavailTechs }) {
   const t = useT();
   const [confirmAction, setConfirmAction] = useState(null);
   const tech   = TECHS.find(te => te.key === card.tech);
@@ -607,7 +607,18 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   const isOnHold  = ACTIVE_COLS.has(card.col) && card.status === "onhold";
   const isActive  = ACTIVE_COLS.has(card.col);
   const isDone    = card.col === "ready";
-  const hasRuleWarning = !!card.ruleWarning;
+
+  // Compute rule warnings dynamically (not persisted)
+  const ruleWarnings = (() => {
+    if (!tech || !allCards) return "";
+    const warnings = [];
+    const techJobs = allCards.filter(c => c.tech === card.tech && c.col !== "ready" && c.col !== "shop" && c.id !== card.id);
+    const totalHours = techJobs.reduce((s, c) => s + (c.hours || 0), 0) + (card.hours || 0);
+    if (unavailTechs && unavailTechs.has(card.tech)) warnings.push(`R5: ${tech.name} absent`);
+    if (totalHours > MAX_HOURS) warnings.push(`R6: ${tech.name} ${totalHours.toFixed(1)}h/${MAX_HOURS}h`);
+    return warnings.join(" | ");
+  })();
+  const hasRuleWarning = ruleWarnings.length > 0;
 
   function handleAction(action) {
     // Always confirm Done and Hold to prevent accidental taps on large screen.
@@ -749,7 +760,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
       {/* Rule warning — orange badge for dispatch rule violations */}
       {hasRuleWarning && (
         <div style={{ fontSize: "0.65rem", color: "#fff7ed", background: "#9a3412", border: "1px solid #f97316", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
-          <span style={{ fontWeight: 800, color: "#fb923c" }}>⚠️ DISPATCH:</span> {card.ruleWarning}
+          <span style={{ fontWeight: 800, color: "#fb923c" }}>⚠️ DISPATCH:</span> {ruleWarnings}
         </div>
       )}
 
@@ -1250,46 +1261,17 @@ export function KeyBoardPage() {
   const [panelOpen,        setPanelOpen]        = useState(false);
   const pollRef = useRef(null);
 
-  // Recalculate dispatch rule warnings for all cards
-  // Called after loading cards from DB since ruleWarning isn't persisted
-  const recalcWarnings = useCallback((loadedCards) => {
-    return loadedCards.map(card => {
-      if (!card.tech) return { ...card, ruleWarning: "" };
-      const tech = TECHS.find(t => t.key === card.tech);
-      if (!tech) return { ...card, ruleWarning: "" };
-
-      const techJobs = loadedCards.filter(c =>
-        c.tech === card.tech && c.col !== "ready" && c.col !== "shop" && c.id !== card.id
-      );
-      const existingHours = techJobs.reduce((s, c) => s + (c.hours || 0), 0);
-      const totalHours = existingHours + (card.hours || 0);
-      const warnings = [];
-
-      // R5: Tech absent
-      if (unavailableTechs.has(card.tech)) {
-        warnings.push(`R5: ${tech.name} is marked absent`);
-      }
-      // R6: Overload (>8h)
-      if (totalHours > MAX_HOURS) {
-        warnings.push(`R6: ${tech.name} at ${totalHours.toFixed(1)}h/${MAX_HOURS}h`);
-      }
-
-      return { ...card, ruleWarning: warnings.join(" | ") };
-    });
-  }, [unavailableTechs]);
-
   const fetchCards = useCallback(async () => {
     try {
       const data = await apiFetch("/api/keyboard/cards");
-      const loaded = (data || []).map(fromDbRow);
-      setCards(recalcWarnings(loaded));
+      setCards((data || []).map(fromDbRow));
       setSyncErr(null);
     } catch (e) {
       setSyncErr("Sync error — " + e.message);
     } finally {
       setLoading(false);
     }
-  }, [recalcWarnings]);
+  }, []);
 
   // Fetch technicians from Management app (via Training backend proxy)
   const fetchTechnicians = useCallback(async () => {
@@ -1911,13 +1893,13 @@ export function KeyBoardPage() {
                     <div style={{ flex: 1, overflowY: "auto", padding: "4px 6px", display: "flex", flexDirection: "column", gap: 3 }}>
                       {techAppts.length > 0 && (<>{divider("#60a5fa", `📅 ${t("keyboard.board.appts")}`, techAppts.length)}{techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}</>)}
                       {divider("#ef4444", `⏳ ${t("keyboard.modal.statusWaiting")}`, techWaiting.length)}
-                      {techWaiting.map(card => (<KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
+                      {techWaiting.map(card => (<KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}
                       {divider("#f97316", `🚗 ${t("keyboard.board.dropOff")}`, techDropoff.length + techRepair.length)}
-                      {techDropoff.map(card => (<KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
-                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} /><div style={{ position: "absolute", top: 6, right: 24, fontSize: "0.6rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "1px 5px", borderRadius: 3 }}>⚙️ {t("keyboard.board.working")}</div></div>))}
+                      {techDropoff.map(card => (<KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}
+                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} /><div style={{ position: "absolute", top: 6, right: 24, fontSize: "0.6rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "1px 5px", borderRadius: 3 }}>⚙️ {t("keyboard.board.working")}</div></div>))}
                       {divider("#22c55e", `✅ ${t("keyboard.modal.statusReady")}`, techReady.length)}
-                      {techReady.map(card => (<KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}
-                      {techShop.length > 0 && (<>{divider("#64748b", `🏪 ${t("keyboard.board.shopLabel")}`, techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />))}</>)}
+                      {techReady.map(card => (<KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}
+                      {techShop.length > 0 && (<>{divider("#64748b", `🏪 ${t("keyboard.board.shopLabel")}`, techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}</>)}
                     </div>
                   </div>
                 );
@@ -1939,7 +1921,7 @@ export function KeyBoardPage() {
                     {unassignedCards.length === 0 ? (
                       <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>{t("keyboard.board.allAssigned")}</div>
                     ) : unassignedCards.map(card => (
-                      <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                      <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
                     ))}
                   </div>
                 </div>
@@ -2069,7 +2051,7 @@ export function KeyBoardPage() {
                       {techWaiting.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
                       ))}
 
                       {/* Drop Off + In Progress */}
@@ -2077,13 +2059,13 @@ export function KeyBoardPage() {
                       {techDropoff.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
                       ))}
                       {techRepair.map(card => (
                         <div key={card.id} style={{ position: "relative" }}>
                           <KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit}
                             onEdit={guardedEdit}
-                            onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                            onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
                           <div style={{
                             position: "absolute", top: 6, right: 24,
                             fontSize: "0.6rem", fontWeight: 800,
@@ -2098,7 +2080,7 @@ export function KeyBoardPage() {
                       {techReady.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
                       ))}
 
                       {/* Shop cars for this tech */}
@@ -2145,7 +2127,7 @@ export function KeyBoardPage() {
                       {unassignedCards.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
                       ))}
                     </>
                   )}
