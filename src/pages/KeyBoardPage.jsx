@@ -606,6 +606,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
   const isOnHold  = ACTIVE_COLS.has(card.col) && card.status === "onhold";
   const isActive  = ACTIVE_COLS.has(card.col);
   const isDone    = card.col === "ready";
+  const hasRuleWarning = !!card.ruleWarning;
 
   function handleAction(action) {
     // Always confirm Done and Hold to prevent accidental taps on large screen.
@@ -632,18 +633,19 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         borderRadius: 10, padding: "9px 10px",
         boxShadow: isDone ? "0 2px 8px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.4)",
         position: "relative", userSelect: "none",
-        border: isDone ? `2px solid #16a34a` : isUnassigned ? `2px solid #fbbf24` : undefined,
-        borderLeft: isDone ? `4px solid #22c55e` : isUnassigned ? `4px solid #fbbf24` : `4px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "#334155"}`,
-        animation: isUnassigned ? "blinkAmber 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none",
+        border: isDone ? `2px solid #16a34a` : hasRuleWarning ? `2px solid #f97316` : isUnassigned ? `2px solid #fbbf24` : undefined,
+        borderLeft: isDone ? `4px solid #22c55e` : hasRuleWarning ? `4px solid #f97316` : isUnassigned ? `4px solid #fbbf24` : `4px solid ${isOnHold ? "#ca8a04" : tech ? tech.color : isUrgent ? "#dc2626" : "#334155"}`,
+        animation: hasRuleWarning ? "blinkOrange 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" : isUnassigned ? "blinkAmber 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none",
         cursor: canEdit ? "pointer" : "default",
         transition: "transform 0.12s, box-shadow 0.12s",
       }}
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 5px 14px rgba(0,0,0,0.5)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4)"; }}
     >
-      {isUnassigned && (
+      {(isUnassigned || hasRuleWarning) && (
         <style>
-          {`@keyframes blinkAmber { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}
+          {`@keyframes blinkAmber { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+            @keyframes blinkOrange { 0%, 100% { border-color: #f97316; box-shadow: 0 0 8px rgba(249,115,22,0.4); } 50% { border-color: #ea580c; box-shadow: 0 0 16px rgba(249,115,22,0.7); } }`}
         </style>
       )}
       {/* Confirmation overlay — shown for all users on Done/Hold, and for non-SA on all actions */}
@@ -740,6 +742,13 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
       {isOnHold && (
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fbbf24", background: "#451a03", padding: "2px 7px", borderRadius: 5, display: "inline-block", marginTop: 4 }}>
           {t("keyboard.card.onHold")}
+        </div>
+      )}
+
+      {/* Rule warning — orange badge for dispatch rule violations */}
+      {hasRuleWarning && (
+        <div style={{ fontSize: "0.65rem", color: "#fff7ed", background: "#9a3412", border: "1px solid #f97316", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
+          <span style={{ fontWeight: 800, color: "#fb923c" }}>⚠️ DISPATCH:</span> {card.ruleWarning}
         </div>
       )}
 
@@ -1379,6 +1388,44 @@ export function KeyBoardPage() {
         } else if (targetCol !== "_delete") {
           // New RO with approved work → auto-create card
           const matchedTech = matchTech(ro.technician_email, ro.technician_name);
+          const estHours = ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150) * 10) / 10 : 0;
+
+          // Check dispatch rules for the assigned tech
+          let ruleWarning = "";
+          if (matchedTech) {
+            const techKey = matchedTech.key;
+            const techJobs = [...updated, ...newCards].filter(c =>
+              c.tech === techKey && c.col !== "ready" && c.col !== "shop"
+            );
+            const existingHours = techJobs.reduce((s, c) => s + (c.hours || 0), 0);
+            const totalHours = existingHours + estHours;
+            const warnings = [];
+
+            // R5: Tech absent
+            if (unavailableTechs.has(techKey)) {
+              warnings.push(`R5: ${matchedTech.name} is marked absent`);
+            }
+            // R6: Overload (>8h)
+            if (totalHours > MAX_HOURS) {
+              warnings.push(`R6: ${matchedTech.name} at ${totalHours.toFixed(1)}h/${MAX_HOURS}h (overloaded)`);
+            }
+            // R4: Deadline conflict
+            techJobs.forEach(existing => {
+              if (!existing.deadline) return;
+              const dl = parseDeadline(existing.deadline);
+              if (!dl) return;
+              const hoursUntilDl = (dl - Date.now()) / 3600000;
+              if (hoursUntilDl > 0 && totalHours > hoursUntilDl) {
+                warnings.push(`R4: Deadline conflict with ${existing.name || "RO#" + existing.ro}`);
+              }
+            });
+
+            if (warnings.length > 0) {
+              ruleWarning = warnings.join(" | ");
+              console.warn(`[AutoSync] ⚠️ RO #${roNumber} assigned to ${matchedTech.name} with warnings: ${ruleWarning}`);
+            }
+          }
+
           const newCard = {
             id: uid(),
             col: targetCol,
@@ -1386,13 +1433,14 @@ export function KeyBoardPage() {
             name: ro.customer_name || "",
             vehicle: ro.vehicle_description || "",
             ro: roNumber,
-            hours: ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150) * 10) / 10 : 0,
+            hours: estHours,
             deadline: ro.estimated_completion_date || "",
             tech: matchedTech ? matchedTech.key : "",
             originalTech: matchedTech ? matchedTech.key : "",
             addedAt: Date.now(),
             overrideNote: "",
             skill: "",
+            ruleWarning: ruleWarning || "",
           };
           console.log(`[AutoSync] New card RO #${roNumber} → ${targetCol}, tech: ${matchedTech ? matchedTech.name : "unassigned"}, label: ${ro.ro_label}/${ro.custom_label}`);
           newCards.push(newCard);
