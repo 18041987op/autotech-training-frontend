@@ -286,12 +286,12 @@ export function SchedulePage() {
       <WeekNav weekDates={weekDates} weekOffset={weekOffset} setWeekOffset={setWeekOffset} />
 
       {/* Schedule grid */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden border-2 border-slate-200 rounded-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-base">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 sticky left-0 bg-slate-50 min-w-[160px] z-10">
+              <tr className="border-b-2 border-slate-300 bg-slate-50">
+                <th className="text-left px-5 py-4 font-bold text-slate-700 sticky left-0 bg-slate-50 min-w-[180px] z-10 border-r-2 border-slate-200 text-base">
                   Employee
                 </th>
                 {weekDates.map((date, i) => {
@@ -301,22 +301,22 @@ export function SchedulePage() {
                   return (
                     <th
                       key={i}
-                      className={`text-center px-2 py-3 font-semibold min-w-[120px] ${
+                      className={`text-center px-3 py-4 font-bold min-w-[140px] border-r border-slate-200 last:border-r-0 ${
                         isClosed
-                          ? "bg-slate-200/60 text-slate-400"
+                          ? "bg-slate-100 text-slate-400"
                           : isToday
                             ? "text-sky-600 bg-sky-50/50"
-                            : "text-slate-600"
+                            : "text-slate-700"
                       }`}
                     >
-                      <div className="text-[10px] uppercase">{t(`hr.schedule.days.${DAY_KEYS[i]}`)}</div>
-                      <div className="text-sm">{date.getDate()}</div>
+                      <div className="text-xs uppercase font-extrabold tracking-wider">{t(`hr.schedule.days.${DAY_KEYS[i]}`)}</div>
+                      <div className="text-lg font-bold">{date.getDate()}</div>
                       {isClosed ? (
-                        <div className="text-[9px] text-slate-400 flex items-center justify-center gap-0.5 mt-0.5">
+                        <div className="text-[10px] text-slate-400 flex items-center justify-center gap-0.5 mt-0.5">
                           <Lock className="h-2.5 w-2.5" /> {t("hr.schedule.closed")}
                         </div>
                       ) : shopDay ? (
-                        <div className="text-[9px] text-slate-400 mt-0.5">
+                        <div className="text-[10px] text-slate-400 mt-0.5">
                           {fmt12(shopDay.open)}–{fmt12(shopDay.close)}
                         </div>
                       ) : null}
@@ -325,7 +325,7 @@ export function SchedulePage() {
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {isLoading ? (
                 [...Array(5)].map((_, i) => (
                   <tr key={i}>
@@ -342,10 +342,10 @@ export function SchedulePage() {
                 </tr>
               ) : (
                 activeEmployees.map((emp) => (
-                  <tr key={emp.emp_id} className="hover:bg-slate-50/30">
-                    <td className="px-4 py-2 font-medium text-slate-900 sticky left-0 bg-white z-10">
-                      <div className="truncate max-w-[150px]">{emp.employee_name}</div>
-                      <div className="text-[10px] text-slate-400 capitalize">{emp.role}</div>
+                  <tr key={emp.emp_id} className="hover:bg-slate-50/50">
+                    <td className="px-5 py-3 font-semibold text-slate-900 sticky left-0 bg-white z-10 border-r-2 border-slate-200">
+                      <div className="truncate max-w-[170px] text-base">{emp.employee_name}</div>
+                      <div className="text-xs text-slate-400 capitalize">{emp.role}</div>
                     </td>
                     {weekDates.map((date, i) => {
                       const dateStr = date.toISOString().slice(0, 10);
@@ -358,8 +358,8 @@ export function SchedulePage() {
                       // Closed day cell
                       if (isClosed) {
                         return (
-                          <td key={i} className="px-1 py-1 text-center bg-slate-200/40">
-                            <span className="text-slate-300 text-xs">—</span>
+                          <td key={i} className="px-2 py-3 text-center bg-slate-100/60 border-r border-slate-200 last:border-r-0">
+                            <span className="text-slate-300 text-base">—</span>
                           </td>
                         );
                       }
@@ -369,8 +369,8 @@ export function SchedulePage() {
                       return (
                         <td
                           key={i}
-                          className={`px-1 py-1 text-center cursor-pointer transition-colors ${
-                            isToday ? "bg-sky-50/30" : ""
+                          className={`px-2 py-3 text-center cursor-pointer transition-colors border-r border-slate-200 last:border-r-0 ${
+                            isToday ? "bg-sky-50/40" : ""
                           } ${isEditing ? "bg-sky-100/50" : "hover:bg-slate-100"}`}
                           onClick={() => !isEditing && handleCellClick(emp.emp_id, dateStr, i)}
                         >
@@ -417,22 +417,22 @@ export function SchedulePage() {
                               </div>
                             </div>
                           ) : shift ? (
-                            <div className="flex flex-col items-center gap-0.5">
-                              <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+                            <div className="flex flex-col items-center gap-1">
+                              <span className={`text-sm font-bold px-2 py-1 rounded-lg whitespace-nowrap ${
                                 shift.approved
-                                  ? "text-emerald-700 bg-emerald-100"
-                                  : "text-amber-700 bg-amber-100"
+                                  ? "text-emerald-700 bg-emerald-100 border border-emerald-200"
+                                  : "text-amber-700 bg-amber-100 border border-amber-200"
                               }`}>
                                 {fmt12(shift.start_time)}–{fmt12(shift.end_time)}
                               </span>
                               {shift.approved ? (
-                                <CheckCircle className="h-3 w-3 text-emerald-500" />
+                                <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
                               ) : (
-                                <span className="text-[9px] text-amber-500 font-medium">{t("hr.schedule.draft")}</span>
+                                <span className="text-[10px] text-amber-500 font-semibold">{t("hr.schedule.draft")}</span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-slate-200 text-lg leading-none">+</span>
+                            <span className="text-slate-200 text-xl leading-none">+</span>
                           )}
                         </td>
                       );
