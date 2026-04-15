@@ -1813,7 +1813,7 @@ export function KeyBoardPage() {
               {(isTech ? techs.filter(t => t.key !== myTech?.key) : techs).map(tech => {
                 const isUnavail = unavailableTechs.has(tech.key);
                 const techLoad = computeTechLoad(cards, unavailableTechs);
-                const l = techLoad[tech.key];
+                const l = techLoad[tech.key] || { hours: 0, jobs: [], hasDeadline: false, worstUrgency: null, unavailable: false };
                 const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
                 const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
                 const techAppts = appointmentsByTech[tech.key] || [];
