@@ -1322,29 +1322,32 @@ export function KeyBoardPage() {
     if (tekmetricROs.length === 0) return;
 
     // Determine KeyBoard column from Tekmetric status + labels
-    // ro_label = Tekmetric's internal label ("In-Progress", "Work Not Started")
-    // custom_label = Shop's custom label ("Waiting on Parts", "Cur-or-Fut-Appointment", etc.)
+    // ro_label = Tekmetric's work progress ("In-Progress", "Work Not Started")
+    // custom_label = Shop's custom label (optional — e.g. "Customer Waiting")
+    //
+    // NOTE: "Customer Waiting" vs "Drop Off" is a PHYSICAL state that Tekmetric
+    // doesn't track. The SA manages this manually by dragging cards.
+    // If the shop creates a "Customer Waiting" custom label in Tekmetric,
+    // we'll auto-place those in the "waiting" column.
     function getTargetCol(ro) {
       const status = ro.status;
       const label = (ro.ro_label || "").toLowerCase();
       const custom = (ro.custom_label || "").toLowerCase();
 
-      // Completed / ready for pickup → always "ready"
+      // Completed / ready for pickup → "ready"
       if (status === "WAITING_FOR_PICKUP" || status === "COMPLETE") return "ready";
-      // Waiting on parts → always "waiting"
+      // Closed → remove from board
+      if (status === "INVOICE" || status === "POSTED" || status === "VOID") return "_delete";
+      // Waiting on parts (status or custom label) → "waiting"
       if (status === "WAITING_ON_PARTS") return "waiting";
       if (custom.includes("waiting on parts") || custom.includes("need to order")) return "waiting";
-      // Closed → remove
-      if (status === "INVOICE" || status === "POSTED" || status === "VOID") return "_delete";
-      // Shop/warranty → "shop" column
-      if (custom.includes("warranty") && custom.includes("shop")) return "shop";
-      // In-Progress label → actively working → "repair"
+      // Custom label "Customer Waiting" → "waiting" (if shop creates this label)
+      if (custom.includes("customer waiting")) return "waiting";
+      // In-Progress = tech actively working → "repair"
       if (label.includes("in-progress") || label.includes("in progress")) return "repair";
-      // Work Not Started → vehicle dropped off but not started → "dropoff"
+      // Work Not Started = vehicle dropped off, not started → "dropoff"
       if (label.includes("not started")) return "dropoff";
-      // Appointment-related → "dropoff" (they have an appointment, vehicle is there)
-      if (custom.includes("appointment")) return "dropoff";
-      // Default for REPAIR_IN_PROGRESS
+      // Default for any REPAIR_IN_PROGRESS → "dropoff"
       if (status === "REPAIR_IN_PROGRESS") return "dropoff";
       return null;
     }
