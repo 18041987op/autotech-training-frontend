@@ -1308,8 +1308,22 @@ export function KeyBoardPage() {
   }, []);
 
   // Auto-sync with Tekmetric ROs
+  // Status flow: REPAIR_IN_PROGRESS → "repair" or "dropoff" (active work)
+  //              WAITING_ON_PARTS → "waiting" (on hold for parts)
+  //              WAITING_FOR_PICKUP / COMPLETE → "ready" (work done, awaiting payment/pickup)
+  //              INVOICE / POSTED → delete from board (paid and closed)
+  //              ESTIMATE / WAITING_FOR_AUTHORIZATION → NOT on board (no approved work)
   useEffect(() => {
     if (tekmetricROs.length === 0) return;
+
+    // Map Tekmetric status → KeyBoard column
+    const STATUS_TO_COL = {
+      "REPAIR_IN_PROGRESS": "repair",
+      "WAITING_ON_PARTS":   "waiting",
+      "WAITING_FOR_PICKUP": "ready",
+      "COMPLETE":           "ready",
+    };
+
     setCards(prev => {
       let updated = [...prev];
       const toDelete = [];
@@ -1318,37 +1332,44 @@ export function KeyBoardPage() {
       tekmetricROs.forEach(ro => {
         const roNumber = String(ro.repair_order_number);
         const idx = updated.findIndex(c => String(c.ro) === roNumber);
+        const targetCol = STATUS_TO_COL[ro.status];
 
         if (idx !== -1) {
-          // Card exists, sync status
-          if (ro.status === "WAITING_FOR_PICKUP") {
-            console.log(`[AutoSync] Moving card RO ${roNumber} to READY`);
-            updated[idx] = { ...updated[idx], col: "ready" };
-          } else if (ro.status === "INVOICE") {
-            console.log(`[AutoSync] Deleting card RO ${roNumber} (INVOICE)`);
+          // Card already exists on the board
+          if (ro.status === "INVOICE" || ro.status === "POSTED" || ro.status === "VOID") {
+            // Paid/closed → remove from board
+            console.log(`[AutoSync] Removing RO #${roNumber} (${ro.status})`);
             toDelete.push(updated[idx].id);
+          } else if (targetCol && updated[idx].col !== targetCol) {
+            // Status changed → move to correct column (but don't override manual SA moves)
+            // Only auto-move to "ready" (work completed) — SA controls waiting/dropoff/repair
+            if (targetCol === "ready" || targetCol === "waiting") {
+              console.log(`[AutoSync] Moving RO #${roNumber} to ${targetCol} (was ${updated[idx].col})`);
+              updated[idx] = { ...updated[idx], col: targetCol };
+            }
           }
-        } else if (ro.status !== "INVOICE" && ro.status !== "VOID") {
-          // Auto-create card for new RO — match by email (source of truth), fallback to name
+        } else if (targetCol) {
+          // New RO with approved work → auto-create card
           const matchedTech = matchTech(ro.technician_email, ro.technician_name);
           const newCard = {
             id: uid(),
-            col: "dropoff",
-            status: "repairing",
+            col: targetCol,
+            status: ro.status === "WAITING_ON_PARTS" ? "onhold" : "repairing",
             name: ro.customer_name || "",
             vehicle: ro.vehicle_description || "",
             ro: roNumber,
-            hours: 0,
-            deadline: "",
+            hours: ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150) * 10) / 10 : 0,
+            deadline: ro.estimated_completion_date || "",
             tech: matchedTech ? matchedTech.key : "",
             originalTech: matchedTech ? matchedTech.key : "",
             addedAt: Date.now(),
             overrideNote: "",
             skill: "",
           };
-          console.log(`[AutoSync] Auto-created card for RO #${roNumber} → tech: ${matchedTech ? matchedTech.name : "unassigned"}`);
+          console.log(`[AutoSync] New card RO #${roNumber} → ${targetCol}, tech: ${matchedTech ? matchedTech.name : "unassigned"}`);
           newCards.push(newCard);
         }
+        // else: ESTIMATE, WAITING_FOR_AUTHORIZATION → skip (no approved work)
       });
 
       updated = updated.filter(c => !toDelete.includes(c.id));
