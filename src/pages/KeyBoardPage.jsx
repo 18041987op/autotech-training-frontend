@@ -1409,10 +1409,11 @@ export function KeyBoardPage() {
             console.log(`[AutoSync] Removing RO #${roNumber} (${ro.status})`);
             toDelete.push(updated[idx].id);
           } else if (updated[idx].col !== targetCol) {
-            // Auto-move to "ready" and "waiting" always; others only if label changed
-            if (targetCol === "ready" || targetCol === "waiting" || targetCol === "shop") {
-              console.log(`[AutoSync] Moving RO #${roNumber} to ${targetCol} (was ${updated[idx].col})`);
-              updated[idx] = { ...updated[idx], col: targetCol };
+            // Only auto-move to "ready" (work completed — definitive Tekmetric status)
+            // Do NOT auto-move between dropoff/waiting/repair — SA controls those manually
+            if (targetCol === "ready" && updated[idx].col !== "ready") {
+              console.log(`[AutoSync] Moving RO #${roNumber} to ready (was ${updated[idx].col})`);
+              updated[idx] = { ...updated[idx], col: "ready" };
             }
           }
         } else if (targetCol !== "_delete") {
