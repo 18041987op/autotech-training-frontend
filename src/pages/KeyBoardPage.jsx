@@ -1605,7 +1605,7 @@ export function KeyBoardPage() {
   });
 
   // Unassigned cards (no tech selected)
-  const unassignedCards = cards.filter(c => !c.tech);
+  const unassignedCards = cards.filter(c => !c.tech).sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
 
   // Column order note: if tech is logged in, their column renders first (separate block)
   // SA/admin/view-only sees default order: Appointments | Techs... | Unassigned
@@ -1831,10 +1831,12 @@ export function KeyBoardPage() {
                 const pct = Math.min(100, (l.hours / MAX_HOURS) * 100);
                 const barColor = l.hours >= MAX_HOURS ? "#ef4444" : l.hours > MAX_HOURS * 0.6 ? "#f59e0b" : "#22c55e";
                 const techAppts = appointmentsByTech[tech.key] || [];
-                const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting");
-                const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
-                const techRepair  = cards.filter(c => c.tech === tech.key && c.col === "repair");
-                const techReady   = cards.filter(c => c.tech === tech.key && c.col === "ready");
+                // Sort: newest (most recent addedAt) first within each section
+                const byNewest = (a, b) => (b.addedAt || 0) - (a.addedAt || 0);
+                const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting").sort(byNewest);
+                const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff").sort(byNewest);
+                const techRepair  = cards.filter(c => c.tech === tech.key && c.col === "repair").sort(byNewest);
+                const techReady   = cards.filter(c => c.tech === tech.key && c.col === "ready").sort(byNewest);
                 const techShop    = cards.filter(c => c.tech === tech.key && c.col === "shop");
 
                 const divider = (color, label, count) => (
@@ -1938,10 +1940,12 @@ export function KeyBoardPage() {
                 // Dim columns of OTHER techs when logged in as a technician
                 const isMyColumn = !isTech || tech.key === myTech?.key;
 
-                const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting");
-                const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff");
-                const techRepair  = cards.filter(c => c.tech === tech.key && c.col === "repair");
-                const techReady   = cards.filter(c => c.tech === tech.key && c.col === "ready");
+                // Sort: newest (most recent addedAt) first within each section
+                const byNewest = (a, b) => (b.addedAt || 0) - (a.addedAt || 0);
+                const techWaiting = cards.filter(c => c.tech === tech.key && c.col === "waiting").sort(byNewest);
+                const techDropoff = cards.filter(c => c.tech === tech.key && c.col === "dropoff").sort(byNewest);
+                const techRepair  = cards.filter(c => c.tech === tech.key && c.col === "repair").sort(byNewest);
+                const techReady   = cards.filter(c => c.tech === tech.key && c.col === "ready").sort(byNewest);
                 const techShop    = cards.filter(c => c.tech === tech.key && c.col === "shop");
 
                 const divider = (color, label, count) => (
