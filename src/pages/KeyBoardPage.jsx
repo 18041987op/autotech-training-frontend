@@ -687,7 +687,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
           {card.name}
         </span>
         {card.ro && (
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: isDone ? "#4ade80" : "#6366f1", background: isDone ? "#14532d" : "#eef2ff", padding: "1px 5px", borderRadius: 4, flexShrink: 0 }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: 800, color: isDone ? "#4ade80" : "#6366f1", background: isDone ? "#14532d" : "#eef2ff", padding: "2px 7px", borderRadius: 5, flexShrink: 0 }}>
             RO #{card.ro}
           </span>
         )}
@@ -1944,6 +1944,10 @@ export function KeyBoardPage() {
                           </span>
                         </div>
                       </div>
+                      {/* Total cars count */}
+                      <span style={{ fontSize: "0.75rem", fontWeight: 900, background: "rgba(0,0,0,0.35)", color: "#fff", padding: "2px 8px", borderRadius: 10, flexShrink: 0 }}>
+                        🚗 {techWaiting.length + techDropoff.length + techRepair.length + techReady.length + techShop.length}
+                      </span>
                       {isUnavail && (
                         <span style={{ fontSize: "0.55rem", fontWeight: 800, background: "rgba(0,0,0,0.4)", color: "#fbbf24", padding: "2px 6px", borderRadius: 10 }}>OFF</span>
                       )}
