@@ -7,10 +7,10 @@ import { useAuthStore } from "../stores/authStore";
 import { getMyTimeOff, requestTimeOff, getTimeOffBalance } from "../lib/hrApi";
 
 const REQUEST_TYPES = [
-  { value: "vacation", label: "Vacation" },
-  { value: "sick", label: "Sick" },
-  { value: "personal", label: "Personal" },
-  { value: "unpaid", label: "Unpaid" },
+  { value: "vacation", label: "Vacation (Paid)", paid: true },
+  { value: "sick", label: "Sick (Paid)", paid: true },
+  { value: "personal", label: "Personal (Paid)", paid: true },
+  { value: "unpaid", label: "Unpaid Leave", paid: false },
 ];
 
 const STATUS_STYLES = {
@@ -175,8 +175,16 @@ function TimeOffRequestModal({ email, onClose, onSuccess }) {
           <div>
             <label className="block text-xs font-medium text-slate-600 mb-1">{t("hr.timeOff.type")}</label>
             <select value={form.type} onChange={set("type")} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm">
-              {REQUEST_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              {REQUEST_TYPES.map((rt) => <option key={rt.value} value={rt.value}>{rt.label}</option>)}
             </select>
+            {(() => {
+              const selected = REQUEST_TYPES.find(rt => rt.value === form.type);
+              return selected?.paid ? (
+                <p className="text-xs text-emerald-600 mt-1">✅ This time off will be paid when approved (hours × your rate).</p>
+              ) : (
+                <p className="text-xs text-amber-600 mt-1">⚠️ Unpaid leave — no pay will be calculated. This is recorded as an absence.</p>
+              );
+            })()}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
