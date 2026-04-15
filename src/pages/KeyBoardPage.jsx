@@ -680,12 +680,17 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction }) {
         </div>
       )}
 
-      {/* Customer name */}
+      {/* Customer name + RO number */}
       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
         <span style={{ fontSize: "1.0rem" }}>{isDone ? "✅" : "🔑"}</span>
         <span style={{ fontWeight: 800, fontSize: "0.95rem", color: isDone ? "#bbf7d0" : isOnHold ? "#fbbf24" : "#0f172a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {card.name}
         </span>
+        {card.ro && (
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: isDone ? "#4ade80" : "#6366f1", background: isDone ? "#14532d" : "#eef2ff", padding: "1px 5px", borderRadius: 4, flexShrink: 0 }}>
+            RO #{card.ro}
+          </span>
+        )}
       </div>
 
       {/* Vehicle */}
@@ -1372,10 +1377,20 @@ export function KeyBoardPage() {
         // else: ESTIMATE, WAITING_FOR_AUTHORIZATION → skip (no approved work)
       });
 
+      // Clean up stale cards: remove cards whose RO is no longer in the active Tekmetric list
+      // This handles ROs that were paid/closed outside of the normal status flow
+      const activeRONumbers = new Set(tekmetricROs.map(ro => String(ro.repair_order_number)));
+      updated.forEach(c => {
+        if (c.ro && !activeRONumbers.has(String(c.ro)) && !toDelete.includes(c.id)) {
+          console.log(`[AutoSync] Removing stale card RO #${c.ro} (no longer in active Tekmetric list)`);
+          toDelete.push(c.id);
+        }
+      });
+
       updated = updated.filter(c => !toDelete.includes(c.id));
       const finalCards = [...updated, ...newCards];
 
-      // Persist new cards to API
+      // Persist new cards and delete stale ones
       if (newCards.length > 0) {
         newCards.forEach(card => {
           apiFetch("/api/keyboard/cards", { method: "POST", body: toDbRow(card) }).catch(e => {
@@ -1383,7 +1398,13 @@ export function KeyBoardPage() {
           });
         });
       }
+      if (toDelete.length > 0) {
+        toDelete.forEach(id => {
+          apiFetch(`/api/keyboard/cards/${id}`, { method: "DELETE" }).catch(() => {});
+        });
+      }
 
+      console.log(`[AutoSync] Board: ${finalCards.length} cards (${newCards.length} new, ${toDelete.length} removed)`);
       return finalCards;
     });
   }, [tekmetricROs]);
