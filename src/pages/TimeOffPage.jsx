@@ -7,9 +7,7 @@ import { useAuthStore } from "../stores/authStore";
 import { getMyTimeOff, requestTimeOff, getTimeOffBalance } from "../lib/hrApi";
 
 const REQUEST_TYPES = [
-  { value: "vacation", label: "Vacation (Paid)", paid: true },
-  { value: "sick", label: "Sick (Paid)", paid: true },
-  { value: "personal", label: "Personal (Paid)", paid: true },
+  { value: "vacation", label: "PTO (Paid)", paid: true },
   { value: "unpaid", label: "Unpaid Leave", paid: false },
 ];
 
@@ -60,26 +58,22 @@ export function TimeOffPage() {
       </div>
 
       {/* Balance cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.vacation")}</p>
+          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.pto")}</p>
           <p className="text-2xl font-bold text-sky-700">{balance.vacation_remaining ?? "—"}</p>
           <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.vacation_total ?? "—"} {t("hr.timeOff.days")}</p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.sick")}</p>
-          <p className="text-2xl font-bold text-amber-700">{balance.sick_remaining ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.sick_total ?? "—"} {t("hr.timeOff.days")}</p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.personal")}</p>
-          <p className="text-2xl font-bold text-purple-700">{balance.personal_remaining ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.personal_total ?? "—"} {t("hr.timeOff.days")}</p>
+          <p className="text-[10px] text-emerald-500 mt-0.5">{t("hr.timeOff.accruedGradually")}</p>
         </div>
         <div className="card p-4">
           <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.usedYTD")}</p>
           <p className="text-2xl font-bold text-slate-700">{balance.used_ytd ?? "—"}</p>
           <p className="text-[10px] text-slate-400">{t("hr.timeOff.daysTotal")}</p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.unpaidLeave")}</p>
+          <p className="text-2xl font-bold text-amber-700">{balance.unpaid_used ?? "—"}</p>
+          <p className="text-[10px] text-slate-400">{t("hr.timeOff.daysThisYear")}</p>
         </div>
       </div>
 

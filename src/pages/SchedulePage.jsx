@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
   CalendarDays, ChevronLeft, ChevronRight, X, Save,
-  CheckCircle, ShieldCheck, Lock
+  CheckCircle, ShieldCheck, Lock, Printer
 } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import {
@@ -188,16 +188,113 @@ export function SchedulePage() {
 
   const isLoading = isAdmin ? loadingAll : loadingMy;
 
+  // ─── Print schedule ────────────────────────────────────────────
+  const handlePrint = () => {
+    const dateRange = `${weekDates[0].toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${weekDates[6].toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+
+    // Build employee rows for print
+    const employees = isAdmin ? activeEmployees : [{ emp_id: user?.id, employee_name: user?.name || user?.email, role: "" }];
+    const schedules = isAdmin ? allSchedules : mySchedules;
+
+    let tableRows = "";
+    employees.forEach((emp) => {
+      let cells = `<td style="padding:8px 12px;font-weight:600;border:1px solid #e2e8f0;white-space:nowrap;">${emp.employee_name || "—"}</td>`;
+      weekDates.forEach((date, i) => {
+        const dateStr = date.toISOString().slice(0, 10);
+        const shift = schedules.find((s) => s.emp_id === emp.emp_id && s.date === dateStr);
+        const shopDay = getShopDay(i);
+        const isClosed = !shopDay;
+        if (isClosed) {
+          cells += `<td style="padding:8px;text-align:center;border:1px solid #e2e8f0;background:#f8fafc;color:#94a3b8;">—</td>`;
+        } else if (shift) {
+          const bg = shift.approved ? "#ecfdf5" : "#fffbeb";
+          const color = shift.approved ? "#047857" : "#b45309";
+          cells += `<td style="padding:8px;text-align:center;border:1px solid #e2e8f0;background:${bg};color:${color};font-weight:600;font-size:12px;">${fmt12(shift.start_time)}–${fmt12(shift.end_time)}</td>`;
+        } else {
+          cells += `<td style="padding:8px;text-align:center;border:1px solid #e2e8f0;color:#cbd5e1;">OFF</td>`;
+        }
+      });
+      tableRows += `<tr>${cells}</tr>`;
+    });
+
+    // Day headers
+    let dayHeaders = `<th style="padding:8px 12px;text-align:left;border:1px solid #e2e8f0;background:#f1f5f9;font-size:12px;">Employee</th>`;
+    weekDates.forEach((date, i) => {
+      const shopDay = getShopDay(i);
+      const isClosed = !shopDay;
+      const dayName = t(`hr.schedule.days.${DAY_KEYS[i]}`);
+      const bg = isClosed ? "#f8fafc" : "#f1f5f9";
+      dayHeaders += `<th style="padding:8px;text-align:center;border:1px solid #e2e8f0;background:${bg};font-size:12px;">
+        <div style="font-weight:700;text-transform:uppercase;">${dayName}</div>
+        <div style="font-size:14px;font-weight:700;">${date.getDate()}</div>
+        ${isClosed ? '<div style="font-size:10px;color:#94a3b8;">Closed</div>' : shopDay ? `<div style="font-size:10px;color:#94a3b8;">${fmt12(shopDay.open)}–${fmt12(shopDay.close)}</div>` : ""}
+      </th>`;
+    });
+
+    const printHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Schedule – ${dateRange}</title>
+        <style>
+          @media print {
+            body { margin: 0; padding: 20px; }
+            .no-print { display: none !important; }
+          }
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; }
+          table { border-collapse: collapse; width: 100%; }
+        </style>
+      </head>
+      <body>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;border-bottom:2px solid #0284c7;padding-bottom:16px;">
+          <img src="/logo.png" alt="AutoRx Center" style="height:60px;width:auto;" />
+          <div>
+            <h1 style="margin:0;font-size:22px;color:#0f172a;">AutoRx Center</h1>
+            <p style="margin:4px 0 0;font-size:14px;color:#64748b;">${isAdmin ? t("hr.schedule.teamSchedule") : t("hr.schedule.mySchedule")} — ${dateRange}</p>
+          </div>
+        </div>
+        <table>
+          <thead><tr>${dayHeaders}</tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+        <div style="margin-top:20px;display:flex;gap:20px;font-size:11px;color:#64748b;">
+          <span>● <span style="display:inline-block;width:12px;height:12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;vertical-align:middle;"></span> ${t("hr.schedule.approved")}</span>
+          <span>● <span style="display:inline-block;width:12px;height:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:4px;vertical-align:middle;"></span> ${t("hr.schedule.draftLegend")}</span>
+        </div>
+        <p style="margin-top:24px;font-size:10px;color:#94a3b8;text-align:center;">
+          5701 Orr Road, Charlotte, NC 28213 · autorxcenter@gmail.com · Printed ${new Date().toLocaleDateString()}
+        </p>
+      </body>
+      </html>
+    `;
+
+    const printWin = window.open("", "_blank", "width=900,height=600");
+    printWin.document.write(printHtml);
+    printWin.document.close();
+    printWin.focus();
+    setTimeout(() => printWin.print(), 500);
+  };
+
   // ─── EMPLOYEE VIEW (approved only, read-only) ──────────────────
   if (!isAdmin) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <CalendarDays className="h-6 w-6 text-sky-600" />
-            {t("hr.schedule.mySchedule")}
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">{t("hr.schedule.yourApprovedSchedule")}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <CalendarDays className="h-6 w-6 text-sky-600" />
+              {t("hr.schedule.mySchedule")}
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">{t("hr.schedule.yourApprovedSchedule")}</p>
+          </div>
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                       border border-slate-200 text-slate-700 hover:bg-slate-50 transition shadow-sm self-start"
+          >
+            <Printer className="h-4 w-4" />
+            {t("hr.schedule.print")}
+          </button>
         </div>
 
         <WeekNav weekDates={weekDates} weekOffset={weekOffset} setWeekOffset={setWeekOffset} />
@@ -269,18 +366,28 @@ export function SchedulePage() {
           </p>
         </div>
 
-        {/* Approve week button */}
-        {unapprovedCount > 0 && (
+        <div className="flex items-center gap-2 self-start">
           <button
-            onClick={handleApproveWeek}
-            disabled={approveMut.isPending}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                       bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
+            onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                       border border-slate-200 text-slate-700 hover:bg-slate-50 transition shadow-sm"
           >
-            <ShieldCheck className="h-4 w-4" />
-            {approveMut.isPending ? t("hr.schedule.approving") : `${t("hr.schedule.approveWeek")} (${unapprovedCount})`}
+            <Printer className="h-4 w-4" />
+            {t("hr.schedule.print")}
           </button>
-        )}
+          {/* Approve week button */}
+          {unapprovedCount > 0 && (
+            <button
+              onClick={handleApproveWeek}
+              disabled={approveMut.isPending}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                         bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition shadow-sm"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              {approveMut.isPending ? t("hr.schedule.approving") : `${t("hr.schedule.approveWeek")} (${unapprovedCount})`}
+            </button>
+          )}
+        </div>
       </div>
 
       <WeekNav weekDates={weekDates} weekOffset={weekOffset} setWeekOffset={setWeekOffset} />
