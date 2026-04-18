@@ -35,22 +35,19 @@ export const useAuthStore = create(
   )
 );
 
-// Use the zustand persist API's onFinishHydration listener.
-// This is more reliable than onRehydrateStorage in zustand v4.5+.
-// It fires once hydration from localStorage completes (even if storage is empty).
+// Register listener for future hydration events
 useAuthStore.persist.onFinishHydration(() => {
   useAuthStore.setState({ _hasHydrated: true });
 });
 
+// If hydration already completed before listener was registered (race condition),
+// set the flag now. This is the fix: localStorage hydration can finish synchronously
+// before the listener above is attached.
+if (useAuthStore.persist.hasHydrated()) {
+  useAuthStore.setState({ _hasHydrated: true });
+}
+
 /**
  * Hook: returns true once the auth store has finished hydrating from localStorage.
- * Use this in any component that depends on user data to avoid the race condition
- * where `user` is momentarily null before localStorage is read.
- *
- * Usage:
- *   const authReady = useAuthReady();
- *   const user = useAuthStore((s) => s.user);
- *   // In your useQuery: enabled: authReady && !!user?.email
- *   // In your render:   if (!authReady) return <Spinner />;
  */
 export const useAuthReady = () => useAuthStore((s) => s._hasHydrated);
