@@ -1981,7 +1981,9 @@
       "shopClosedLegend": "Shop closed",
       "shopHours": "Shop Hours",
       "teamSchedule": "Team Schedule",
+      "teamScheduleSubtitle": "See who's scheduled this week",
       "today": "Today",
+      "you": "You",
       "yourApprovedSchedule": "Your approved schedule for this week"
     },
     "timesheet": {

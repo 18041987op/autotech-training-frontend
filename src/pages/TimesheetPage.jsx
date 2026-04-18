@@ -50,7 +50,6 @@ function fmtDate(iso) {
 // ─── Main page ─────────────────────────────────────────────────────────────
 export function TimesheetPage() {
   const { t } = useTranslation();
-  const user = useAuthStore((s) => s.user);
   const hasElevated = useAuthStore((s) => s.hasElevatedAccess());
   const [activeTab, setActiveTab] = useState(hasElevated ? "review" : "my");
 
@@ -288,7 +287,7 @@ function TeamTimesheetReview() {
     queryFn: () => getAllTimesheets(week.start, week.end),
   });
 
-  const employees = data?.data?.employees || [];
+  const employees = useMemo(() => data?.data?.employees || [], [data]);
   const grandTotal = data?.data?.grandTotal || {};
   const days = getDayDates(week.start, week.end);
 

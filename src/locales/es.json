@@ -1981,7 +1981,9 @@
       "shopClosedLegend": "Taller cerrado",
       "shopHours": "Horario del Taller",
       "teamSchedule": "Horario del Equipo",
+      "teamScheduleSubtitle": "Mira quién está programado esta semana",
       "today": "Hoy",
+      "you": "Tú",
       "yourApprovedSchedule": "Tu horario aprobado para esta semana"
     },
     "timesheet": {

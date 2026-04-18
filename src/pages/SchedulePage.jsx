@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import {
-  getMySchedule, getAllSchedules, getTeamDirectory,
+  getAllSchedules, getTeamDirectory,
   saveScheduleEntry, deleteScheduleEntry, approveSchedules,
   getShopHours
 } from "../lib/hrApi";
@@ -82,40 +82,29 @@ export function SchedulePage() {
     return h;
   };
 
-  // ─── Admin queries ──────────────────────────────────────────────
+  // ─── All employees see team schedules (read-only for regular employees) ──
   const { data: allSchedulesData, isLoading: loadingAll } = useQuery({
     queryKey: ["allSchedules", startDate, endDate],
     queryFn: () => getAllSchedules(startDate, endDate),
-    enabled: canManageSchedule,
   });
 
   const { data: teamData } = useQuery({
     queryKey: ["teamDirectory", false],
     queryFn: () => getTeamDirectory(false),
-    enabled: canManageSchedule,
-  });
-
-  // ─── Employee query ─────────────────────────────────────────────
-  const { data: myData, isLoading: loadingMy } = useQuery({
-    queryKey: ["mySchedule", user?.email, startDate, endDate],
-    queryFn: () => getMySchedule(user?.email, startDate, endDate, undefined, user?.name),
-    enabled: !canManageSchedule && !!user?.email,
   });
 
   const activeEmployees = teamData?.data || [];
   const allSchedules = useMemo(() => allSchedulesData?.data || [], [allSchedulesData]);
-  const mySchedules = useMemo(() => myData?.data || [], [myData]);
 
   // ─── Schedule map: empId|date → entry ───────────────────────────
   const scheduleMap = useMemo(() => {
     const map = {};
-    const src = canManageSchedule ? allSchedules : mySchedules;
-    src.forEach((s) => {
+    allSchedules.forEach((s) => {
       const key = `${s.emp_id}|${s.date}`;
       map[key] = s;
     });
     return map;
-  }, [canManageSchedule, allSchedules, mySchedules]);
+  }, [allSchedules]);
 
   const getShift = (empId, dateStr) => scheduleMap[`${empId}|${dateStr}`] || null;
 
@@ -186,15 +175,15 @@ export function SchedulePage() {
     });
   };
 
-  const isLoading = canManageSchedule ? loadingAll : loadingMy;
+  const isLoading = loadingAll;
 
   // ─── Print schedule ────────────────────────────────────────────
   const handlePrint = () => {
     const dateRange = `${weekDates[0].toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${weekDates[6].toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 
     // Build employee rows for print
-    const employees = canManageSchedule ? activeEmployees : [{ emp_id: user?.id, employee_name: user?.name || user?.email, role: "" }];
-    const schedules = canManageSchedule ? allSchedules : mySchedules;
+    const employees = activeEmployees;
+    const schedules = allSchedules;
 
     let tableRows = "";
     employees.forEach((emp) => {
@@ -250,7 +239,7 @@ export function SchedulePage() {
           <img src="/logo.png" alt="AutoRx Center" style="height:60px;width:auto;" />
           <div>
             <h1 style="margin:0;font-size:22px;color:#0f172a;">AutoRx Center</h1>
-            <p style="margin:4px 0 0;font-size:14px;color:#64748b;">${canManageSchedule ? t("hr.schedule.teamSchedule") : t("hr.schedule.mySchedule")} — ${dateRange}</p>
+            <p style="margin:4px 0 0;font-size:14px;color:#64748b;">${t("hr.schedule.teamSchedule")} — ${dateRange}</p>
           </div>
         </div>
         <table>
@@ -275,7 +264,7 @@ export function SchedulePage() {
     setTimeout(() => printWin.print(), 500);
   };
 
-  // ─── EMPLOYEE VIEW (approved only, read-only) ──────────────────
+  // ─── EMPLOYEE VIEW (read-only team grid) ──────────────────────
   if (!canManageSchedule) {
     return (
       <div className="space-y-6">
@@ -283,9 +272,9 @@ export function SchedulePage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <CalendarDays className="h-6 w-6 text-sky-600" />
-              {t("hr.schedule.mySchedule")}
+              {t("hr.schedule.teamSchedule")}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">{t("hr.schedule.yourApprovedSchedule")}</p>
+            <p className="text-sm text-slate-500 mt-1">{t("hr.schedule.teamScheduleSubtitle")}</p>
           </div>
           <button
             onClick={handlePrint}
@@ -299,54 +288,134 @@ export function SchedulePage() {
 
         <WeekNav weekDates={weekDates} weekOffset={weekOffset} setWeekOffset={setWeekOffset} />
 
-        <div className="grid grid-cols-7 gap-2">
-          {weekDates.map((date, i) => {
-            const dateStr = date.toISOString().slice(0, 10);
-            const shift = mySchedules.find((s) => s.date === dateStr);
-            const isToday = date.toDateString() === new Date().toDateString();
-            const shopDay = getShopDay(i);
-            const isClosed = !shopDay;
-
-            return (
-              <div
-                key={i}
-                className={`card p-3 text-center transition-colors ${
-                  isClosed
-                    ? "bg-slate-100/70 opacity-50"
-                    : isToday
-                      ? "ring-2 ring-sky-500/30"
-                      : ""
-                }`}
-              >
-                <p className={`text-xs font-bold ${
-                  isClosed ? "text-slate-300" : isToday ? "text-sky-600" : "text-slate-400"
-                }`}>
-                  {t(`hr.schedule.days.${DAY_KEYS[i]}`)}
-                </p>
-                <p className={`text-lg font-bold mt-0.5 ${isClosed ? "text-slate-300" : "text-slate-900"}`}>
-                  {date.getDate()}
-                </p>
-                {isClosed ? (
-                  <p className="text-[10px] text-slate-300 mt-2 flex items-center justify-center gap-0.5">
-                    <Lock className="h-2.5 w-2.5" /> {t("hr.schedule.closed")}
-                  </p>
-                ) : isLoading ? (
-                  <div className="h-4 bg-slate-100 animate-pulse rounded mt-2" />
-                ) : shift ? (
-                  <div className="mt-2">
-                    <span className="text-xs font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                      {fmt12(shift.start_time)} – {fmt12(shift.end_time)}
-                    </span>
-                  </div>
+        {/* Read-only team schedule grid */}
+        <div className="card overflow-hidden border-2 border-slate-200 rounded-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-base">
+              <thead>
+                <tr className="border-b-2 border-slate-300 bg-slate-50">
+                  <th className="text-left px-5 py-4 font-bold text-slate-700 sticky left-0 bg-slate-50 min-w-[180px] z-10 border-r-2 border-slate-200 text-base">
+                    {t("hr.timesheet.employeeCol")}
+                  </th>
+                  {weekDates.map((date, i) => {
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    const shopDay = getShopDay(i);
+                    const isClosed = !shopDay;
+                    return (
+                      <th
+                        key={i}
+                        className={`text-center px-3 py-4 font-bold min-w-[140px] border-r border-slate-200 last:border-r-0 ${
+                          isClosed
+                            ? "bg-slate-100 text-slate-400"
+                            : isToday
+                              ? "text-sky-600 bg-sky-50/50"
+                              : "text-slate-700"
+                        }`}
+                      >
+                        <div className="text-xs uppercase font-extrabold tracking-wider">{t(`hr.schedule.days.${DAY_KEYS[i]}`)}</div>
+                        <div className="text-lg font-bold">{date.getDate()}</div>
+                        {isClosed ? (
+                          <div className="text-[10px] text-slate-400 flex items-center justify-center gap-0.5 mt-0.5">
+                            <Lock className="h-2.5 w-2.5" /> {t("hr.schedule.closed")}
+                          </div>
+                        ) : shopDay ? (
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {fmt12(shopDay.open)}–{fmt12(shopDay.close)}
+                          </div>
+                        ) : null}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {isLoading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={8} className="px-4 py-3">
+                        <div className="h-8 bg-slate-100 animate-pulse rounded" />
+                      </td>
+                    </tr>
+                  ))
+                ) : activeEmployees.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-12 text-slate-400">
+                      {t("hr.timesheet.noEmployees")}
+                    </td>
+                  </tr>
                 ) : (
-                  <p className="text-[10px] text-slate-300 mt-2">{t("hr.schedule.off")}</p>
+                  activeEmployees.map((emp) => {
+                    const isMe = emp.emp_id === user?.id;
+                    return (
+                      <tr key={emp.emp_id} className={`${isMe ? "bg-sky-50/40" : "hover:bg-slate-50/50"}`}>
+                        <td className={`px-5 py-3 font-semibold sticky left-0 z-10 border-r-2 border-slate-200 ${isMe ? "bg-sky-50/40" : "bg-white"}`}>
+                          <div className="truncate max-w-[170px] text-base text-slate-900">
+                            {emp.employee_name}
+                            {isMe && <span className="ml-1.5 text-[10px] text-sky-600 font-bold uppercase">({t("hr.schedule.you")})</span>}
+                          </div>
+                          <div className="text-xs text-slate-400 capitalize">{emp.role}</div>
+                        </td>
+                        {weekDates.map((date, i) => {
+                          const dateStr = date.toISOString().slice(0, 10);
+                          const shift = getShift(emp.emp_id, dateStr);
+                          const isToday = date.toDateString() === new Date().toDateString();
+                          const shopDay = getShopDay(i);
+                          const isClosed = !shopDay;
+
+                          if (isClosed) {
+                            return (
+                              <td key={i} className="px-2 py-3 text-center bg-slate-100/60 border-r border-slate-200 last:border-r-0">
+                                <span className="text-slate-300 text-base">—</span>
+                              </td>
+                            );
+                          }
+
+                          return (
+                            <td
+                              key={i}
+                              className={`px-2 py-3 text-center border-r border-slate-200 last:border-r-0 ${
+                                isToday ? "bg-sky-50/40" : ""
+                              }`}
+                            >
+                              {shift ? (
+                                <span className={`text-sm font-bold px-2 py-1 rounded-lg whitespace-nowrap ${
+                                  shift.approved
+                                    ? "text-emerald-700 bg-emerald-100 border border-emerald-200"
+                                    : "text-amber-700 bg-amber-100 border border-amber-200"
+                                }`}>
+                                  {fmt12(shift.start_time)}–{fmt12(shift.end_time)}
+                                </span>
+                              ) : (
+                                <span className="text-slate-200 text-sm">{t("hr.schedule.off")}</span>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })
                 )}
-              </div>
-            );
-          })}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* Shop hours legend */}
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 text-xs text-slate-500">
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300" />
+            {t("hr.schedule.approved")}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded-full bg-amber-100 border border-amber-300" />
+            {t("hr.schedule.draftLegend")}
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 rounded bg-slate-200/60 border border-slate-300" />
+            {t("hr.schedule.shopClosedLegend")}
+          </span>
+        </div>
+
         <ShopHoursLegend shopHours={shopHours} />
       </div>
     );
