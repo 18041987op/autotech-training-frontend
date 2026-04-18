@@ -8,7 +8,7 @@ import { getTeamDirectory } from "../lib/hrApi";
 export function TeamDirectoryPage() {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
-  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const isAdmin = useAuthStore((s) => s.hasAdminAccess());
   const [showInactive, setShowInactive] = useState(false);
 
   const { data, isLoading } = useQuery({

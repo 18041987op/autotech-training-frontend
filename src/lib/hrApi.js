@@ -54,10 +54,11 @@ export const getShopHours = () => hrFetch("/shop-hours");
 
 // ─── Schedule ──────────────────────────────────────────────────────────────
 
-export const getMySchedule = (email, startDate, endDate, empId) => {
+export const getMySchedule = (email, startDate, endDate, empId, name) => {
   const qs = new URLSearchParams({ start_date: startDate, end_date: endDate });
   if (empId) qs.set("emp_id", empId);
   else if (email) qs.set("email", email);
+  if (name) qs.set("name", name);
   return hrFetch(`/schedule?${qs}`);
 };
 
@@ -114,25 +115,27 @@ export const endBreak = (email) => {
 
 // ─── Time Off ──────────────────────────────────────────────────────────────
 
-export const getMyTimeOff = (email, empId) => {
+export const getMyTimeOff = (email, empId, name) => {
   const qs = new URLSearchParams();
   if (empId) qs.set("emp_id", empId);
   else if (email) qs.set("email", email);
+  if (name) qs.set("name", name);
   return hrFetch(`/time-off?${qs}`);
 };
 
 /** Admin: get all time-off requests from all employees */
 export const getAllTimeOff = () => hrFetch("/time-off?all=true");
 
-export const getTimeOffBalance = (email, empId) => {
+export const getTimeOffBalance = (email, empId, name) => {
   const qs = new URLSearchParams();
   if (empId) qs.set("emp_id", empId);
   else if (email) qs.set("email", email);
+  if (name) qs.set("name", name);
   return hrFetch(`/time-off/balance?${qs}`);
 };
 
-export const requestTimeOff = (email, data) =>
-  hrFetch("/time-off", { method: "POST", body: { email, ...data } });
+export const requestTimeOff = (email, data, name) =>
+  hrFetch("/time-off", { method: "POST", body: { email, name, ...data } });
 
 /** Admin: approve/deny a request */
 export const updateTimeOffRequest = (id, data) =>

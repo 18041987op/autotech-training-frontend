@@ -2056,7 +2056,14 @@
       "of": "of",
       "reasonOptional": "Reason (optional)",
       "reasonPlaceholder": "Why do you need time off?",
-      "submitting": "Submitting..."
+      "submitting": "Submitting...",
+      "myRequests": "My Requests",
+      "teamRequests": "Team Requests",
+      "employee": "Employee",
+      "actions": "Actions",
+      "approve": "Approve",
+      "deny": "Deny",
+      "requestUpdated": "Request updated successfully"
     },
     "benefits": {
       "title": "Benefits",

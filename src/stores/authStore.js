@@ -14,6 +14,11 @@ export const useAuthStore = create(
 
       isAuthenticated: () => !!get().token,
       isAdmin: () => get().user?.role === 'admin',
+      isAdministrative: () => ['administrative', 'coordinator'].includes(get().user?.role?.toLowerCase()),
+      hasAdminAccess: () => {
+        const role = get().user?.role?.toLowerCase();
+        return role === 'admin' || role === 'administrative' || role === 'coordinator';
+      },
     }),
     {
       name: 'auth-storage',

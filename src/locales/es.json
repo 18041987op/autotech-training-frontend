@@ -2056,7 +2056,14 @@
       "of": "de",
       "reasonOptional": "Razón (opcional)",
       "reasonPlaceholder": "¿Por qué necesitas tiempo libre?",
-      "submitting": "Enviando..."
+      "submitting": "Enviando...",
+      "myRequests": "Mis Solicitudes",
+      "teamRequests": "Solicitudes del Equipo",
+      "employee": "Empleado",
+      "actions": "Acciones",
+      "approve": "Aprobar",
+      "deny": "Rechazar",
+      "requestUpdated": "Solicitud actualizada exitosamente"
     },
     "benefits": {
       "title": "Beneficios",

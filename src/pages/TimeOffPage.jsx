@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { CalendarOff, Plus, Clock, AlertCircle, ShieldCheck } from "lucide-react";
+import { CalendarOff, Plus, Clock, AlertCircle, ShieldCheck, CheckCircle, XCircle } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
-import { getMyTimeOff, requestTimeOff, getTimeOffBalance } from "../lib/hrApi";
+import { getMyTimeOff, requestTimeOff, getTimeOffBalance, getAllTimeOff, updateTimeOffRequest } from "../lib/hrApi";
 
 const REQUEST_TYPES = [
   { value: "vacation", label: "PTO (Paid)", paid: true },
@@ -21,26 +21,49 @@ const STATUS_STYLES = {
 export function TimeOffPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = useAuthStore((s) => s.hasAdminAccess());
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [activeTab, setActiveTab] = useState("my"); // "my" | "team" (admin only)
 
   const { data: requestsData, isLoading } = useQuery({
     queryKey: ["myTimeOff", user?.email],
-    queryFn: () => getMyTimeOff(user?.email),
+    queryFn: () => getMyTimeOff(user?.email, undefined, user?.name),
     enabled: !!user?.email,
   });
 
   const { data: balanceData } = useQuery({
     queryKey: ["timeOffBalance", user?.email],
-    queryFn: () => getTimeOffBalance(user?.email),
+    queryFn: () => getTimeOffBalance(user?.email, undefined, user?.name),
     enabled: !!user?.email,
+  });
+
+  // Admin: all team requests
+  const { data: allRequestsData, isLoading: loadingAll } = useQuery({
+    queryKey: ["allTimeOff"],
+    queryFn: () => getAllTimeOff(),
+    enabled: isAdmin,
   });
 
   const requests = requestsData?.data || [];
   const balance = balanceData?.data || {};
+  const allRequests = allRequestsData?.data || [];
+  const pendingRequests = allRequests.filter((r) => r.status === "pending");
 
   const ptoEligible = balance.pto_eligible === true;
   const hasStartDate = !!balance.start_date;
+
+  // Admin: approve/deny mutations
+  const approveMut = useMutation({
+    mutationFn: ({ id, status, review_notes }) => updateTimeOffRequest(id, { status, review_notes }),
+    onSuccess: () => {
+      toast.success(t("hr.timeOff.requestUpdated"));
+      queryClient.invalidateQueries({ queryKey: ["allTimeOff"] });
+      queryClient.invalidateQueries({ queryKey: ["myTimeOff"] });
+      queryClient.invalidateQueries({ queryKey: ["timeOffBalance"] });
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   return (
     <div className="space-y-6">
@@ -60,113 +83,229 @@ export function TimeOffPage() {
         </button>
       </div>
 
-      {/* Eligibility banner */}
-      {!hasStartDate && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
-          <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-amber-800">{t("hr.timeOff.noStartDate")}</p>
-            <p className="text-xs text-amber-600 mt-0.5">{t("hr.timeOff.noStartDateDesc")}</p>
-          </div>
-        </div>
-      )}
-      {hasStartDate && !ptoEligible && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-sky-50 border border-sky-200">
-          <Clock className="h-5 w-5 text-sky-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-semibold text-sky-800">{t("hr.timeOff.notYetEligible")}</p>
-            <p className="text-xs text-sky-600 mt-0.5">
-              {t("hr.timeOff.eligibleAfter", { date: balance.pto_eligible_date || "—" })}
-              {balance.days_until_eligible ? ` (${balance.days_until_eligible} ${t("hr.timeOff.daysRemaining")})` : ""}
-            </p>
-          </div>
-        </div>
-      )}
-      {ptoEligible && (
-        <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-          <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-          <p className="text-sm font-semibold text-emerald-800">{t("hr.timeOff.eligible")}</p>
+      {/* Admin tabs */}
+      {isAdmin && (
+        <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
+          <button
+            onClick={() => setActiveTab("my")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              activeTab === "my" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {t("hr.timeOff.myRequests")}
+          </button>
+          <button
+            onClick={() => setActiveTab("team")}
+            className={`px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1.5 ${
+              activeTab === "team" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {t("hr.timeOff.teamRequests")}
+            {pendingRequests.length > 0 && (
+              <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {pendingRequests.length}
+              </span>
+            )}
+          </button>
         </div>
       )}
 
-      {/* Balance cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoAvailable")}</p>
-          <p className="text-2xl font-bold text-sky-700">{balance.pto_hours_remaining ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.pto_hours_total ?? "—"} {t("hr.timeOff.hours")}</p>
-          <p className="text-[10px] text-emerald-500 mt-0.5">{t("hr.timeOff.accruedGradually")}</p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoUsed")}</p>
-          <p className="text-2xl font-bold text-slate-700">{balance.pto_hours_used ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">{t("hr.timeOff.hoursThisYear")}</p>
-        </div>
-        <div className="card p-4">
-          <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.unpaidLeave")}</p>
-          <p className="text-2xl font-bold text-amber-700">{balance.unpaid_used ?? "—"}</p>
-          <p className="text-[10px] text-slate-400">{t("hr.timeOff.hoursThisYear")}</p>
-        </div>
-      </div>
+      {/* ─── MY REQUESTS TAB ─── */}
+      {(!isAdmin || activeTab === "my") && (
+        <>
+          {/* Eligibility banner */}
+          {!hasStartDate && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-amber-800">{t("hr.timeOff.noStartDate")}</p>
+                <p className="text-xs text-amber-600 mt-0.5">{t("hr.timeOff.noStartDateDesc")}</p>
+              </div>
+            </div>
+          )}
+          {hasStartDate && !ptoEligible && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-sky-50 border border-sky-200">
+              <Clock className="h-5 w-5 text-sky-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-sky-800">{t("hr.timeOff.notYetEligible")}</p>
+                <p className="text-xs text-sky-600 mt-0.5">
+                  {t("hr.timeOff.eligibleAfter", { date: balance.pto_eligible_date || "—" })}
+                  {balance.days_until_eligible ? ` (${balance.days_until_eligible} ${t("hr.timeOff.daysRemaining")})` : ""}
+                </p>
+              </div>
+            </div>
+          )}
+          {ptoEligible && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+              <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-sm font-semibold text-emerald-800">{t("hr.timeOff.eligible")}</p>
+            </div>
+          )}
 
-      {/* Requests list */}
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.type")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.dates")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.hours")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("hr.timeOff.reason")}</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.status")}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {isLoading ? (
-                [...Array(3)].map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={5} className="px-4 py-3">
-                      <div className="h-5 bg-slate-100 animate-pulse rounded" />
-                    </td>
+          {/* Balance cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="card p-4">
+              <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoAvailable")}</p>
+              <p className="text-2xl font-bold text-sky-700">{balance.pto_hours_remaining ?? "—"}</p>
+              <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.pto_hours_total ?? "—"} {t("hr.timeOff.hours")}</p>
+              <p className="text-[10px] text-emerald-500 mt-0.5">{t("hr.timeOff.accruedGradually")}</p>
+            </div>
+            <div className="card p-4">
+              <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoUsed")}</p>
+              <p className="text-2xl font-bold text-slate-700">{balance.pto_hours_used ?? "—"}</p>
+              <p className="text-[10px] text-slate-400">{t("hr.timeOff.hoursThisYear")}</p>
+            </div>
+            <div className="card p-4">
+              <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.unpaidLeave")}</p>
+              <p className="text-2xl font-bold text-amber-700">{balance.unpaid_used ?? "—"}</p>
+              <p className="text-[10px] text-slate-400">{t("hr.timeOff.hoursThisYear")}</p>
+            </div>
+          </div>
+
+          {/* My requests list */}
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50">
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.type")}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.dates")}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.hours")}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("hr.timeOff.reason")}</th>
+                    <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.status")}</th>
                   </tr>
-                ))
-              ) : requests.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-12 text-slate-400">
-                    {t("hr.timeOff.noRequests")}
-                  </td>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {isLoading ? (
+                    [...Array(3)].map((_, i) => (
+                      <tr key={i}>
+                        <td colSpan={5} className="px-4 py-3">
+                          <div className="h-5 bg-slate-100 animate-pulse rounded" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : requests.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-12 text-slate-400">
+                        {t("hr.timeOff.noRequests")}
+                      </td>
+                    </tr>
+                  ) : (
+                    requests.map((req) => (
+                      <tr key={req.id} className="hover:bg-slate-50/50">
+                        <td className="px-4 py-3 font-medium text-slate-900">
+                          {req.type === "vacation" ? "PTO" : req.type === "unpaid" ? t("hr.timeOff.unpaidLeave") : req.type}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 text-xs">
+                          {new Date(req.start_date).toLocaleDateString()} – {new Date(req.end_date).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 font-semibold">
+                          {req.hours ? `${req.hours}h` : req.days ? `${req.days}d` : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 text-xs hidden sm:table-cell truncate max-w-[200px]">{req.reason || "—"}</td>
+                        <td className="px-4 py-3">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${STATUS_STYLES[req.status] || ""}`}>
+                            {req.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ─── TEAM REQUESTS TAB (admin/administrative only) ─── */}
+      {isAdmin && activeTab === "team" && (
+        <div className="card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.employee")}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.type")}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.dates")}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.hours")}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600 hidden sm:table-cell">{t("hr.timeOff.reason")}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.status")}</th>
+                  <th className="text-left px-4 py-3 font-semibold text-slate-600">{t("hr.timeOff.actions")}</th>
                 </tr>
-              ) : (
-                requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 font-medium text-slate-900">
-                      {req.type === "vacation" ? "PTO" : req.type === "unpaid" ? t("hr.timeOff.unpaidLeave") : req.type}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 text-xs">
-                      {new Date(req.start_date).toLocaleDateString()} – {new Date(req.end_date).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-3 text-slate-600 font-semibold">
-                      {req.hours ? `${req.hours}h` : req.days ? `${req.days}d` : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-slate-500 text-xs hidden sm:table-cell truncate max-w-[200px]">{req.reason || "—"}</td>
-                    <td className="px-4 py-3">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${STATUS_STYLES[req.status] || ""}`}>
-                        {req.status}
-                      </span>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loadingAll ? (
+                  [...Array(3)].map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={7} className="px-4 py-3">
+                        <div className="h-5 bg-slate-100 animate-pulse rounded" />
+                      </td>
+                    </tr>
+                  ))
+                ) : allRequests.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-12 text-slate-400">
+                      {t("hr.timeOff.noRequests")}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  allRequests.map((req) => (
+                    <tr key={req.id} className={`hover:bg-slate-50/50 ${req.status === "pending" ? "bg-amber-50/30" : ""}`}>
+                      <td className="px-4 py-3 font-medium text-slate-900 text-xs">
+                        {req.employees?.employee_name || req.emp_id}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-slate-900">
+                        {req.type === "vacation" ? "PTO" : req.type === "unpaid" ? t("hr.timeOff.unpaidLeave") : req.type}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 text-xs">
+                        {new Date(req.start_date).toLocaleDateString()} – {new Date(req.end_date).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 font-semibold">
+                        {req.hours ? `${req.hours}h` : req.days ? `${req.days}d` : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 text-xs hidden sm:table-cell truncate max-w-[200px]">{req.reason || "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${STATUS_STYLES[req.status] || ""}`}>
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {req.status === "pending" && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => approveMut.mutate({ id: req.id, status: "approved" })}
+                              disabled={approveMut.isPending}
+                              className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition"
+                              title={t("hr.timeOff.approve")}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => approveMut.mutate({ id: req.id, status: "denied" })}
+                              disabled={approveMut.isPending}
+                              className="p-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition"
+                              title={t("hr.timeOff.deny")}
+                            >
+                              <XCircle className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Request form modal */}
       {showForm && (
         <TimeOffRequestModal
           email={user?.email}
+          name={user?.name}
           ptoEligible={ptoEligible}
           ptoHoursRemaining={balance.pto_hours_remaining || 0}
           onClose={() => setShowForm(false)}
@@ -174,6 +313,7 @@ export function TimeOffPage() {
             setShowForm(false);
             queryClient.invalidateQueries({ queryKey: ["myTimeOff"] });
             queryClient.invalidateQueries({ queryKey: ["timeOffBalance"] });
+            queryClient.invalidateQueries({ queryKey: ["allTimeOff"] });
             toast.success(t("hr.timeOff.requestSubmitted"));
           }}
         />
@@ -182,7 +322,7 @@ export function TimeOffPage() {
   );
 }
 
-function TimeOffRequestModal({ email, ptoEligible, ptoHoursRemaining, onClose, onSuccess }) {
+function TimeOffRequestModal({ email, name, ptoEligible, ptoHoursRemaining, onClose, onSuccess }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     type: ptoEligible ? "vacation" : "unpaid",
@@ -193,7 +333,7 @@ function TimeOffRequestModal({ email, ptoEligible, ptoHoursRemaining, onClose, o
   });
 
   const mutation = useMutation({
-    mutationFn: (data) => requestTimeOff(email, data),
+    mutationFn: (data) => requestTimeOff(email, data, name),
     onSuccess,
     onError: (err) => toast.error(err.message),
   });

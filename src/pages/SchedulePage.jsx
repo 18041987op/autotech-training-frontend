@@ -56,7 +56,7 @@ function fmt12(t) {
 export function SchedulePage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = useAuthStore((s) => s.isAdmin());
+  const isAdmin = useAuthStore((s) => s.hasAdminAccess());
   const queryClient = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
   const [editingCell, setEditingCell] = useState(null); // { empId, date }
@@ -98,7 +98,7 @@ export function SchedulePage() {
   // ─── Employee query ─────────────────────────────────────────────
   const { data: myData, isLoading: loadingMy } = useQuery({
     queryKey: ["mySchedule", user?.email, startDate, endDate],
-    queryFn: () => getMySchedule(user?.email, startDate, endDate),
+    queryFn: () => getMySchedule(user?.email, startDate, endDate, undefined, user?.name),
     enabled: !isAdmin && !!user?.email,
   });
 
