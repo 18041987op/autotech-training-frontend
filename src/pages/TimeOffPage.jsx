@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { CalendarOff, Plus, Clock, AlertCircle, ShieldCheck, CheckCircle, XCircle } from "lucide-react";
+import { CalendarOff, Plus, Clock, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { useAuthStore, useAuthReady } from "../stores/authStore";
 import { getMyTimeOff, requestTimeOff, getTimeOffBalance, getAllTimeOff, updateTimeOffRequest } from "../lib/hrApi";
 
