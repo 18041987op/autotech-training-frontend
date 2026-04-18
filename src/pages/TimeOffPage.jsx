@@ -136,12 +136,7 @@ export function TimeOffPage() {
               </div>
             </div>
           )}
-          {ptoEligible && (
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-              <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-              <p className="text-sm font-semibold text-emerald-800">{t("hr.timeOff.eligible")}</p>
-            </div>
-          )}
+          {/* Only show a message when NOT eligible — no banner needed when eligible */}
 
           {/* Balance cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
