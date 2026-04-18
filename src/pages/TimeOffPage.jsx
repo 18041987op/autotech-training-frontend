@@ -21,7 +21,7 @@ const STATUS_STYLES = {
 export function TimeOffPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = useAuthStore((s) => s.hasAdminAccess());
+  const isAdmin = useAuthStore((s) => s.hasElevatedAccess());
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [activeTab, setActiveTab] = useState("my"); // "my" | "team" (admin only)

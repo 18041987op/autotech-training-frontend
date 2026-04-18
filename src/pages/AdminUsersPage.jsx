@@ -104,31 +104,6 @@ export function AdminUsersPage() {
   const [showInactive, setShowInactive] = useState(false);
   const [resetingId, setResetingId] = useState(null); // userId with reset form open
 
-  // Add User modal state
-  const [showCreateUser, setShowCreateUser] = useState(false);
-  const [creating, setCreating] = useState(false);
-
-  const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    role: "technician",
-    approved: true
-  });
-
-  const openCreateUser = () => {
-    setNewUser({
-      name: "",
-      email: "",
-      password: "",
-      role: "technician",
-      approved: true
-    });
-    setShowCreateUser(true);
-  };
-
-  const closeCreateUser = () => setShowCreateUser(false);
-
   const load = async () => {
     setErr("");
     setLoading(true);
@@ -192,40 +167,6 @@ export function AdminUsersPage() {
     }
   };
 
-  const createUser = async () => {
-    if (creating) return;
-
-    const name = (newUser.name || "").trim();
-    const email = (newUser.email || "").trim();
-    const password = newUser.password || "";
-
-    if (!name) return alert(t("adminUsers.nameRequired"));
-    if (!email) return alert(t("adminUsers.emailRequired"));
-    if (!password || password.length < 6)
-      return alert(t("adminUsers.passwordRequired"));
-
-    setCreating(true);
-    try {
-      await apiFetch("/api/admin/users", {
-        method: "POST",
-        body: {
-          name,
-          email,
-          password,
-          role: newUser.role,
-          approved: !!newUser.approved
-        }
-      });
-
-      closeCreateUser();
-      await load();
-    } catch (e) {
-      alert(e.message || "Failed to create user");
-    } finally {
-      setCreating(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="rounded-3xl border bg-white p-6 shadow-sm text-sm text-slate-600">
@@ -252,10 +193,6 @@ export function AdminUsersPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <button className="btn-primary btn-sm" onClick={openCreateUser} type="button">
-              + {t("adminUsers.addUser")}
-            </button>
-
             {stats.inactive > 0 && (
               <button
                 className={`btn-outline-sm flex items-center gap-1.5 ${showInactive ? "border-red-300 bg-red-50 text-red-700" : ""}`}
@@ -400,106 +337,7 @@ export function AdminUsersPage() {
         )}
       </div>
 
-      {/* Create User Modal */}
-      {showCreateUser ? (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/40" onClick={closeCreateUser} />
-
-          <div className="absolute left-1/2 top-1/2 w-[92%] max-w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-3xl border bg-white p-6 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-extrabold">{t("adminUsers.addUserTitle")}</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  {t("adminUsers.addUserSubtitle")}
-                </p>
-              </div>
-
-              <button className="btn-outline-sm" onClick={closeCreateUser} type="button">
-                {t("actions.close")}
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-600">{t("adminUsers.formLabels.fullName")}</label>
-                <input
-                  className="mt-1 input"
-                  value={newUser.name}
-                  onChange={(e) => setNewUser((p) => ({ ...p, name: e.target.value }))}
-                  placeholder={t("adminUsers.formPlaceholders.name")}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600">{t("adminUsers.formLabels.email")}</label>
-                <input
-                  className="mt-1 input"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser((p) => ({ ...p, email: e.target.value }))}
-                  placeholder={t("adminUsers.formPlaceholders.email")}
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-600">
-                  {t("adminUsers.formLabels.temporaryPassword")}
-                </label>
-                <input
-                  className="mt-1 input"
-                  value={newUser.password}
-                  onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
-                  placeholder={t("adminUsers.formPlaceholders.password")}
-                  type="password"
-                />
-              </div>
-
-              <div className="grid gap-3 md:grid-cols-2">
-                <div>
-                  <label className="text-xs font-semibold text-slate-600">{t("adminUsers.formLabels.role")}</label>
-                  <select
-                    className="mt-1 input bg-white"
-                    value={newUser.role}
-                    onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}
-                  >
-                    <option value="technician">{t("roles.technician")}</option>
-                    <option value="service_advisor">{t("roles.serviceAdvisor")}</option>
-                    <option value="administrative">{t("roles.administrative")}</option>
-                    <option value="admin">{t("roles.admin")}</option>
-                  </select>
-                </div>
-
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={newUser.approved}
-                      onChange={(e) =>
-                        setNewUser((p) => ({ ...p, approved: e.target.checked }))
-                      }
-                    />
-                    {t("adminUsers.formLabels.approved")}
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-2">
-              <button className="btn-outline-sm" onClick={closeCreateUser} type="button">
-                {t("actions.cancel")}
-              </button>
-
-              <button
-                className="btn-primary btn-sm px-4 disabled:opacity-60"
-                onClick={createUser}
-                type="button"
-                disabled={creating}
-              >
-                {creating ? t("adminUsers.creating") : t("adminUsers.createUser")}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* Employees are created in Management Portal and propagated to Training App */}
     </div>
   );
 }

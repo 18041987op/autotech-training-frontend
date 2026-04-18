@@ -60,6 +60,8 @@ export function Layout({ user, onSignOut }) {
   const location = useLocation();
   const isKeyboard = location.pathname.startsWith("/keyboard");
   const isAdmin = user?.role === "admin";
+  const isAdministrative = user?.role?.toLowerCase() === "administrative";
+  const hasElevated = isAdmin || isAdministrative;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [kbNavOpen, setKbNavOpen] = useState(false);
 
@@ -105,16 +107,18 @@ export function Layout({ user, onSignOut }) {
         { to: "/team",      label: t("nav2.team"),       icon: Users },
       ],
     },
-    // Admin section — only visible to admins
-    ...(isAdmin
+    // Admin section — visible to admin and administrative (some items restricted)
+    ...(hasElevated
       ? [
           {
             key: "admin",
             label: t("nav.admin"),
             items: [
               { to: "/admin/progress",     label: t("nav.dashboard"), icon: BarChart2 },
-              { to: "/admin/users",        label: t("nav2.manageUsers"),     icon: UserCog },
-              { to: "/admin/modules",      label: t("nav2.manageModules"),   icon: GraduationCap },
+              // Users page: admin only (create/delete/roles/passwords)
+              ...(isAdmin ? [{ to: "/admin/users", label: t("nav2.manageUsers"), icon: UserCog }] : []),
+              // Modules page: admin only (create/edit/delete training content)
+              ...(isAdmin ? [{ to: "/admin/modules", label: t("nav2.manageModules"), icon: GraduationCap }] : []),
               { to: "/admin/tools",        label: t("nav2.manageTools"),     icon: Wrench },
               { to: "/admin/loans",        label: t("nav2.allLoans"),        icon: ClipboardList },
               { to: "/admin/tool-reports", label: t("nav2.toolReports"),     icon: BarChart2 },

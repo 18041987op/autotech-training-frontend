@@ -56,7 +56,7 @@ function fmt12(t) {
 export function SchedulePage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const isAdmin = useAuthStore((s) => s.hasAdminAccess());
+  const canManageSchedule = useAuthStore((s) => s.hasElevatedAccess());
   const queryClient = useQueryClient();
   const [weekOffset, setWeekOffset] = useState(0);
   const [editingCell, setEditingCell] = useState(null); // { empId, date }
@@ -86,20 +86,20 @@ export function SchedulePage() {
   const { data: allSchedulesData, isLoading: loadingAll } = useQuery({
     queryKey: ["allSchedules", startDate, endDate],
     queryFn: () => getAllSchedules(startDate, endDate),
-    enabled: isAdmin,
+    enabled: canManageSchedule,
   });
 
   const { data: teamData } = useQuery({
     queryKey: ["teamDirectory", false],
     queryFn: () => getTeamDirectory(false),
-    enabled: isAdmin,
+    enabled: canManageSchedule,
   });
 
   // ─── Employee query ─────────────────────────────────────────────
   const { data: myData, isLoading: loadingMy } = useQuery({
     queryKey: ["mySchedule", user?.email, startDate, endDate],
     queryFn: () => getMySchedule(user?.email, startDate, endDate, undefined, user?.name),
-    enabled: !isAdmin && !!user?.email,
+    enabled: !canManageSchedule && !!user?.email,
   });
 
   const activeEmployees = teamData?.data || [];
@@ -109,21 +109,21 @@ export function SchedulePage() {
   // ─── Schedule map: empId|date → entry ───────────────────────────
   const scheduleMap = useMemo(() => {
     const map = {};
-    const src = isAdmin ? allSchedules : mySchedules;
+    const src = canManageSchedule ? allSchedules : mySchedules;
     src.forEach((s) => {
       const key = `${s.emp_id}|${s.date}`;
       map[key] = s;
     });
     return map;
-  }, [isAdmin, allSchedules, mySchedules]);
+  }, [canManageSchedule, allSchedules, mySchedules]);
 
   const getShift = (empId, dateStr) => scheduleMap[`${empId}|${dateStr}`] || null;
 
   // ─── Count unapproved entries this week ─────────────────────────
   const unapprovedCount = useMemo(() => {
-    if (!isAdmin) return 0;
+    if (!canManageSchedule) return 0;
     return allSchedules.filter((s) => !s.approved).length;
-  }, [isAdmin, allSchedules]);
+  }, [canManageSchedule, allSchedules]);
 
   // ─── Mutations ──────────────────────────────────────────────────
   const saveMut = useMutation({
@@ -156,7 +156,7 @@ export function SchedulePage() {
   });
 
   const handleCellClick = (empId, dateStr, dayIdx) => {
-    if (!isAdmin) return;
+    if (!canManageSchedule) return;
     const shopDay = getShopDay(dayIdx);
     if (!shopDay) return; // can't schedule on closed day
     const existing = getShift(empId, dateStr);
@@ -186,15 +186,15 @@ export function SchedulePage() {
     });
   };
 
-  const isLoading = isAdmin ? loadingAll : loadingMy;
+  const isLoading = canManageSchedule ? loadingAll : loadingMy;
 
   // ─── Print schedule ────────────────────────────────────────────
   const handlePrint = () => {
     const dateRange = `${weekDates[0].toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${weekDates[6].toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 
     // Build employee rows for print
-    const employees = isAdmin ? activeEmployees : [{ emp_id: user?.id, employee_name: user?.name || user?.email, role: "" }];
-    const schedules = isAdmin ? allSchedules : mySchedules;
+    const employees = canManageSchedule ? activeEmployees : [{ emp_id: user?.id, employee_name: user?.name || user?.email, role: "" }];
+    const schedules = canManageSchedule ? allSchedules : mySchedules;
 
     let tableRows = "";
     employees.forEach((emp) => {
@@ -250,7 +250,7 @@ export function SchedulePage() {
           <img src="/logo.png" alt="AutoRx Center" style="height:60px;width:auto;" />
           <div>
             <h1 style="margin:0;font-size:22px;color:#0f172a;">AutoRx Center</h1>
-            <p style="margin:4px 0 0;font-size:14px;color:#64748b;">${isAdmin ? t("hr.schedule.teamSchedule") : t("hr.schedule.mySchedule")} — ${dateRange}</p>
+            <p style="margin:4px 0 0;font-size:14px;color:#64748b;">${canManageSchedule ? t("hr.schedule.teamSchedule") : t("hr.schedule.mySchedule")} — ${dateRange}</p>
           </div>
         </div>
         <table>
@@ -276,7 +276,7 @@ export function SchedulePage() {
   };
 
   // ─── EMPLOYEE VIEW (approved only, read-only) ──────────────────
-  if (!isAdmin) {
+  if (!canManageSchedule) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

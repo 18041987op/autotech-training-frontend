@@ -13,11 +13,16 @@ export const useAuthStore = create(
       clearAuth: () => set({ user: null, token: null }),
 
       isAuthenticated: () => !!get().token,
+      // Super admin — only Osman (owner). Full unrestricted control.
       isAdmin: () => get().user?.role === 'admin',
-      isAdministrative: () => ['administrative', 'coordinator'].includes(get().user?.role?.toLowerCase()),
-      hasAdminAccess: () => {
+      // Administrative staff (e.g. Thalia). Can see and do almost everything admin can,
+      // EXCEPT: delete users, change roles, reset passwords, create training modules content.
+      isAdministrative: () => get().user?.role?.toLowerCase() === 'administrative',
+      // Combined check — use for pages/features that both admin and administrative can access.
+      // Do NOT use for destructive actions (delete, role change, password reset).
+      hasElevatedAccess: () => {
         const role = get().user?.role?.toLowerCase();
-        return role === 'admin' || role === 'administrative' || role === 'coordinator';
+        return role === 'admin' || role === 'administrative';
       },
     }),
     {
