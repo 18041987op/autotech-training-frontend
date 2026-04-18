@@ -2008,7 +2008,21 @@
       "payPeriod": "Pay Period",
       "thisMonth": "This Month",
       "thisWeek": "This Week",
-      "thisWeekLabel": "This week"
+      "thisWeekLabel": "This week",
+      "myTimesheet": "My Timesheet",
+      "payPeriodReview": "Pay Period Review",
+      "filterByName": "Filter by name...",
+      "needsReview": "Needs review",
+      "timeCards": "Time Cards",
+      "scheduledLabel": "Scheduled",
+      "totalPaid": "Total Paid",
+      "regularLabel": "Regular",
+      "unpaidBreaks": "Unpaid Breaks",
+      "otHours": "OT Hours",
+      "employeeCol": "Employee",
+      "noEmployees": "No employees found",
+      "scheduled": "Scheduled",
+      "noShowMsg": "Scheduled but did not clock in"
     },
     "timeOff": {
       "title": "Time Off",

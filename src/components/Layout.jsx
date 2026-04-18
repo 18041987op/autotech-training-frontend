@@ -140,7 +140,7 @@ export function Layout({ user, onSignOut }) {
             <Brand />
             <UserCard user={user} />
             <NavSection sections={navSections} />
-            <CrossAppNav isAdmin={isAdmin} />
+            <CrossAppNav isAdmin={isAdmin} isAdministrative={isAdministrative} />
           </aside>
         )}
 
@@ -185,7 +185,7 @@ export function Layout({ user, onSignOut }) {
                 <div onClick={() => setKbNavOpen(false)}>
                   <NavSection sections={navSections} />
                 </div>
-                <CrossAppNav isAdmin={isAdmin} />
+                <CrossAppNav isAdmin={isAdmin} isAdministrative={isAdministrative} />
               </div>
               {/* Sign out at bottom */}
               <div className="border-t border-slate-200 p-3">
@@ -261,7 +261,7 @@ export function Layout({ user, onSignOut }) {
               <div onClick={closeMobile}>
                 <NavSection sections={navSections} />
               </div>
-              <CrossAppNav isAdmin={isAdmin} />
+              <CrossAppNav isAdmin={isAdmin} isAdministrative={isAdministrative} />
             </div>
 
             {/* Drawer footer: sign out */}
@@ -400,9 +400,9 @@ function SideItem({ to, label, icon: Icon, end }) {
 }
 
 // ─── CrossAppNav ─────────────────────────────────────────────────────────────
-function CrossAppNav({ isAdmin }) {
+function CrossAppNav({ isAdmin, isAdministrative }) {
   const { t } = useTranslation();
-  if (!isAdmin) return null;
+  if (!isAdmin && !isAdministrative) return null;
   return (
     <div className="border-t border-slate-200 pt-3 mt-3">
       <p className="mb-2 px-3 text-xs font-semibold uppercase text-slate-400 tracking-wider">

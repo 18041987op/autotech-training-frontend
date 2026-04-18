@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, Navigate } from "react-router-dom";
 import { KeyRound, Eye, EyeOff, CheckCircle2, X } from "lucide-react";
+import { useAuthStore } from "../stores/authStore";
 import { apiFetch } from "../lib/api";
 
 // ─── Inline reset-password widget ────────────────────────────────────────────
@@ -96,6 +97,7 @@ function Pill({ children }) {
 
 export function AdminUsersPage() {
   const { t } = useTranslation();
+  const isSuperAdmin = useAuthStore((s) => s.isAdmin());
   const { user: currentUser } = useOutletContext() || {};
   const currentUserId = currentUser?.id;
   const [users, setUsers] = useState([]);
@@ -118,8 +120,8 @@ export function AdminUsersPage() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    if (isSuperAdmin) load();
+  }, [isSuperAdmin]);
 
   const stats = useMemo(() => {
     const total = users.length;
@@ -135,6 +137,11 @@ export function AdminUsersPage() {
     if (showInactive) return users;
     return users.filter((u) => u.approved || (!u.approved && !u.last_login));
   }, [users, showInactive]);
+
+  // Only super admin can manage users — redirect others
+  if (!isSuperAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   const approve = async (id) => {
     try {

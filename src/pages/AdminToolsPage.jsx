@@ -10,6 +10,7 @@ import {
   getTools, createTool, updateTool, deleteTool,
   updateToolStatus, getToolStats,
 } from "../lib/toolsApi";
+import { useAuthStore } from "../stores/authStore";
 
 const MGMT_BASE = process.env.REACT_APP_MANAGEMENT_API_URL;
 
@@ -59,6 +60,7 @@ const STATUS_COLORS = {
 export function AdminToolsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const isSuperAdmin = useAuthStore((s) => s.isAdmin());
   const [search, setSearch] = useState("");
   const [editModal, setEditModal] = useState(null); // null | 'new' | tool object
   const [deleteConfirm, setDeleteConfirm] = useState(null);
@@ -205,13 +207,15 @@ export function AdminToolsPage() {
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </button>
-                        <button
-                          onClick={() => setDeleteConfirm(tool)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-600"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => setDeleteConfirm(tool)}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-500 hover:text-red-600"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Navigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
 import { apiFetch, getToken } from "../lib/api";
 
 const API_BASE = process.env.REACT_APP_API_BASE_URL;
@@ -42,6 +44,7 @@ const DRIVE_ANCHORS = [
 
 export function AdminModulesPage() {
   const { t } = useTranslation();
+  const isSuperAdmin = useAuthStore((s) => s.isAdmin());
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -141,8 +144,8 @@ export function AdminModulesPage() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    if (isSuperAdmin) load();
+  }, [isSuperAdmin]);
 
   const openCreate = () => {
     setEditing({ id: null });
@@ -278,6 +281,11 @@ export function AdminModulesPage() {
     }, {});
     return { total, byCat };
   }, [modules]);
+
+  // Only super admin can manage training modules — redirect others
+  if (!isSuperAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   if (loading) {
     return (

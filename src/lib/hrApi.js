@@ -93,6 +93,14 @@ export const getMyTimesheet = (email, range = "week", empId) => {
   return hrFetch(`/timesheet?${qs}`);
 };
 
+/** Admin: get all employees' timesheets for a date range */
+export const getAllTimesheets = (startDate, endDate, range = "week") => {
+  const qs = new URLSearchParams({ all: "true", range });
+  if (startDate) qs.set("start_date", startDate);
+  if (endDate) qs.set("end_date", endDate);
+  return hrFetch(`/timesheet?${qs}`);
+};
+
 export const clockIn = (email) => {
   if (!email) throw new Error("Email is required to clock in");
   return hrFetch("/timesheet/clock-in", { method: "POST", body: { email: String(email) } });

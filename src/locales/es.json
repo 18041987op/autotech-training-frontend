@@ -2008,7 +2008,21 @@
       "payPeriod": "Período de Pago",
       "thisMonth": "Este Mes",
       "thisWeek": "Esta Semana",
-      "thisWeekLabel": "Esta semana"
+      "thisWeekLabel": "Esta semana",
+      "myTimesheet": "Mi Registro",
+      "payPeriodReview": "Revisión del Período",
+      "filterByName": "Filtrar por nombre...",
+      "needsReview": "Necesita revisión",
+      "timeCards": "Registros",
+      "scheduledLabel": "Programado",
+      "totalPaid": "Total Pagado",
+      "regularLabel": "Regular",
+      "unpaidBreaks": "Descansos",
+      "otHours": "Horas Extra",
+      "employeeCol": "Empleado",
+      "noEmployees": "No se encontraron empleados",
+      "scheduled": "Programado",
+      "noShowMsg": "Programado pero no registró entrada"
     },
     "timeOff": {
       "title": "Tiempo Libre",
