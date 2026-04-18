@@ -9,7 +9,7 @@ import {
   ArrowRightLeft, Check, XCircle, Bell,
 } from "lucide-react";
 import { getTools, getToolStats, borrowTool, getToolsUsers, getTool, getMyAssignedROs, getToolRecommendations, createPurchaseRequest, createTransferRequest, getTransferRequests, respondTransferRequest } from "../lib/toolsApi";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore, useAuthReady } from "../stores/authStore";
 import { QRScannerButton } from "../components/QRScanner";
 
 // Category values are kept as API keys, labels will be translated in component
@@ -73,13 +73,14 @@ export function ToolsCatalogPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [borrowModal, setBorrowModal] = useState(null); // tool to borrow
   const [transferRequestModal, setTransferRequestModal] = useState(null); // tool to request transfer for
+  const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
 
   // Fetch tools users to find current user's tools_users id
   const { data: usersData } = useQuery({
     queryKey: ["toolsUsers"],
     queryFn: () => getToolsUsers({ active: "true" }),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
   const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(

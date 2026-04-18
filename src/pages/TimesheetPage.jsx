@@ -7,7 +7,7 @@ import {
   ChevronDown, ChevronRight, ChevronLeft, Users, AlertCircle,
   Search,
 } from "lucide-react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore, useAuthReady } from "../stores/authStore";
 import {
   getMyTimesheet, getAllTimesheets, clockIn, clockOut, takeBreak, endBreak,
 } from "../lib/hrApi";
@@ -94,6 +94,7 @@ export function TimesheetPage() {
 // ─── MY TIMESHEET (personal clock in/out) ──────────────────────────────────
 function MyTimesheetView() {
   const { t } = useTranslation();
+  const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [dateRange, setDateRange] = useState("week");
@@ -101,7 +102,7 @@ function MyTimesheetView() {
   const { data, isLoading } = useQuery({
     queryKey: ["myTimesheet", user?.email, dateRange],
     queryFn: () => getMyTimesheet(user?.email, dateRange),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
 
   const entries = data?.data?.entries || [];

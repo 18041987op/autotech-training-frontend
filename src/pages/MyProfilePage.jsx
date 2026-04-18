@@ -2,17 +2,18 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { User, Mail, Phone, Briefcase, Calendar, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore, useAuthReady } from "../stores/authStore";
 import { getMyProfile } from "../lib/hrApi";
 
 export function MyProfilePage() {
   const { t } = useTranslation();
+  const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
 
   const { data, isLoading } = useQuery({
     queryKey: ["myProfile", user?.email],
     queryFn: () => getMyProfile(user?.email),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
 
   const profile = data?.data || null;

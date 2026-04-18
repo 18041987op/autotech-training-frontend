@@ -9,11 +9,12 @@ import {
   Bell, Check, XCircle,
 } from "lucide-react";
 import { getMyTools, returnTool, transferTool, getToolsUsers, getTransferRequests, respondTransferRequest } from "../lib/toolsApi";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore, useAuthReady } from "../stores/authStore";
 
 export function MyToolsPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
   const [returnModal, setReturnModal] = useState(null);
   const [transferModal, setTransferModal] = useState(null);
@@ -22,7 +23,7 @@ export function MyToolsPage() {
   const { data: usersData } = useQuery({
     queryKey: ["toolsUsers"],
     queryFn: () => getToolsUsers({ active: "true" }),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
   const toolsUsers = usersData?.data || [];
   const currentToolsUser = toolsUsers.find(
@@ -34,7 +35,7 @@ export function MyToolsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["myTools", user?.email],
     queryFn: () => getMyTools(user?.email, user?.name),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
 
   const loans = data?.data || [];

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { CalendarOff, Plus, Clock, AlertCircle, ShieldCheck, CheckCircle, XCircle } from "lucide-react";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore, useAuthReady } from "../stores/authStore";
 import { getMyTimeOff, requestTimeOff, getTimeOffBalance, getAllTimeOff, updateTimeOffRequest } from "../lib/hrApi";
 
 const REQUEST_TYPES = [
@@ -20,6 +20,7 @@ const STATUS_STYLES = {
 
 export function TimeOffPage() {
   const { t } = useTranslation();
+  const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
   const isAdmin = useAuthStore((s) => s.hasElevatedAccess());
   const queryClient = useQueryClient();
@@ -29,13 +30,13 @@ export function TimeOffPage() {
   const { data: requestsData, isLoading } = useQuery({
     queryKey: ["myTimeOff", user?.email],
     queryFn: () => getMyTimeOff(user?.email, undefined, user?.name),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
 
   const { data: balanceData } = useQuery({
     queryKey: ["timeOffBalance", user?.email],
     queryFn: () => getTimeOffBalance(user?.email, undefined, user?.name),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
 
   // Admin: all team requests

@@ -13,7 +13,7 @@ import {
   getTool, getLoans, returnTool, transferTool, getToolsUsers,
   borrowTool, getMyAssignedROs, getToolRecommendations, createPurchaseRequest,
 } from "../lib/toolsApi";
-import { useAuthStore } from "../stores/authStore";
+import { useAuthStore, useAuthReady } from "../stores/authStore";
 
 const STATUS_COLORS = {
   available: "bg-emerald-100 text-emerald-700",
@@ -41,13 +41,14 @@ export function ToolDetailPage() {
     queryFn: () => getLoans({ tool_id: id }),
   });
 
+  const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
 
   // Resolve current user's tools_users ID
   const { data: usersData } = useQuery({
     queryKey: ["toolsUsers"],
     queryFn: () => getToolsUsers({ active: "true" }),
-    enabled: !!user?.email,
+    enabled: authReady && !!user?.email,
   });
   const currentToolsUser = (usersData?.data || []).find(
     (u) => u.email === user?.email || u.work_email === user?.email
