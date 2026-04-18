@@ -143,12 +143,24 @@ export function TimeOffPage() {
           )}
 
           {/* Balance cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div className="card p-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="card p-4 border-l-4 border-l-sky-500">
               <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoAvailable")}</p>
-              <p className="text-2xl font-bold text-sky-700">{balance.pto_hours_remaining ?? "—"}</p>
-              <p className="text-[10px] text-slate-400">{t("hr.timeOff.of")} {balance.pto_hours_total ?? "—"} {t("hr.timeOff.hours")}</p>
+              <p className="text-2xl font-bold text-sky-700">
+                {balance.pto_hours_remaining != null ? Math.round(balance.pto_hours_remaining * 10) / 10 : "—"}
+              </p>
+              <p className="text-[10px] text-slate-400">
+                {t("hr.timeOff.of")} {balance.pto_hours_accrued != null ? Math.round(balance.pto_hours_accrued * 10) / 10 : balance.pto_hours_total ?? "—"} {t("hr.timeOff.hoursAccrued")}
+              </p>
               <p className="text-[10px] text-emerald-500 mt-0.5">{t("hr.timeOff.accruedGradually")}</p>
+            </div>
+            <div className="card p-4 border-l-4 border-l-emerald-500">
+              <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoPerYear")}</p>
+              <p className="text-2xl font-bold text-emerald-700">{balance.pto_days_per_year ?? "—"}</p>
+              <p className="text-[10px] text-slate-400">{t("hr.timeOff.daysPerYear")}</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                = {balance.pto_hours_total ?? "—"} {t("hr.timeOff.hours")}
+              </p>
             </div>
             <div className="card p-4">
               <p className="text-xs font-medium text-slate-400">{t("hr.timeOff.ptoUsed")}</p>

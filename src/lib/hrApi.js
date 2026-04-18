@@ -152,6 +152,7 @@ export const updateTimeOffRequest = (id, data) =>
 // ─── Benefits ──────────────────────────────────────────────────────────────
 
 export const getBenefits = () => hrFetch("/benefits");
+export const getBenefitsConfig = () => hrFetch("/benefits-config");
 
 // ─── Team Directory ────────────────────────────────────────────────────────
 

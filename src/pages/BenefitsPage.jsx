@@ -1,25 +1,79 @@
 import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
-  Heart, CalendarDays, Clock, AlertCircle, ChevronDown, ChevronUp, Shield
+  Heart, CalendarDays, Clock, AlertCircle, ChevronDown, ChevronUp, Shield, Loader2
 } from "lucide-react";
+import { getBenefitsConfig } from "../lib/hrApi";
 
-/* ─── PTO accrual tables (from Employee Handbook v1.6) ─── */
-const FULL_TIME_PTO = [
+/* ─── Fallback PTO tables (used if API unavailable) ─── */
+const FALLBACK_FULL_TIME = [
   { companyYears: "1–2", exp12: 5, exp34: 7, exp5: 9 },
   { companyYears: "3–4", exp12: 7, exp34: 9, exp5: 11 },
   { companyYears: "5+",  exp12: 9, exp34: 11, exp5: 13 },
 ];
-
-const PART_TIME_PTO = [
+const FALLBACK_PART_TIME = [
   { companyYears: "1–2", exp12: 2.5, exp34: 3.5, exp5: 4.5 },
   { companyYears: "3–4", exp12: 3.5, exp34: 4.5, exp5: 5.5 },
   { companyYears: "5+",  exp12: 4.5, exp34: 5.5, exp5: 6.5 },
 ];
 
+const COMPANY_YEAR_BRACKETS = [
+  { min: 1, max: 2, label: "1–2" },
+  { min: 3, max: 4, label: "3–4" },
+  { min: 5, max: null, label: "5+" },
+];
+const AUTO_EXP_BRACKETS = [
+  { min: 1, max: 2 },
+  { min: 3, max: 4 },
+  { min: 5, max: null },
+];
+
+function gridToRows(grid, type) {
+  return COMPANY_YEAR_BRACKETS.map((cy) => {
+    const row = { companyYears: cy.label };
+    AUTO_EXP_BRACKETS.forEach((ae, idx) => {
+      const match = grid.find(
+        (r) =>
+          r.employment_type === type &&
+          r.company_years_min === cy.min &&
+          r.auto_exp_min === ae.min
+      );
+      const key = idx === 0 ? "exp12" : idx === 1 ? "exp34" : "exp5";
+      row[key] = match ? Number(match.pto_days_per_year) : 0;
+    });
+    return row;
+  });
+}
+
 export function BenefitsPage() {
   const { t } = useTranslation();
   const [openSection, setOpenSection] = useState("pto");
+
+  const { data: configData, isLoading } = useQuery({
+    queryKey: ["benefitsConfig"],
+    queryFn: getBenefitsConfig,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const ptoGrid = configData?.data?.pto_grid || [];
+  const policies = configData?.data?.policies || [];
+
+  // Build display rows from API data or fallback
+  const fullTimeRows = ptoGrid.length > 0
+    ? gridToRows(ptoGrid, "full_time")
+    : FALLBACK_FULL_TIME;
+  const partTimeRows = ptoGrid.length > 0
+    ? gridToRows(ptoGrid, "part_time")
+    : FALLBACK_PART_TIME;
+
+  // Read policy values
+  const getPolicy = (key, fallback) => {
+    const p = policies.find((pol) => pol.policy_key === key);
+    return p ? p.policy_value : fallback;
+  };
+  const eligibilityDays = getPolicy("eligibility_days", "90");
+  const carryover = getPolicy("carryover", "false") === "true";
 
   const toggle = (key) => setOpenSection(openSection === key ? null : key);
 
@@ -41,48 +95,56 @@ export function BenefitsPage() {
         isOpen={openSection === "pto"}
         onToggle={() => toggle("pto")}
       >
-        {/* Key rules */}
-        <div className="space-y-3 mb-5">
-          <RuleCard
-            icon={<Clock className="h-4 w-4 text-amber-600" />}
-            color="amber"
-            text={t("hr.benefits.ptoEligibility")}
-          />
-          <RuleCard
-            icon={<AlertCircle className="h-4 w-4 text-sky-600" />}
-            color="sky"
-            text={t("hr.benefits.ptoAccrual")}
-          />
-          <RuleCard
-            icon={<AlertCircle className="h-4 w-4 text-red-600" />}
-            color="red"
-            text={t("hr.benefits.ptoNoRollover")}
-          />
-          <RuleCard
-            icon={<AlertCircle className="h-4 w-4 text-purple-600" />}
-            color="purple"
-            text={t("hr.benefits.ptoOveruse")}
-          />
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-sky-500" />
+          </div>
+        ) : (
+          <>
+            {/* Key rules */}
+            <div className="space-y-3 mb-5">
+              <RuleCard
+                icon={<Clock className="h-4 w-4 text-amber-600" />}
+                color="amber"
+                text={t("hr.benefits.ptoEligibilityDynamic", { days: eligibilityDays })}
+              />
+              <RuleCard
+                icon={<AlertCircle className="h-4 w-4 text-sky-600" />}
+                color="sky"
+                text={t("hr.benefits.ptoAccrual")}
+              />
+              <RuleCard
+                icon={<AlertCircle className="h-4 w-4 text-red-600" />}
+                color="red"
+                text={carryover ? t("hr.benefits.ptoCarryoverYes") : t("hr.benefits.ptoNoRollover")}
+              />
+              <RuleCard
+                icon={<AlertCircle className="h-4 w-4 text-purple-600" />}
+                color="purple"
+                text={t("hr.benefits.ptoOveruse")}
+              />
+            </div>
 
-        {/* Full-time table */}
-        <h4 className="text-sm font-bold text-slate-700 mb-2">{t("hr.benefits.fullTimePto")}</h4>
-        <PtoTable rows={FULL_TIME_PTO} t={t} />
+            {/* Full-time table */}
+            <h4 className="text-sm font-bold text-slate-700 mb-2">{t("hr.benefits.fullTimePto")}</h4>
+            <PtoTable rows={fullTimeRows} t={t} />
 
-        {/* Part-time table */}
-        <h4 className="text-sm font-bold text-slate-700 mt-4 mb-2">{t("hr.benefits.partTimePto")}</h4>
-        <PtoTable rows={PART_TIME_PTO} t={t} />
+            {/* Part-time table */}
+            <h4 className="text-sm font-bold text-slate-700 mt-4 mb-2">{t("hr.benefits.partTimePto")}</h4>
+            <PtoTable rows={partTimeRows} t={t} />
 
-        {/* Request guidelines */}
-        <div className="mt-4 p-3 bg-sky-50 rounded-xl border border-sky-100">
-          <p className="text-xs font-semibold text-sky-700 mb-1">{t("hr.benefits.requestGuidelines")}</p>
-          <ul className="text-xs text-sky-600 space-y-1 list-disc list-inside">
-            <li>{t("hr.benefits.guidelineOneDayNotice")}</li>
-            <li>{t("hr.benefits.guidelineExtendedNotice")}</li>
-            <li>{t("hr.benefits.guidelineOccurrences")}</li>
-            <li>{t("hr.benefits.guidelineSameDept")}</li>
-          </ul>
-        </div>
+            {/* Request guidelines */}
+            <div className="mt-4 p-3 bg-sky-50 rounded-xl border border-sky-100">
+              <p className="text-xs font-semibold text-sky-700 mb-1">{t("hr.benefits.requestGuidelines")}</p>
+              <ul className="text-xs text-sky-600 space-y-1 list-disc list-inside">
+                <li>{t("hr.benefits.guidelineOneDayNotice")}</li>
+                <li>{t("hr.benefits.guidelineExtendedNotice")}</li>
+                <li>{t("hr.benefits.guidelineOccurrences")}</li>
+                <li>{t("hr.benefits.guidelineSameDept")}</li>
+              </ul>
+            </div>
+          </>
+        )}
       </BenefitAccordion>
 
       {/* ─── Paid Holidays Section ─── */}
