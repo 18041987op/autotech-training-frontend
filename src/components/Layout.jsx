@@ -373,7 +373,7 @@ function NavSection({ sections }) {
       {sections.map((section, idx) => (
         <div key={section.key} className={idx > 0 && section.label ? "mt-4" : idx > 0 ? "mt-1" : ""}>
           {section.label && (
-            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase text-slate-400 tracking-widest">
+            <p className="mb-1.5 px-3 text-[10px] font-bold uppercase text-sky-600 tracking-widest">
               {section.label}
             </p>
           )}

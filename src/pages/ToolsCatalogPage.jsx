@@ -392,7 +392,7 @@ function ToolCard({ tool, currentUserId, onBorrow, onRequestTransfer, t }) {
               <Plus className="h-3 w-3" /> {t("tools.catalog.borrow")}
             </button>
           )}
-          {!canBorrow && activeLoans.length > 0 && !currentUserHasTool && (
+          {!canBorrow && activeLoans.length > 0 && currentUserId && !currentUserHasTool && (
             <button
               onClick={() => onRequestTransfer(tool)}
               className="text-xs font-semibold text-amber-600 hover:text-amber-800 flex items-center gap-1"

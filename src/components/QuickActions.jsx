@@ -99,7 +99,8 @@ export function QuickActions() {
   // Show a shimmer placeholder while auth is hydrating from localStorage.
   // Without this, the component would flash "Clock In" for users who are
   // actually on break or clocked in, because user is null → query disabled → status defaults to "idle".
-  const isHydrating = !authReady || (!user?.email && authReady);
+  // Also show shimmer while the timesheet query is still loading for the first time.
+  const isHydrating = !authReady;
 
   return (
     <>

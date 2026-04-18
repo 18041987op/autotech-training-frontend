@@ -8,6 +8,8 @@ export const useAuthStore = create(
       token: null,
       _hasHydrated: false,
 
+      setHasHydrated: (v) => set({ _hasHydrated: v }),
+
       setUser: (user) => set({ user }),
       setToken: (token) => set({ token }),
 
@@ -29,19 +31,16 @@ export const useAuthStore = create(
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token, user: state.user }),
-      onRehydrateStorage: () => {
-        return () => {
-          // Called when hydration from localStorage is complete.
-          // This prevents the race condition where user is null between
-          // component mount and localStorage hydration, causing queries
-          // gated by `enabled: !!user?.email` to not fire and components
-          // to render with default/empty state.
-          useAuthStore.setState({ _hasHydrated: true });
-        };
-      },
     }
   )
 );
+
+// Use the zustand persist API's onFinishHydration listener.
+// This is more reliable than onRehydrateStorage in zustand v4.5+.
+// It fires once hydration from localStorage completes (even if storage is empty).
+useAuthStore.persist.onFinishHydration(() => {
+  useAuthStore.setState({ _hasHydrated: true });
+});
 
 /**
  * Hook: returns true once the auth store has finished hydrating from localStorage.
