@@ -304,12 +304,13 @@ function TeamTimesheetReview() {
       list = list.filter((e) => (e.employee_name || "").toLowerCase().includes(s));
     }
     if (needsReviewFilter) {
+      const today = new Date().toISOString().slice(0, 10);
       list = list.filter((e) => {
-        // "Needs review" = has a No-Show day (scheduled but no timecard) or missing clock-out
+        // "Needs review" = has a No-Show day (scheduled PAST day but no timecard) or missing clock-out
         return e.entries.some((en) => !en.clock_out) ||
                e.schedules.some((s) => {
                  const dayStr = s.date;
-                 return !e.entries.some((en) => en.clock_in?.startsWith(dayStr));
+                 return dayStr < today && !e.entries.some((en) => en.clock_in?.startsWith(dayStr));
                });
       });
     }
@@ -318,11 +319,12 @@ function TeamTimesheetReview() {
 
   // Count needs-review
   const needsReviewCount = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
     return employees.filter((e) => {
       return e.entries.some((en) => !en.clock_out) ||
              e.schedules.some((s) => {
                const dayStr = s.date;
-               return !e.entries.some((en) => en.clock_in?.startsWith(dayStr));
+               return dayStr < today && !e.entries.some((en) => en.clock_in?.startsWith(dayStr));
              });
     }).length;
   }, [employees]);
@@ -518,7 +520,8 @@ function EmployeeDayBreakdown({ emp, days }) {
         const dayEntries = emp.entries.filter((e) => e.clock_in?.startsWith(dayStr));
         const schedule = emp.schedules.find((s) => s.date === dayStr);
         const isScheduled = !!schedule;
-        const hasNoShow = isScheduled && dayEntries.length === 0;
+        const today = new Date().toISOString().slice(0, 10);
+        const hasNoShow = isScheduled && dayEntries.length === 0 && dayStr < today;
 
         // Calculate scheduled hours for this day
         let scheduledH = 0;
@@ -546,6 +549,11 @@ function EmployeeDayBreakdown({ emp, days }) {
                 {hasNoShow && (
                   <span className="text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-full flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" /> No-Show
+                  </span>
+                )}
+                {isScheduled && dayEntries.length === 0 && !hasNoShow && dayStr >= today && (
+                  <span className="text-[10px] font-medium text-sky-600 bg-sky-50 border border-sky-200 px-1.5 py-0.5 rounded-full">
+                    {t("hr.timesheet.upcoming", "Upcoming")}
                   </span>
                 )}
                 {isScheduled && (
@@ -598,6 +606,10 @@ function EmployeeDayBreakdown({ emp, days }) {
             ) : hasNoShow ? (
               <div className="ml-2 text-xs text-red-500 italic py-1">
                 {t("hr.timesheet.noShowMsg", "Scheduled but did not clock in")}
+              </div>
+            ) : isScheduled && dayStr >= today ? (
+              <div className="ml-2 text-xs text-slate-400 italic py-1">
+                {t("hr.timesheet.upcomingShift", "Upcoming shift")}
               </div>
             ) : null}
           </div>

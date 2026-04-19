@@ -2025,7 +2025,9 @@
       "employeeCol": "Empleado",
       "noEmployees": "No se encontraron empleados",
       "scheduled": "Programado",
-      "noShowMsg": "Programado pero no registró entrada"
+      "noShowMsg": "Programado pero no registró entrada",
+      "upcomingShift": "Turno próximo",
+      "upcoming": "Próximo"
     },
     "timeOff": {
       "title": "Tiempo Libre",

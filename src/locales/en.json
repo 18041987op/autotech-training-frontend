@@ -2025,7 +2025,9 @@
       "employeeCol": "Employee",
       "noEmployees": "No employees found",
       "scheduled": "Scheduled",
-      "noShowMsg": "Scheduled but did not clock in"
+      "noShowMsg": "Scheduled but did not clock in",
+      "upcomingShift": "Upcoming shift",
+      "upcoming": "Upcoming"
     },
     "timeOff": {
       "title": "Time Off",
