@@ -60,6 +60,8 @@ export const confirmDoorAction = (doorCode, {
   return_has_damage,
   return_damage_description,
   was_needed,
+  door_was_closed,
+  door_not_closed_reason,
 } = {}) =>
   cabinetFetch(`/doors/${doorCode}/confirm`, {
     method: "POST",
@@ -71,8 +73,17 @@ export const confirmDoorAction = (doorCode, {
       return_has_damage,
       return_damage_description,
       was_needed,
+      door_was_closed,
+      door_not_closed_reason,
     },
   });
+
+/**
+ * Poll the current door state (is_open from reed switch sensor).
+ * Used by DoorAccessPage to show real-time open/closed status after unlock.
+ */
+export const getDoorState = (doorCode) =>
+  cabinetFetch(`/doors/${doorCode}/state`);
 
 // ─── Admin: Cabinets CRUD ───────────────────────────────────────────────────
 

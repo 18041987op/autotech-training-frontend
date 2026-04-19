@@ -2441,6 +2441,13 @@
     "return_done": "Tool Returned!",
     "return_by": "Return by:",
     "my_tools": "My Tools",
-    "catalog": "Catalog"
+    "catalog": "Catalog",
+    "door_checking": "Checking door status...",
+    "door_is_open": "Door is OPEN",
+    "door_is_closed": "Door is closed",
+    "close_door_to_confirm": "Please close the door before confirming.",
+    "report_door_issue": "Can't close the door?",
+    "door_issue_label": "Why can't the door be closed?",
+    "door_issue_placeholder": "e.g. Door is damaged, latch is stuck..."
   }
 }

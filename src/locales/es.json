@@ -2441,6 +2441,13 @@
     "return_done": "¡Herramienta Devuelta!",
     "return_by": "Devolver antes de:",
     "my_tools": "Mis Herramientas",
-    "catalog": "Catálogo"
+    "catalog": "Catálogo",
+    "door_checking": "Verificando estado de la puerta...",
+    "door_is_open": "La puerta está ABIERTA",
+    "door_is_closed": "La puerta está cerrada",
+    "close_door_to_confirm": "Por favor cierra la puerta antes de confirmar.",
+    "report_door_issue": "¿No puedes cerrar la puerta?",
+    "door_issue_label": "¿Por qué no se puede cerrar la puerta?",
+    "door_issue_placeholder": "Ej. Puerta dañada, cerradura atascada..."
   }
 }

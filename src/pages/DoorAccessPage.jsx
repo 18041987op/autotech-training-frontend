@@ -29,9 +29,12 @@ import {
   ThumbsUp,
   ThumbsDown,
   Timer,
+  DoorOpen,
+  DoorClosed,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
-import { checkDoorAccess, unlockDoor, confirmDoorAction } from "../lib/cabinetApi";
+import { checkDoorAccess, unlockDoor, confirmDoorAction, getDoorState } from "../lib/cabinetApi";
 
 // ─── Step Constants ──────────────────────────────────────────────────────────
 const STEP = {
@@ -61,6 +64,12 @@ export default function DoorAccessPage() {
   const [wasNeeded, setWasNeeded] = useState(null);
   const [adminReason, setAdminReason] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Door state polling
+  const [isDoorOpen, setIsDoorOpen] = useState(null); // null = unknown, true = open, false = closed
+  const [doorPolling, setDoorPolling] = useState(false);
+  const [showDoorIssueForm, setShowDoorIssueForm] = useState(false);
+  const [doorNotClosedReason, setDoorNotClosedReason] = useState("");
 
   // ─── Step 1: Check access ──────────────────────────────────────────────────
   const loadAccess = useCallback(async () => {
@@ -93,6 +102,39 @@ export default function DoorAccessPage() {
   useEffect(() => {
     loadAccess();
   }, [loadAccess]);
+
+  // ─── Door state polling ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (step !== STEP.DOOR_OPEN && step !== STEP.RETURN_FORM) {
+      setDoorPolling(false);
+      return;
+    }
+
+    setDoorPolling(true);
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const res = await getDoorState(doorCode);
+        if (!cancelled && res?.data) {
+          setIsDoorOpen(res.data.is_open);
+        }
+      } catch (err) {
+        console.warn("Door state poll error:", err);
+        // Don't crash — just keep polling
+      }
+    };
+
+    // Poll immediately, then every 2 seconds
+    poll();
+    const interval = setInterval(poll, 2000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      setDoorPolling(false);
+    };
+  }, [step, doorCode]);
 
   // ─── Step 2: Request unlock ────────────────────────────────────────────────
   const handleUnlock = async (action, loan = null, tool = null, reason = null) => {
@@ -135,6 +177,10 @@ export default function DoorAccessPage() {
   // ─── Step 3: Confirm action ────────────────────────────────────────────────
   const handleConfirm = async () => {
     try {
+      // Determine if door was closed or user provided an explanation
+      const doorWasClosed = isDoorOpen === false;
+      const reason = showDoorIssueForm ? doorNotClosedReason : undefined;
+
       await confirmDoorAction(doorCode, {
         access_log_id: unlockResult?.access_log_id,
         action: selectedAction.action,
@@ -146,6 +192,8 @@ export default function DoorAccessPage() {
             ? damageDescription
             : undefined,
         was_needed: selectedAction.action === "return" ? wasNeeded : undefined,
+        door_was_closed: doorWasClosed,
+        door_not_closed_reason: reason,
       });
 
       setStep(STEP.SUCCESS);
@@ -382,6 +430,7 @@ export default function DoorAccessPage() {
   if (step === STEP.DOOR_OPEN) {
     const toolName = selectedAction?.tool?.name || selectedAction?.loan?.tools?.name || "—";
     const shelfPos = selectedAction?.tool?.shelf_position || selectedAction?.loan?.tools?.shelf_position;
+    const canConfirm = isDoorOpen === false || (showDoorIssueForm && doorNotClosedReason.trim().length > 0);
 
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-emerald-50">
@@ -408,10 +457,69 @@ export default function DoorAccessPage() {
             </div>
           )}
 
+          {/* Real-time door state indicator */}
+          <div className={`rounded-xl p-3 mb-4 flex items-center justify-center gap-2 ${
+            isDoorOpen === null
+              ? "bg-gray-100 text-gray-500"
+              : isDoorOpen
+              ? "bg-red-50 text-red-600"
+              : "bg-emerald-50 text-emerald-600"
+          }`}>
+            {isDoorOpen === null ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span className="font-medium text-sm">{t("cabinet.door_checking")}</span>
+              </>
+            ) : isDoorOpen ? (
+              <>
+                <DoorOpen className="w-5 h-5" />
+                <span className="font-medium text-sm">{t("cabinet.door_is_open")}</span>
+              </>
+            ) : (
+              <>
+                <DoorClosed className="w-5 h-5" />
+                <span className="font-medium text-sm">{t("cabinet.door_is_closed")}</span>
+              </>
+            )}
+          </div>
+
+          {/* Gate: must close door or report issue */}
+          {isDoorOpen !== false && !showDoorIssueForm && (
+            <p className="text-sm text-gray-500 mb-3">{t("cabinet.close_door_to_confirm")}</p>
+          )}
+
+          {/* Report door issue */}
+          {isDoorOpen !== false && !showDoorIssueForm && (
+            <button
+              onClick={() => setShowDoorIssueForm(true)}
+              className="text-sm text-amber-600 underline mb-4 inline-flex items-center gap-1"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              {t("cabinet.report_door_issue")}
+            </button>
+          )}
+
+          {showDoorIssueForm && (
+            <div className="bg-amber-50 rounded-xl p-3 mb-4 text-left">
+              <p className="text-sm font-medium text-amber-700 mb-2">{t("cabinet.door_issue_label")}</p>
+              <textarea
+                value={doorNotClosedReason}
+                onChange={(e) => setDoorNotClosedReason(e.target.value)}
+                placeholder={t("cabinet.door_issue_placeholder")}
+                className="w-full px-3 py-2 border border-amber-200 rounded-lg text-gray-700 text-sm resize-none"
+                rows={2}
+              />
+            </div>
+          )}
+
           <button
             onClick={handleConfirm}
-            className="w-full px-6 py-4 bg-emerald-500 text-white rounded-xl font-bold text-lg
-                       hover:bg-emerald-600 active:scale-[0.98] transition flex items-center justify-center gap-2"
+            disabled={!canConfirm}
+            className={`w-full px-6 py-4 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2
+              ${canConfirm
+                ? "bg-emerald-500 text-white hover:bg-emerald-600 active:scale-[0.98]"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
           >
             <CheckCircle2 className="w-6 h-6" />
             {selectedAction?.action === "pickup"
@@ -427,6 +535,7 @@ export default function DoorAccessPage() {
   if (step === STEP.RETURN_FORM) {
     const toolName = selectedAction?.tool?.name || selectedAction?.loan?.tools?.name || "—";
     const shelfPos = selectedAction?.tool?.shelf_position || selectedAction?.loan?.tools?.shelf_position;
+    const canConfirmReturn = isDoorOpen === false || (showDoorIssueForm && doorNotClosedReason.trim().length > 0);
 
     return (
       <div className="min-h-screen bg-amber-50 p-4">
@@ -445,6 +554,32 @@ export default function DoorAccessPage() {
                 <p className="text-sm">{t("cabinet.closes_in", { seconds: countdown })}</p>
               </div>
             )}
+
+            {/* Real-time door state indicator */}
+            <div className={`rounded-xl p-3 flex items-center justify-center gap-2 ${
+              isDoorOpen === null
+                ? "bg-gray-100 text-gray-500"
+                : isDoorOpen
+                ? "bg-red-50 text-red-600"
+                : "bg-emerald-50 text-emerald-600"
+            }`}>
+              {isDoorOpen === null ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="font-medium text-sm">{t("cabinet.door_checking")}</span>
+                </>
+              ) : isDoorOpen ? (
+                <>
+                  <DoorOpen className="w-5 h-5" />
+                  <span className="font-medium text-sm">{t("cabinet.door_is_open")}</span>
+                </>
+              ) : (
+                <>
+                  <DoorClosed className="w-5 h-5" />
+                  <span className="font-medium text-sm">{t("cabinet.door_is_closed")}</span>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Condition */}
@@ -511,11 +646,42 @@ export default function DoorAccessPage() {
             </div>
           </div>
 
+          {/* Gate: must close door or report issue */}
+          {isDoorOpen !== false && !showDoorIssueForm && (
+            <div className="bg-white rounded-xl shadow p-4 mt-3 text-center">
+              <p className="text-sm text-gray-500 mb-2">{t("cabinet.close_door_to_confirm")}</p>
+              <button
+                onClick={() => setShowDoorIssueForm(true)}
+                className="text-sm text-amber-600 underline inline-flex items-center gap-1"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                {t("cabinet.report_door_issue")}
+              </button>
+            </div>
+          )}
+
+          {showDoorIssueForm && (
+            <div className="bg-amber-50 rounded-xl p-4 mt-3">
+              <p className="text-sm font-medium text-amber-700 mb-2">{t("cabinet.door_issue_label")}</p>
+              <textarea
+                value={doorNotClosedReason}
+                onChange={(e) => setDoorNotClosedReason(e.target.value)}
+                placeholder={t("cabinet.door_issue_placeholder")}
+                className="w-full px-3 py-2 border border-amber-200 rounded-lg text-gray-700 text-sm resize-none"
+                rows={2}
+              />
+            </div>
+          )}
+
           {/* Confirm */}
           <button
             onClick={handleConfirm}
-            className="w-full mt-4 px-6 py-4 bg-amber-500 text-white rounded-xl font-bold text-lg
-                       hover:bg-amber-600 active:scale-[0.98] transition flex items-center justify-center gap-2"
+            disabled={!canConfirmReturn}
+            className={`w-full mt-4 px-6 py-4 rounded-xl font-bold text-lg transition flex items-center justify-center gap-2
+              ${canConfirmReturn
+                ? "bg-amber-500 text-white hover:bg-amber-600 active:scale-[0.98]"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
           >
             <CheckCircle2 className="w-6 h-6" />
             {t("cabinet.confirm_return")}
