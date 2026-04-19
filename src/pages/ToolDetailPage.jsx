@@ -7,7 +7,7 @@ import {
   ArrowLeft, Wrench, Clock,
   AlertTriangle, CheckCircle, ArrowRightLeft,
   ThumbsUp, ThumbsDown, Plus, Car, ChevronRight,
-  Sparkles, AlertCircle, ShoppingCart,
+  Sparkles, AlertCircle, ShoppingCart, DoorOpen,
 } from "lucide-react";
 import {
   getTool, getLoans, returnTool, transferTool, getToolsUsers,
@@ -162,13 +162,22 @@ export function ToolDetailPage() {
             />
           </div>
           {isMyLoan && (
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => setReturnModal(activeLoan)}
-                className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1.5"
-              >
-                <CheckCircle className="h-3.5 w-3.5" /> {t("tools.detail.returnTool")}
-              </button>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {tool?.cabinet_door?.door_code ? (
+                <button
+                  onClick={() => navigate(`/cabinet/door/${tool.cabinet_door.door_code}/access`)}
+                  className="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 flex items-center gap-1.5"
+                >
+                  <DoorOpen className="h-3.5 w-3.5" /> {t("cabinet.go_to_door_return")}
+                </button>
+              ) : (
+                <button
+                  onClick={() => setReturnModal(activeLoan)}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1.5"
+                >
+                  <CheckCircle className="h-3.5 w-3.5" /> {t("tools.detail.returnTool")}
+                </button>
+              )}
               <button
                 onClick={() => setTransferModal(activeLoan)}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
@@ -380,7 +389,8 @@ function ReturnModal({ loan, onClose, onSuccess }) {
 
 function BorrowModal({ tool, onClose, onSuccess }) {
   const { t } = useTranslation();
-  const [step, setStep] = useState("select-ro"); // select-ro | manual | confirm
+  const navigate = useNavigate();
+  const [step, setStep] = useState("select-ro"); // select-ro | manual | confirm | borrowed
   const [selectedRO, setSelectedRO] = useState(null);
   const [purpose, setPurpose] = useState("");
   const [vehicle, setVehicle] = useState("");
@@ -390,6 +400,7 @@ function BorrowModal({ tool, onClose, onSuccess }) {
   const [purchaseRequested, setPurchaseRequested] = useState({});
 
   const user = window.__APP_USER__;
+  const doorCode = tool?.cabinet_door?.door_code;
 
   const { data: usersData } = useQuery({
     queryKey: ["toolsUsers"],
@@ -415,7 +426,11 @@ function BorrowModal({ tool, onClose, onSuccess }) {
     mutationFn: (data) => borrowTool(data),
     onSuccess: () => {
       toast.success(t("tools.catalog.borrowSuccess", { toolName: tool.name }));
-      onSuccess();
+      if (doorCode) {
+        setStep("borrowed");
+      } else {
+        onSuccess();
+      }
     },
     onError: (err) => toast.error(err.message || t("tools.catalog.borrowError")),
   });
@@ -669,6 +684,31 @@ function BorrowModal({ tool, onClose, onSuccess }) {
                   {mutation.isPending ? t("tools.catalog.borrowing") : t("tools.catalog.confirmBorrow")}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Step 4: Borrowed — Ready to open door? */}
+          {step === "borrowed" && doorCode && (
+            <div className="mt-4 text-center space-y-4">
+              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto" />
+              <p className="text-lg font-bold text-slate-900">{t("cabinet.borrow_success_title")}</p>
+              <p className="text-sm text-slate-500">{t("cabinet.borrow_success_msg")}</p>
+              <button
+                onClick={() => {
+                  onSuccess();
+                  navigate(`/cabinet/door/${doorCode}/access`);
+                }}
+                className="w-full px-4 py-3 rounded-xl bg-emerald-500 text-white font-semibold hover:bg-emerald-600 active:scale-[0.98] transition flex items-center justify-center gap-2"
+              >
+                <DoorOpen className="h-5 w-5" />
+                {t("cabinet.go_to_door")}
+              </button>
+              <button
+                onClick={onSuccess}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50"
+              >
+                {t("cabinet.later")}
+              </button>
             </div>
           )}
         </div>

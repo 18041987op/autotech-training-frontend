@@ -2448,6 +2448,11 @@
     "close_door_to_confirm": "Please close the door before confirming.",
     "report_door_issue": "Can't close the door?",
     "door_issue_label": "Why can't the door be closed?",
-    "door_issue_placeholder": "e.g. Door is damaged, latch is stuck..."
+    "door_issue_placeholder": "e.g. Door is damaged, latch is stuck...",
+    "borrow_success_title": "Tool Reserved!",
+    "borrow_success_msg": "Ready to pick it up? Go to the cabinet door to unlock it.",
+    "go_to_door": "Open Cabinet Door",
+    "go_to_door_return": "Return at Cabinet",
+    "later": "I'll pick it up later"
   }
 }

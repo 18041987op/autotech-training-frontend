@@ -2448,6 +2448,11 @@
     "close_door_to_confirm": "Por favor cierra la puerta antes de confirmar.",
     "report_door_issue": "¿No puedes cerrar la puerta?",
     "door_issue_label": "¿Por qué no se puede cerrar la puerta?",
-    "door_issue_placeholder": "Ej. Puerta dañada, cerradura atascada..."
+    "door_issue_placeholder": "Ej. Puerta dañada, cerradura atascada...",
+    "borrow_success_title": "¡Herramienta Reservada!",
+    "borrow_success_msg": "¿Listo para recogerla? Ve al gabinete para abrir la puerta.",
+    "go_to_door": "Abrir Puerta del Gabinete",
+    "go_to_door_return": "Devolver en Gabinete",
+    "later": "La recojo después"
   }
 }
