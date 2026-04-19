@@ -67,7 +67,6 @@ export default function DoorAccessPage() {
 
   // Door state polling
   const [isDoorOpen, setIsDoorOpen] = useState(null); // null = unknown, true = open, false = closed
-  const [doorPolling, setDoorPolling] = useState(false);
   const [showDoorIssueForm, setShowDoorIssueForm] = useState(false);
   const [doorNotClosedReason, setDoorNotClosedReason] = useState("");
 
@@ -106,11 +105,9 @@ export default function DoorAccessPage() {
   // ─── Door state polling ────────────────────────────────────────────────────
   useEffect(() => {
     if (step !== STEP.DOOR_OPEN && step !== STEP.RETURN_FORM) {
-      setDoorPolling(false);
       return;
     }
 
-    setDoorPolling(true);
     let cancelled = false;
 
     const poll = async () => {
@@ -132,7 +129,6 @@ export default function DoorAccessPage() {
     return () => {
       cancelled = true;
       clearInterval(interval);
-      setDoorPolling(false);
     };
   }, [step, doorCode]);
 
