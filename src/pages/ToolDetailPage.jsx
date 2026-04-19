@@ -164,12 +164,21 @@ export function ToolDetailPage() {
           {isMyLoan && (
             <div className="flex flex-wrap gap-2 mt-4">
               {tool?.cabinet_door?.door_code ? (
-                <button
-                  onClick={() => navigate(`/cabinet/door/${tool.cabinet_door.door_code}/access`)}
-                  className="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 flex items-center gap-1.5"
-                >
-                  <DoorOpen className="h-3.5 w-3.5" /> {t("cabinet.go_to_door_return")}
-                </button>
+                activeLoan.picked_up ? (
+                  <button
+                    onClick={() => navigate(`/cabinet/door/${tool.cabinet_door.door_code}/access`)}
+                    className="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 flex items-center gap-1.5"
+                  >
+                    <DoorOpen className="h-3.5 w-3.5" /> {t("cabinet.go_to_door_return")}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => navigate(`/cabinet/door/${tool.cabinet_door.door_code}/access`)}
+                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 flex items-center gap-1.5"
+                  >
+                    <DoorOpen className="h-3.5 w-3.5" /> {t("cabinet.go_to_door_pickup")}
+                  </button>
+                )
               ) : (
                 <button
                   onClick={() => setReturnModal(activeLoan)}

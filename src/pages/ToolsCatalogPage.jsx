@@ -142,7 +142,15 @@ export function ToolsCatalogPage() {
             {t("tools.catalog.subtitle")}
           </p>
         </div>
-        <QRScannerButton onScan={handleQRScan} />
+        <div className="flex items-center gap-2">
+          <Link
+            to="/my-tools"
+            className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
+          >
+            <Package className="h-3.5 w-3.5" /> {t("tools.catalog.goToMyTools")}
+          </Link>
+          <QRScannerButton onScan={handleQRScan} />
+        </div>
       </div>
 
       {/* Incoming transfer requests banner */}

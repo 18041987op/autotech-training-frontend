@@ -1765,6 +1765,7 @@
     "catalog": {
       "title": "Tool Catalog",
       "subtitle": "Browse and borrow shop tools",
+      "goToMyTools": "My Tools",
       "searchPlaceholder": "Search tools...",
       "allCategories": "All",
       "categories": {
@@ -2452,6 +2453,7 @@
     "borrow_success_title": "Tool Reserved!",
     "borrow_success_msg": "Ready to pick it up? Go to the cabinet door to unlock it.",
     "go_to_door": "Open Cabinet Door",
+    "go_to_door_pickup": "Open Cabinet to Pick Up",
     "go_to_door_return": "Return at Cabinet",
     "later": "I'll pick it up later"
   }

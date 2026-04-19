@@ -1765,6 +1765,7 @@
     "catalog": {
       "title": "Catálogo de Herramientas",
       "subtitle": "Explora y pide prestado herramientas del taller",
+      "goToMyTools": "Mis Herramientas",
       "searchPlaceholder": "Buscar herramientas...",
       "allCategories": "Todos",
       "categories": {
@@ -2452,6 +2453,7 @@
     "borrow_success_title": "¡Herramienta Reservada!",
     "borrow_success_msg": "¿Listo para recogerla? Ve al gabinete para abrir la puerta.",
     "go_to_door": "Abrir Puerta del Gabinete",
+    "go_to_door_pickup": "Abrir Gabinete para Recoger",
     "go_to_door_return": "Devolver en Gabinete",
     "later": "La recojo después"
   }

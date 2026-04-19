@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Wrench, Clock, AlertTriangle, CheckCircle,
   ArrowRightLeft, Package, ThumbsUp, ThumbsDown,
-  Bell, Check, XCircle,
+  Bell, Check, XCircle, DoorOpen,
 } from "lucide-react";
 import { getMyTools, returnTool, transferTool, getToolsUsers, getTransferRequests, respondTransferRequest } from "../lib/toolsApi";
 import { useAuthStore, useAuthReady } from "../stores/authStore";
 
 export function MyToolsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
@@ -75,14 +76,22 @@ export function MyToolsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Wrench className="h-6 w-6 text-sky-600" />
-          {t("tools.myTools.title")}
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          {t("tools.myTools.subtitle")}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <Wrench className="h-6 w-6 text-sky-600" />
+            {t("tools.myTools.title")}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {t("tools.myTools.subtitle")}
+          </p>
+        </div>
+        <Link
+          to="/tools"
+          className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1.5"
+        >
+          <Package className="h-3.5 w-3.5" /> {t("tools.myTools.browseCatalog")}
+        </Link>
       </div>
 
       {/* Incoming transfer requests */}
@@ -177,12 +186,30 @@ export function MyToolsPage() {
                     </p>
                   </div>
                   <div className="flex flex-col gap-1.5 shrink-0">
-                    <button
-                      onClick={() => setReturnModal(loan)}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1"
-                    >
-                      <CheckCircle className="h-3 w-3" /> {t("tools.myTools.return")}
-                    </button>
+                    {loan.tools?.cabinet_door?.door_code ? (
+                      loan.picked_up ? (
+                        <button
+                          onClick={() => navigate(`/cabinet/door/${loan.tools.cabinet_door.door_code}/access`)}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 flex items-center gap-1"
+                        >
+                          <DoorOpen className="h-3 w-3" /> {t("cabinet.go_to_door_return")}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => navigate(`/cabinet/door/${loan.tools.cabinet_door.door_code}/access`)}
+                          className="px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-semibold hover:bg-emerald-600 flex items-center gap-1"
+                        >
+                          <DoorOpen className="h-3 w-3" /> {t("cabinet.go_to_door_pickup")}
+                        </button>
+                      )
+                    ) : (
+                      <button
+                        onClick={() => setReturnModal(loan)}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 flex items-center gap-1"
+                      >
+                        <CheckCircle className="h-3 w-3" /> {t("tools.myTools.return")}
+                      </button>
+                    )}
                     <button
                       onClick={() => setTransferModal(loan)}
                       className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50 flex items-center gap-1"
