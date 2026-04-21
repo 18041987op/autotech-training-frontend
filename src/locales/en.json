@@ -46,7 +46,8 @@
     "view": "View",
     "optionAHelp": "Option A: layout + navigation + i18n only. Next step is wiring real data and role rules.",
     "back": "Back",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "close": "Close"
   },
   "auth": {
     "welcomeTitle": "Welcome back",
@@ -2489,6 +2490,16 @@
     "paid_of": "paid of",
     "weeks_remaining": "weeks remaining",
     "signed_on": "Agreement signed on",
-    "payment_history": "Payment History"
+    "payment_history": "Payment History",
+    "agreement_title": "Debt Agreement",
+    "agreement_signed": "Agreement Signed",
+    "additional_conditions": "Additional Conditions",
+    "pending_signature": "This agreement requires your signature",
+    "sign_agreement": "Sign Agreement",
+    "sign_below": "Draw your signature below:",
+    "clear_signature": "Clear",
+    "confirm_signature": "Submit Signature",
+    "signing": "Signing...",
+    "needs_signature": "Needs Signature"
   }
 }

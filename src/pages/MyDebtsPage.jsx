@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState, useRef, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuthStore, useAuthReady } from "../stores/authStore";
-import { getMyDebts, getDebtDetail } from "../lib/debtApi";
+import { getMyDebts, getDebtDetail, signDebt } from "../lib/debtApi";
 
 const fmt = (n) =>
   Number(n).toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -35,11 +35,241 @@ const methodLabels = {
   other: "debt.method_other",
 };
 
+/* ── Signature Pad ────────────────────────────────────────────────── */
+
+function SignaturePad({ onSave, onCancel, saving }) {
+  const { t } = useTranslation();
+  const canvasRef = useRef(null);
+  const isDrawing = useRef(false);
+  const hasDrawn = useRef(false);
+
+  const getPos = (e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches) {
+      return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top,
+      };
+    }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  const startDraw = (e) => {
+    e.preventDefault();
+    isDrawing.current = true;
+    hasDrawn.current = true;
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const { x, y } = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
+
+  const draw = (e) => {
+    e.preventDefault();
+    if (!isDrawing.current) return;
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const { x, y } = getPos(e);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "#1e293b";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.stroke();
+  };
+
+  const endDraw = () => {
+    isDrawing.current = false;
+  };
+
+  const clear = () => {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    hasDrawn.current = false;
+  };
+
+  const handleSave = () => {
+    if (!hasDrawn.current) return;
+    const dataUrl = canvasRef.current?.toDataURL("image/png") || "";
+    onSave(dataUrl);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-gray-600 font-medium">{t("debt.sign_below")}</p>
+      <canvas
+        ref={canvasRef}
+        width={400}
+        height={150}
+        className="border-2 border-dashed border-gray-300 rounded-lg cursor-crosshair bg-white w-full"
+        style={{ touchAction: "none" }}
+        onMouseDown={startDraw}
+        onMouseMove={draw}
+        onMouseUp={endDraw}
+        onMouseLeave={endDraw}
+        onTouchStart={startDraw}
+        onTouchMove={draw}
+        onTouchEnd={endDraw}
+      />
+      <div className="flex gap-2">
+        <button
+          onClick={clear}
+          className="flex-1 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+        >
+          {t("debt.clear_signature")}
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex-1 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50"
+        >
+          {saving ? t("debt.signing") : t("debt.confirm_signature")}
+        </button>
+      </div>
+      <button
+        onClick={onCancel}
+        className="w-full py-2 text-sm text-gray-500 hover:text-gray-700"
+      >
+        {t("common.cancel")}
+      </button>
+    </div>
+  );
+}
+
+/* ── Agreement Section (Bilingual) ───────────────────────────────── */
+
+function AgreementSection({ debt, onSign, signing }) {
+  const { t } = useTranslation();
+  const [showSignPad, setShowSignPad] = useState(false);
+
+  const handleSign = async (dataUrl) => {
+    await onSign(dataUrl);
+    setShowSignPad(false);
+  };
+
+  // Already signed
+  if (debt.agreement_signature) {
+    return (
+      <div className="border-t pt-4 space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700">{t("debt.agreement_title")}</h4>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-green-600 text-lg">✓</span>
+            <span className="text-sm font-medium text-green-700">{t("debt.agreement_signed")}</span>
+          </div>
+          <img
+            src={debt.agreement_signature}
+            alt="Your signature"
+            className="max-h-16 border rounded bg-white p-1"
+          />
+          <p className="text-xs text-green-600 mt-1">
+            {t("debt.signed_on")} {fmtDate(debt.agreement_signed_at)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not yet signed — show agreement terms + sign button
+  return (
+    <div className="border-t pt-4 space-y-3">
+      <h4 className="text-sm font-semibold text-gray-700">{t("debt.agreement_title")}</h4>
+
+      {/* Standard Terms — English */}
+      <div className="bg-gray-50 border rounded-lg p-4 space-y-2">
+        <p className="text-xs font-bold text-gray-700 uppercase">Payroll Deduction Agreement</p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          I, <span className="font-semibold">{debt.debtor_name}</span>, acknowledge that I owe{" "}
+          <span className="font-semibold">AutoRx Center</span> the amount of{" "}
+          <span className="font-semibold">{fmt(debt.total_amount)}</span>
+          {debt.description ? ` for: ${debt.description}` : ""}.
+        </p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          I authorize AutoRx Center to deduct{" "}
+          <span className="font-semibold">{fmt(debt.weekly_payment)}</span> per week from my paycheck
+          (after taxes) until the balance is paid in full. This deduction will appear on each pay
+          period until the remaining balance reaches $0.00.
+        </p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          If my employment ends before the debt is fully repaid, the remaining balance will be
+          deducted from my final paycheck. If the final paycheck is insufficient, I agree to
+          arrange an alternative repayment plan.
+        </p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          By signing below, I confirm that I understand and accept these terms.
+        </p>
+      </div>
+
+      {/* Standard Terms — Spanish */}
+      <div className="bg-gray-50 border rounded-lg p-4 space-y-2">
+        <p className="text-xs font-bold text-gray-700 uppercase">Acuerdo de Deducción de Nómina</p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          Yo, <span className="font-semibold">{debt.debtor_name}</span>, reconozco que debo a{" "}
+          <span className="font-semibold">AutoRx Center</span> la cantidad de{" "}
+          <span className="font-semibold">{fmt(debt.total_amount)}</span>
+          {debt.description ? ` por: ${debt.description}` : ""}.
+        </p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          Autorizo a AutoRx Center a deducir{" "}
+          <span className="font-semibold">{fmt(debt.weekly_payment)}</span> por semana de mi cheque
+          de pago (después de impuestos) hasta que el saldo sea pagado en su totalidad. Esta
+          deducción aparecerá en cada período de pago hasta que el saldo restante llegue a $0.00.
+        </p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          Si mi empleo termina antes de que la deuda sea pagada por completo, el saldo restante
+          será deducido de mi último cheque de pago. Si el último cheque es insuficiente, me
+          comprometo a establecer un plan de pago alternativo.
+        </p>
+        <p className="text-xs text-gray-600 leading-relaxed">
+          Al firmar a continuación, confirmo que entiendo y acepto estos términos.
+        </p>
+      </div>
+
+      {/* Custom notes from admin */}
+      {debt.agreement_notes && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <p className="text-xs font-bold text-yellow-800 uppercase mb-1">
+            {t("debt.additional_conditions")}
+          </p>
+          <p className="text-xs text-yellow-700 whitespace-pre-wrap leading-relaxed">
+            {debt.agreement_notes}
+          </p>
+        </div>
+      )}
+
+      {/* Signature area */}
+      {showSignPad ? (
+        <SignaturePad
+          onSave={handleSign}
+          onCancel={() => setShowSignPad(false)}
+          saving={signing}
+        />
+      ) : (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-center">
+          <p className="text-sm text-orange-700 mb-3">{t("debt.pending_signature")}</p>
+          <button
+            onClick={() => setShowSignPad(true)}
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-sm"
+          >
+            {t("debt.sign_agreement")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Main Page ────────────────────────────────────────────────────── */
+
 export function MyDebtsPage() {
   const { t } = useTranslation();
   const authReady = useAuthReady();
   const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
   const [selectedDebt, setSelectedDebt] = useState(null);
+  const [signing, setSigning] = useState(false);
 
   const { data: debtsData, isLoading } = useQuery({
     queryKey: ["myDebts", user?.email],
@@ -52,6 +282,27 @@ export function MyDebtsPage() {
     queryFn: () => getDebtDetail(selectedDebt?.id),
     enabled: !!selectedDebt?.id,
   });
+
+  const handleSign = useCallback(async (dataUrl) => {
+    if (!selectedDebt) return;
+    setSigning(true);
+    try {
+      await signDebt(selectedDebt.id, dataUrl);
+      // Refresh data
+      queryClient.invalidateQueries({ queryKey: ["myDebts"] });
+      queryClient.invalidateQueries({ queryKey: ["debtDetail", selectedDebt.id] });
+      // Update local state so UI reflects signature immediately
+      setSelectedDebt((prev) => prev ? {
+        ...prev,
+        agreement_signature: dataUrl,
+        agreement_signed_at: new Date().toISOString(),
+      } : null);
+    } catch (err) {
+      alert(err.message || "Failed to save signature");
+    } finally {
+      setSigning(false);
+    }
+  }, [selectedDebt, queryClient]);
 
   const debts = debtsData?.debts || [];
   const activeDebts = debts.filter((d) => d.status === "active" || d.status === "paused");
@@ -73,6 +324,11 @@ export function MyDebtsPage() {
     if (total <= 0) return 100;
     return Math.min(100, Math.round((parseFloat(d.total_paid) / total) * 100));
   };
+
+  // Merge detail data into selectedDebt for the agreement section
+  const displayDebt = selectedDebt
+    ? { ...selectedDebt, ...(detailData?.debt || {}) }
+    : null;
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-6">
@@ -118,6 +374,11 @@ export function MyDebtsPage() {
                       {t(`debt.status_${d.status}`)}
                     </span>
                     <span className="ml-2 text-xs text-gray-500">{t(typeLabels[d.debt_type] || d.debt_type)}</span>
+                    {!d.agreement_signature && (
+                      <span className="ml-2 inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                        {t("debt.needs_signature")}
+                      </span>
+                    )}
                   </div>
                   <span className="text-lg font-bold text-red-600">{fmt(d.remaining_balance)}</span>
                 </div>
@@ -173,17 +434,17 @@ export function MyDebtsPage() {
       )}
 
       {/* Detail Modal */}
-      {selectedDebt && (
+      {displayDebt && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="bg-white rounded-t-2xl sm:rounded-xl w-full sm:max-w-lg max-h-[85vh] overflow-y-auto p-5 space-y-4">
             <div className="flex items-start justify-between">
               <div>
                 <h3 className="font-bold text-gray-900">{t("debt.detail_title")}</h3>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[selectedDebt.status]}`}>
-                    {t(`debt.status_${selectedDebt.status}`)}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[displayDebt.status]}`}>
+                    {t(`debt.status_${displayDebt.status}`)}
                   </span>
-                  <span className="text-xs text-gray-500">{t(typeLabels[selectedDebt.debt_type])}</span>
+                  <span className="text-xs text-gray-500">{t(typeLabels[displayDebt.debt_type])}</span>
                 </div>
               </div>
               <button onClick={() => setSelectedDebt(null)} className="text-gray-400 hover:text-gray-600 text-xl p-1">
@@ -191,27 +452,27 @@ export function MyDebtsPage() {
               </button>
             </div>
 
-            {selectedDebt.description && (
-              <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{selectedDebt.description}</p>
+            {displayDebt.description && (
+              <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{displayDebt.description}</p>
             )}
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-gray-50 rounded-lg p-3">
                 <p className="text-xs text-gray-500">{t("debt.total_amount")}</p>
-                <p className="font-bold text-gray-900">{fmt(selectedDebt.total_amount)}</p>
+                <p className="font-bold text-gray-900">{fmt(displayDebt.total_amount)}</p>
               </div>
               <div className="bg-red-50 rounded-lg p-3">
                 <p className="text-xs text-red-600">{t("debt.remaining")}</p>
-                <p className="font-bold text-red-700">{fmt(selectedDebt.remaining_balance)}</p>
+                <p className="font-bold text-red-700">{fmt(displayDebt.remaining_balance)}</p>
               </div>
               <div className="bg-green-50 rounded-lg p-3">
                 <p className="text-xs text-green-600">{t("debt.total_paid_label")}</p>
-                <p className="font-bold text-green-700">{fmt(selectedDebt.total_paid)}</p>
+                <p className="font-bold text-green-700">{fmt(displayDebt.total_paid)}</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-3">
                 <p className="text-xs text-blue-600">{t("debt.weekly_deduction")}</p>
-                <p className="font-bold text-blue-700">{fmt(selectedDebt.weekly_payment)}/{t("debt.per_week")}</p>
+                <p className="font-bold text-blue-700">{fmt(displayDebt.weekly_payment)}/{t("debt.per_week")}</p>
               </div>
             </div>
 
@@ -220,24 +481,24 @@ export function MyDebtsPage() {
               <div className="bg-gray-200 rounded-full h-3">
                 <div
                   className="bg-blue-500 h-3 rounded-full"
-                  style={{ width: `${progressPct(selectedDebt)}%` }}
+                  style={{ width: `${progressPct(displayDebt)}%` }}
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1 text-center">
-                {progressPct(selectedDebt)}% {t("debt.completed")}
+                {progressPct(displayDebt)}% {t("debt.completed")}
               </p>
             </div>
 
-            {/* Signature status */}
-            {selectedDebt.agreement_signature && (
-              <div className="bg-green-50 border border-green-100 rounded-lg p-3">
-                <p className="text-xs text-green-700 font-medium">{t("debt.signed_on")} {fmtDate(selectedDebt.agreement_signed_at)}</p>
-              </div>
-            )}
+            {/* Agreement & Signature */}
+            <AgreementSection
+              debt={displayDebt}
+              onSign={handleSign}
+              signing={signing}
+            />
 
             {/* Payment History */}
             {detailData?.payments?.length > 0 && (
-              <div>
+              <div className="border-t pt-4">
                 <h4 className="text-sm font-semibold text-gray-700 mb-2">{t("debt.payment_history")}</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {detailData.payments.map((p) => (

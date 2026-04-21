@@ -36,3 +36,27 @@ export const getDebtDetail = (debtId) => debtFetch(`/${debtId}`);
 
 /** Get summary for current employee (by email) */
 export const getMyDebtSummary = (email) => debtFetch(`/summary?email=${encodeURIComponent(email)}`);
+
+/** Sign a debt agreement (POST with base64 signature PNG) */
+export async function signDebt(debtId, signatureDataUrl) {
+  if (!MGMT_BASE) {
+    throw new Error("Missing REACT_APP_MANAGEMENT_API_URL environment variable");
+  }
+
+  const res = await fetch(`${MGMT_BASE}/api/debts/${debtId}/sign`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(MGMT_KEY ? { Authorization: `Bearer ${MGMT_KEY}` } : {}),
+    },
+    body: JSON.stringify({ signature: signatureDataUrl }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    const msg = data?.error || data?.message || `Sign API error (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+}

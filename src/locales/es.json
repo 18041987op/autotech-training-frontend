@@ -46,7 +46,8 @@
     "view": "Ver",
     "optionAHelp": "Opción A: layout + navegación + i18n. Próximo paso: conectar datos reales y reglas por rol.",
     "back": "Volver",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "close": "Cerrar"
   },
   "auth": {
     "welcomeTitle": "Bienvenido de vuelta",
@@ -2489,6 +2490,16 @@
     "paid_of": "pagado de",
     "weeks_remaining": "semanas restantes",
     "signed_on": "Acuerdo firmado el",
-    "payment_history": "Historial de Pagos"
+    "payment_history": "Historial de Pagos",
+    "agreement_title": "Acuerdo de Deuda",
+    "agreement_signed": "Acuerdo Firmado",
+    "additional_conditions": "Condiciones Adicionales",
+    "pending_signature": "Este acuerdo requiere tu firma",
+    "sign_agreement": "Firmar Acuerdo",
+    "sign_below": "Dibuja tu firma a continuación:",
+    "clear_signature": "Borrar",
+    "confirm_signature": "Enviar Firma",
+    "signing": "Firmando...",
+    "needs_signature": "Requiere Firma"
   }
 }
