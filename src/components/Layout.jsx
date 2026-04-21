@@ -28,6 +28,7 @@ import {
   Heart,
   Users,
   UserCog,
+  FileText,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -104,6 +105,7 @@ export function Layout({ user, onSignOut }) {
         { to: "/timesheet", label: t("nav2.timesheet"),  icon: Clock },
         { to: "/time-off",  label: t("nav2.timeOff"),   icon: CalendarOff },
         { to: "/benefits",  label: t("nav2.benefits"),   icon: Heart },
+        { to: "/my-debts", label: t("nav2.myDebts"),    icon: FileText },
         { to: "/team",      label: t("nav2.team"),       icon: Users },
       ],
     },

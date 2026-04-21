@@ -27,6 +27,7 @@ import { AdminSuggestionsPage } from "./pages/AdminSuggestionsPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
+import { MyDebtsPage } from "./pages/MyDebtsPage";
 import { KeyBoardPage } from "./pages/KeyBoardPage";
 
 // Tools pages
@@ -152,6 +153,9 @@ function AppRoutes() {
         
         {/* Production history page */}
         <Route path="production" element={<PayHistoryPage />} />
+
+        {/* Employee debts — read-only self-service */}
+        <Route path="my-debts" element={<MyDebtsPage />} />
 
         {/* Key Board — visible to all employees */}
         <Route path="keyboard" element={<KeyBoardPage />} />
