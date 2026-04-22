@@ -597,7 +597,7 @@ function TechPanel({ cards, unavailableTechs, canEdit, onToggleUnavailable }) {
 
 // ─── Key Card ─────────────────────────────────────────────────────────────────
 
-function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards, unavailTechs }) {
+function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards, unavailTechs, isTechUser }) {
   const t = useT();
   const [confirmAction, setConfirmAction] = useState(null);
   const tech   = TECHS.find(te => te.key === card.tech);
@@ -642,7 +642,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards
       onClick={() => canEdit && !confirmAction && onEdit(card)}
       style={{
         background: isDone ? "#052e16" : isOnHold ? "#1c1a07" : "#ffffff",
-        borderRadius: 10, padding: "9px 10px",
+        borderRadius: 12, padding: "12px 14px",
         boxShadow: isDone ? "0 2px 8px rgba(0,0,0,0.3)" : "0 2px 8px rgba(0,0,0,0.4)",
         position: "relative", userSelect: "none",
         border: isDone ? `2px solid #16a34a` : hasRuleWarning ? `2px solid #f97316` : isUnassigned ? `2px solid #fbbf24` : undefined,
@@ -689,32 +689,32 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards
 
       {/* Done badge */}
       {isDone && (
-        <div style={{ fontSize: "0.62rem", fontWeight: 800, color: "#4ade80", background: "#14532d", padding: "2px 8px", borderRadius: 4, display: "inline-block", marginBottom: 4, letterSpacing: 0.5 }}>
+        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#4ade80", background: "#14532d", padding: "3px 10px", borderRadius: 6, display: "inline-block", marginBottom: 5, letterSpacing: 0.5 }}>
           ✅ {t("keyboard.board.doneReady")}
         </div>
       )}
 
       {/* Customer name + RO number */}
       <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-        <span style={{ fontSize: "1.0rem" }}>{isDone ? "✅" : "🔑"}</span>
-        <span style={{ fontWeight: 800, fontSize: "0.95rem", color: isDone ? "#bbf7d0" : isOnHold ? "#fbbf24" : "#0f172a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <span style={{ fontSize: "1.6rem" }}>{isDone ? "✅" : "🔑"}</span>
+        <span style={{ fontWeight: 800, fontSize: "1.7rem", color: isDone ? "#bbf7d0" : isOnHold ? "#fbbf24" : "#0f172a", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>
           {card.name}
         </span>
         {card.ro && (
-          <span style={{ fontSize: "0.8rem", fontWeight: 800, color: isDone ? "#4ade80" : "#6366f1", background: isDone ? "#14532d" : "#eef2ff", padding: "2px 7px", borderRadius: 5, flexShrink: 0 }}>
+          <span style={{ fontSize: "1.4rem", fontWeight: 800, color: isDone ? "#4ade80" : "#6366f1", background: isDone ? "#14532d" : "#eef2ff", padding: "3px 10px", borderRadius: 6, flexShrink: 0 }}>
             RO #{card.ro}
           </span>
         )}
       </div>
 
       {/* Vehicle */}
-      <div style={{ fontSize: "0.8rem", color: isDone ? "#86efac" : "#475569", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: "1.45rem", color: isDone ? "#86efac" : "#475569", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.2 }}>
         {card.vehicle}
       </div>
 
       {/* Hours */}
       {card.hours > 0 && (
-        <div style={{ fontSize: "0.75rem", color: isDone ? "#4ade80" : "#6366f1", fontWeight: 700, marginTop: 3 }}>
+        <div style={{ fontSize: "1.3rem", color: isDone ? "#4ade80" : "#6366f1", fontWeight: 700, marginTop: 4 }}>
           ⏳ {card.hours}h est.
         </div>
       )}
@@ -722,7 +722,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards
       {/* Deadline */}
       {dlLabel && (
         <div style={{
-          fontSize: "0.75rem", fontWeight: 700, marginTop: 3,
+          fontSize: "1.3rem", fontWeight: 700, marginTop: 4,
           color: dlStyle ? dlStyle.color : "#d97706",
           ...(dlUrgency === "overdue" || dlUrgency === "critical"
             ? { background: dlStyle.bg, padding: "2px 6px", borderRadius: 5, display: "inline-block" }
@@ -734,55 +734,54 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards
 
       {/* Skill */}
       {card.skill && (
-        <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#7c3aed", background: "#ede9fe", padding: "1px 5px", borderRadius: 4, display: "inline-block", marginTop: 3 }}>
+        <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "#7c3aed", background: "#ede9fe", padding: "2px 8px", borderRadius: 5, display: "inline-block", marginTop: 4 }}>
           🔧 {card.skill}
         </div>
       )}
 
       {/* Tech badge */}
       {tech ? (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, padding: "3px 8px", borderRadius: 20, fontSize: "0.75rem", fontWeight: 700, color: "#fff", background: tech.color }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, padding: "4px 12px", borderRadius: 20, fontSize: "1.2rem", fontWeight: 700, color: "#fff", background: tech.color }}>
           #{tech.num} {tech.name}
         </div>
       ) : col.needsDispatch ? (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 3, marginTop: 5, fontSize: "0.72rem", fontWeight: 700, color: "#b45309", background: "#fef3c7", padding: "3px 8px", borderRadius: 20 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6, fontSize: "1.15rem", fontWeight: 700, color: "#b45309", background: "#fef3c7", padding: "4px 12px", borderRadius: 20 }}>
           {t("keyboard.card.assignTech")}
         </div>
       ) : null}
 
       {/* On-hold badge */}
       {isOnHold && (
-        <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#fbbf24", background: "#451a03", padding: "2px 7px", borderRadius: 5, display: "inline-block", marginTop: 4 }}>
+        <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "#fbbf24", background: "#451a03", padding: "3px 10px", borderRadius: 6, display: "inline-block", marginTop: 5 }}>
           {t("keyboard.card.onHold")}
         </div>
       )}
 
       {/* Rule warning — orange badge for dispatch rule violations */}
       {hasRuleWarning && (
-        <div style={{ fontSize: "0.65rem", color: "#fff7ed", background: "#9a3412", border: "1px solid #f97316", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
+        <div style={{ fontSize: "1.1rem", color: "#fff7ed", background: "#9a3412", border: "1px solid #f97316", padding: "5px 10px", borderRadius: 6, marginTop: 6, lineHeight: 1.4 }}>
           <span style={{ fontWeight: 800, color: "#fb923c" }}>⚠️ DISPATCH:</span> {ruleWarnings}
         </div>
       )}
 
       {/* Override note (R8) — prominent red badge */}
       {card.overrideNote && (
-        <div style={{ fontSize: "0.65rem", color: "#fecaca", background: "#7f1d1d", border: "1px solid #dc2626", padding: "4px 7px", borderRadius: 5, marginTop: 5, lineHeight: 1.4 }}>
+        <div style={{ fontSize: "1.1rem", color: "#fecaca", background: "#7f1d1d", border: "1px solid #dc2626", padding: "5px 10px", borderRadius: 6, marginTop: 6, lineHeight: 1.4 }}>
           <span style={{ fontWeight: 800, color: "#f87171" }}>⚠️ OVERRIDE:</span> {card.overrideNote}
         </div>
       )}
 
       {/* Footer: RO + elapsed */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 5 }}>
-        <span style={{ fontSize: "0.68rem", color: isDone ? "#86efac" : "#94a3b8", fontWeight: 600 }}>{card.ro ? `${t("keyboard.modal.roLabel")} ${card.ro}` : ""}</span>
-        <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: tc.bg, color: tc.text }} title="Time on board">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6 }}>
+        <span style={{ fontSize: "1.15rem", color: isDone ? "#86efac" : "#94a3b8", fontWeight: 600 }}>{card.ro ? `${t("keyboard.modal.roLabel")} ${card.ro}` : ""}</span>
+        <span style={{ fontSize: "1.1rem", fontWeight: 700, padding: "2px 8px", borderRadius: 6, background: tc.bg, color: tc.text }} title="Time on board">
           🕐 {elapsedLabel(ms)}
         </span>
       </div>
 
-      {/* Quick action buttons — ALL active columns, ALL users */}
-      {isActive && (
-        <div style={{ display: "flex", gap: 5, marginTop: 6 }} onClick={e => e.stopPropagation()}>
-          {/* On Hold / Resume available on ALL active columns */}
+      {/* Quick action buttons — technicians only (SA/office just view the board on TV) */}
+      {isActive && isTechUser && (
+        <div style={{ display: "flex", gap: 6, marginTop: 8 }} onClick={e => e.stopPropagation()}>
           {isOnHold
             ? <button onClick={() => handleAction("resume")} style={btnStyle("#14532d", "#4ade80")}>{t("keyboard.card.resume")}</button>
             : <button onClick={() => handleAction("hold")}   style={btnStyle("#451a03", "#fbbf24")}>{t("keyboard.card.onHoldBtn")}</button>
@@ -794,7 +793,7 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards
       {/* Delete (editor only) */}
       {canEdit && (
         <button onClick={e => { e.stopPropagation(); onDelete(card.id); }}
-          style={{ position: "absolute", top: 5, right: 6, background: "none", border: "none", color: "#cbd5e0", fontSize: "0.75rem", cursor: "pointer", padding: "1px 3px", borderRadius: 3 }}
+          style={{ position: "absolute", top: 5, right: 6, background: "none", border: "none", color: "#cbd5e0", fontSize: "1.2rem", cursor: "pointer", padding: "2px 5px", borderRadius: 4 }}
           onMouseEnter={e => (e.currentTarget.style.color = "#ef4444")}
           onMouseLeave={e => (e.currentTarget.style.color = "#cbd5e0")}>
           ✕
@@ -807,8 +806,8 @@ function KeyCard({ card, col, canEdit, onEdit, onDelete, onQuickAction, allCards
 function btnStyle(bg, color, flex1 = false) {
   return {
     flex: flex1 ? 1 : undefined,
-    fontSize: "0.68rem", fontWeight: 700, padding: "4px 8px",
-    borderRadius: 6, border: "none", cursor: "pointer",
+    fontSize: "1.15rem", fontWeight: 700, padding: "6px 12px",
+    borderRadius: 8, border: "none", cursor: "pointer",
     background: bg, color,
   };
 }
@@ -1191,33 +1190,33 @@ function AppointmentCard({ appt }) {
       </style>
 
       {/* Time */}
-      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: isStateInspection ? "#991b1b" : "#0c4a6e" }}>
+      <div style={{ fontSize: "1.3rem", fontWeight: 700, color: isStateInspection ? "#991b1b" : "#0c4a6e" }}>
         ⏰ {startTime}
       </div>
 
       {/* Customer name */}
-      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: isStateInspection ? "#7f1d1d" : "#164e63", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: "1.4rem", fontWeight: 700, color: isStateInspection ? "#7f1d1d" : "#164e63", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {appt.customer_name}
       </div>
 
       {/* Vehicle */}
-      <div style={{ fontSize: "0.7rem", color: isStateInspection ? "#991b1b" : "#0c4a6e", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      <div style={{ fontSize: "1.2rem", color: isStateInspection ? "#991b1b" : "#0c4a6e", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
         {appt.vehicle_description}
       </div>
 
       {/* Title */}
-      <div style={{ fontSize: "0.7rem", color: isStateInspection ? "#7f1d1d" : "#164e63", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>
+      <div style={{ fontSize: "1.2rem", color: isStateInspection ? "#7f1d1d" : "#164e63", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>
         {appt.title}
       </div>
 
       {/* Badges */}
-      <div style={{ display: "flex", gap: 4, marginTop: 5, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 5, marginTop: 6, flexWrap: "wrap" }}>
         {isStateInspection && (
-          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: "#dc2626", color: "#fff" }}>
+          <span style={{ fontSize: "1.05rem", fontWeight: 700, padding: "3px 8px", borderRadius: 5, background: "#dc2626", color: "#fff" }}>
             🔍 {t("keyboard.board.stateInspection")}
           </span>
         )}
-        <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: isStateInspection ? "#991b1b" : "#0369a1", color: "#fff" }}>
+        <span style={{ fontSize: "1.05rem", fontWeight: 700, padding: "3px 8px", borderRadius: 5, background: isStateInspection ? "#991b1b" : "#0369a1", color: "#fff" }}>
           {typeLabel}
         </span>
       </div>
@@ -1357,8 +1356,8 @@ export function KeyBoardPage() {
 
       // Completed / ready for pickup → "ready"
       if (status === "WAITING_FOR_PICKUP" || status === "COMPLETE") return "ready";
-      // Closed → remove from board
-      if (status === "INVOICE" || status === "POSTED" || status === "VOID") return "_delete";
+      // Closed / paid / balance due → remove from board
+      if (status === "INVOICE" || status === "POSTED" || status === "VOID" || status === "BALANCE_DUE") return "_delete";
       // Waiting on parts (status or custom label) → "waiting"
       if (status === "WAITING_ON_PARTS") return "waiting";
       if (custom.includes("waiting on parts") || custom.includes("need to order")) return "waiting";
@@ -1380,89 +1379,140 @@ export function KeyBoardPage() {
 
       tekmetricROs.forEach(ro => {
         const roNumber = String(ro.repair_order_number);
-        const idx = updated.findIndex(c => String(c.ro) === roNumber);
         const targetCol = getTargetCol(ro);
 
         if (!targetCol) return; // Skip (estimate, etc.)
 
-        if (idx !== -1) {
-          // Card already exists on the board
+        // Find ALL existing cards for this RO (may have multiple for multi-tech ROs)
+        const existingCards = updated.filter(c => String(c.ro) === roNumber);
+
+        if (existingCards.length > 0) {
           if (targetCol === "_delete") {
-            console.log(`[AutoSync] Removing RO #${roNumber} (${ro.status})`);
-            toDelete.push(updated[idx].id);
-          } else if (updated[idx].col !== targetCol) {
-            // Only auto-move to "ready" (work completed — definitive Tekmetric status)
-            // Do NOT auto-move between dropoff/waiting/repair — SA controls those manually
-            if (targetCol === "ready" && updated[idx].col !== "ready") {
-              console.log(`[AutoSync] Moving RO #${roNumber} to ready (was ${updated[idx].col})`);
-              updated[idx] = { ...updated[idx], col: "ready" };
-            }
-          }
-        } else if (targetCol !== "_delete") {
-          // New RO with approved work → auto-create card
-          const matchedTech = matchTech(ro.technician_email, ro.technician_name);
-          const estHours = ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150) * 10) / 10 : 0;
-
-          // Check dispatch rules for the assigned tech
-          let ruleWarning = "";
-          if (matchedTech) {
-            const techKey = matchedTech.key;
-            const techJobs = [...updated, ...newCards].filter(c =>
-              c.tech === techKey && c.col !== "ready" && c.col !== "shop"
-            );
-            const existingHours = techJobs.reduce((s, c) => s + (c.hours || 0), 0);
-            const totalHours = existingHours + estHours;
-            const warnings = [];
-
-            // R5: Tech absent
-            if (unavailableTechs.has(techKey)) {
-              warnings.push(`R5: ${matchedTech.name} is marked absent`);
-            }
-            // R6: Overload (>8h)
-            if (totalHours > MAX_HOURS) {
-              warnings.push(`R6: ${matchedTech.name} at ${totalHours.toFixed(1)}h/${MAX_HOURS}h (overloaded)`);
-            }
-            // R4: Deadline conflict
-            techJobs.forEach(existing => {
-              if (!existing.deadline) return;
-              const dl = parseDeadline(existing.deadline);
-              if (!dl) return;
-              const hoursUntilDl = (dl - Date.now()) / 3600000;
-              if (hoursUntilDl > 0 && totalHours > hoursUntilDl) {
-                warnings.push(`R4: Deadline conflict with ${existing.name || "RO#" + existing.ro}`);
+            console.log(`[AutoSync] Removing RO #${roNumber} (${ro.status}) — ${existingCards.length} card(s)`);
+            existingCards.forEach(c => toDelete.push(c.id));
+          } else {
+            existingCards.forEach(card => {
+              const idx = updated.findIndex(c => c.id === card.id);
+              if (idx !== -1 && card.col !== targetCol) {
+                if (targetCol === "ready" && card.col !== "ready") {
+                  console.log(`[AutoSync] Moving RO #${roNumber} to ready (was ${card.col})`);
+                  updated[idx] = { ...updated[idx], col: "ready" };
+                }
               }
             });
 
-            if (warnings.length > 0) {
-              ruleWarning = warnings.join(" | ");
-              console.warn(`[AutoSync] ⚠️ RO #${roNumber} assigned to ${matchedTech.name} with warnings: ${ruleWarning}`);
+            // Multi-tech: check if new techs have been assigned that don't have cards yet
+            const jobTechs = ro.job_technicians || [];
+            if (jobTechs.length > 1) {
+              const existingTechKeys = new Set(existingCards.map(c => c.tech));
+              jobTechs.forEach(jt => {
+                const mt = matchTech(jt.technician_email, jt.technician_name);
+                if (mt && !existingTechKeys.has(mt.key)) {
+                  const jobHours = jt.jobs ? jt.jobs.reduce((s, j) => s + (j.hours || 0), 0) : 0;
+                  const estH = jobHours > 0 ? jobHours : (ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150 / jobTechs.length) * 10) / 10 : 0);
+                  const card = {
+                    id: uid(), col: targetCol,
+                    status: targetCol === "waiting" ? "onhold" : "repairing",
+                    name: ro.customer_name || "", vehicle: ro.vehicle_description || "",
+                    ro: roNumber, hours: estH,
+                    deadline: ro.estimated_completion_date || "",
+                    tech: mt.key, originalTech: mt.key,
+                    addedAt: ro.created_date ? new Date(ro.created_date).getTime() : Date.now(),
+                    overrideNote: "", skill: "", ruleWarning: "",
+                  };
+                  console.log(`[AutoSync] Multi-tech: adding card for RO #${roNumber} → ${mt.name}`);
+                  newCards.push(card);
+                }
+              });
             }
           }
+        } else if (targetCol !== "_delete") {
+          // New RO — determine technicians from job_technicians array (multi-tech support)
+          const jobTechs = ro.job_technicians || [];
+          const roTechPrimary = matchTech(ro.technician_email, ro.technician_name);
 
-          const newCard = {
-            id: uid(),
-            col: targetCol,
-            status: targetCol === "waiting" ? "onhold" : "repairing",
-            name: ro.customer_name || "",
-            vehicle: ro.vehicle_description || "",
-            ro: roNumber,
-            hours: estHours,
-            deadline: ro.estimated_completion_date || "",
-            tech: matchedTech ? matchedTech.key : "",
-            originalTech: matchedTech ? matchedTech.key : "",
-            addedAt: ro.created_date ? new Date(ro.created_date).getTime() : Date.now(),
-            overrideNote: "",
-            skill: "",
-            ruleWarning: ruleWarning || "",
-          };
-          console.log(`[AutoSync] New card RO #${roNumber} → ${targetCol}, tech: ${matchedTech ? matchedTech.name : "unassigned"}, label: ${ro.ro_label}/${ro.custom_label}`);
-          newCards.push(newCard);
+          // Build list of techs to create cards for
+          let techsToCreate = [];
+          if (jobTechs.length > 0) {
+            // Use per-job technician data — one card per unique tech
+            jobTechs.forEach(jt => {
+              const mt = matchTech(jt.technician_email, jt.technician_name);
+              if (mt) {
+                const jobHours = jt.jobs ? jt.jobs.reduce((s, j) => s + (j.hours || 0), 0) : 0;
+                techsToCreate.push({ tech: mt, hours: jobHours > 0 ? jobHours : null });
+              }
+            });
+          }
+          // Fallback: use RO-level technician if no per-job data
+          if (techsToCreate.length === 0) {
+            const estHours = ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150) * 10) / 10 : 0;
+            techsToCreate.push({ tech: roTechPrimary, hours: estHours });
+          }
+
+          techsToCreate.forEach(({ tech: matchedTech, hours: techHours }) => {
+            const estHours = techHours != null ? techHours : (ro.labor_sub_total ? Math.round((ro.labor_sub_total / 150) * 10) / 10 : 0);
+
+            // Check dispatch rules for the assigned tech
+            let ruleWarning = "";
+            if (matchedTech) {
+              const techKey = matchedTech.key;
+              const techJobs = [...updated, ...newCards].filter(c =>
+                c.tech === techKey && c.col !== "ready" && c.col !== "shop"
+              );
+              const existingHours = techJobs.reduce((s, c) => s + (c.hours || 0), 0);
+              const totalHours = existingHours + estHours;
+              const warnings = [];
+
+              if (unavailableTechs.has(techKey)) {
+                warnings.push(`R5: ${matchedTech.name} is marked absent`);
+              }
+              if (totalHours > MAX_HOURS) {
+                warnings.push(`R6: ${matchedTech.name} at ${totalHours.toFixed(1)}h/${MAX_HOURS}h (overloaded)`);
+              }
+              techJobs.forEach(existing => {
+                if (!existing.deadline) return;
+                const dl = parseDeadline(existing.deadline);
+                if (!dl) return;
+                const hoursUntilDl = (dl - Date.now()) / 3600000;
+                if (hoursUntilDl > 0 && totalHours > hoursUntilDl) {
+                  warnings.push(`R4: Deadline conflict with ${existing.name || "RO#" + existing.ro}`);
+                }
+              });
+
+              if (warnings.length > 0) {
+                ruleWarning = warnings.join(" | ");
+                console.warn(`[AutoSync] ⚠️ RO #${roNumber} assigned to ${matchedTech.name} with warnings: ${ruleWarning}`);
+              }
+            }
+
+            const newCard = {
+              id: uid(),
+              col: targetCol,
+              status: targetCol === "waiting" ? "onhold" : "repairing",
+              name: ro.customer_name || "",
+              vehicle: ro.vehicle_description || "",
+              ro: roNumber,
+              hours: estHours,
+              deadline: ro.estimated_completion_date || "",
+              tech: matchedTech ? matchedTech.key : "",
+              originalTech: matchedTech ? matchedTech.key : "",
+              addedAt: ro.created_date ? new Date(ro.created_date).getTime() : Date.now(),
+              overrideNote: "",
+              skill: "",
+              ruleWarning: ruleWarning || "",
+            };
+            console.log(`[AutoSync] New card RO #${roNumber} → ${targetCol}, tech: ${matchedTech ? matchedTech.name : "unassigned"}, label: ${ro.ro_label}/${ro.custom_label}`);
+            newCards.push(newCard);
+          });
         }
       });
 
       // Clean up stale cards: remove cards whose RO is no longer in the active Tekmetric list
-      // This handles ROs that were paid/closed outside of the normal status flow
-      const activeRONumbers = new Set(tekmetricROs.map(ro => String(ro.repair_order_number)));
+      // Also remove cards for ROs that should be deleted (POSTED, BALANCE_DUE, etc.)
+      const activeRONumbers = new Set(tekmetricROs
+        .filter(ro => getTargetCol(ro) !== "_delete")
+        .map(ro => String(ro.repair_order_number))
+      );
       updated.forEach(c => {
         if (c.ro && !activeRONumbers.has(String(c.ro)) && !toDelete.includes(c.id)) {
           console.log(`[AutoSync] Removing stale card RO #${c.ro} (no longer in active Tekmetric list)`);
@@ -1833,9 +1883,9 @@ export function KeyBoardPage() {
             <div style={{
               display: "grid",
               gridTemplateColumns: isTech
-                ? `160px minmax(190px, 1fr) 160px repeat(${techs.length - 1}, minmax(170px, 1fr))`
-                : `160px repeat(${techs.length}, minmax(170px, 1fr)) 160px`,
-              gap: 4, padding: 6,
+                ? `200px minmax(280px, 1fr) 200px repeat(${techs.length - 1}, minmax(260px, 1fr))`
+                : `200px repeat(${techs.length}, minmax(260px, 1fr)) 200px`,
+              gap: 6, padding: 8,
               minHeight: "100%",
               boxSizing: "border-box",
               alignContent: "start",
@@ -1864,9 +1914,9 @@ export function KeyBoardPage() {
                 const techShop    = cards.filter(c => c.tech === tech.key && c.col === "shop");
 
                 const divider = (color, label, count) => (
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "3px 0", margin: "2px 0" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0", margin: "3px 0" }}>
                     <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
-                    <span style={{ fontSize: "0.58rem", fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>{label} {count > 0 ? `(${count})` : ""}</span>
+                    <span style={{ fontSize: "1.0rem", fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>{label} {count > 0 ? `(${count})` : ""}</span>
                     <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
                   </div>
                 );
@@ -1879,27 +1929,27 @@ export function KeyBoardPage() {
                     order: 2,
                   }}>
                     <div style={{ padding: "6px 10px", background: tech.color, display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                      <div style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "0.85rem", color: "#fff", flexShrink: 0 }}>{tech.num}</div>
+                      <div style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900, fontSize: "1.4rem", color: "#fff", flexShrink: 0 }}>{tech.num}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#fff" }}>⭐ {tech.fullName || tech.name}</div>
+                        <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#fff" }}>⭐ {tech.fullName || tech.name}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                           <div style={{ height: 3, flex: 1, background: "rgba(255,255,255,0.25)", borderRadius: 3, overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
                           </div>
-                          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap" }}>{l.hours.toFixed(1)}/{MAX_HOURS}h</span>
+                          <span style={{ fontSize: "1.0rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap" }}>{l.hours.toFixed(1)}/{MAX_HOURS}h</span>
                         </div>
                       </div>
                     </div>
                     <div style={{ flex: 1, overflowY: "auto", padding: "4px 6px", display: "flex", flexDirection: "column", gap: 3 }}>
                       {techAppts.length > 0 && (<>{divider("#60a5fa", `📅 ${t("keyboard.board.appts")}`, techAppts.length)}{techAppts.map((appt, i) => <AppointmentCard key={`a-${i}`} appt={appt} />)}</>)}
                       {divider("#ef4444", `⏳ ${t("keyboard.modal.statusWaiting")}`, techWaiting.length)}
-                      {techWaiting.map(card => (<KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}
+                      {techWaiting.map(card => (<KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />))}
                       {divider("#f97316", `🚗 ${t("keyboard.board.dropOff")}`, techDropoff.length + techRepair.length)}
-                      {techDropoff.map(card => (<KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}
-                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} /><div style={{ position: "absolute", top: 6, right: 24, fontSize: "0.6rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "1px 5px", borderRadius: 3 }}>⚙️ {t("keyboard.board.working")}</div></div>))}
+                      {techDropoff.map(card => (<KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />))}
+                      {techRepair.map(card => (<div key={card.id} style={{ position: "relative" }}><KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} /><div style={{ position: "absolute", top: 6, right: 28, fontSize: "1.0rem", fontWeight: 800, background: "#ca8a04", color: "#000", padding: "2px 8px", borderRadius: 4 }}>⚙️ {t("keyboard.board.working")}</div></div>))}
                       {divider("#22c55e", `✅ ${t("keyboard.modal.statusReady")}`, techReady.length)}
-                      {techReady.map(card => (<KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}
-                      {techShop.length > 0 && (<>{divider("#64748b", `🏪 ${t("keyboard.board.shopLabel")}`, techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />))}</>)}
+                      {techReady.map(card => (<KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />))}
+                      {techShop.length > 0 && (<>{divider("#64748b", `🏪 ${t("keyboard.board.shopLabel")}`, techShop.length)}{techShop.map(card => (<KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />))}</>)}
                     </div>
                   </div>
                 );
@@ -1914,14 +1964,14 @@ export function KeyBoardPage() {
                   order: 3,
                 }}>
                   <div style={{ padding: "8px 10px", background: unassignedCards.length > 0 ? "#7c2d12" : D.surface2, textAlign: "center", flexShrink: 0, borderBottom: `1px solid ${D.border}` }}>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>⚠️ {t("keyboard.board.unassigned")}</div>
-                    <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>{unassignedCards.length} {t("keyboard.board.unassignedCards")}</div>
+                    <div style={{ fontSize: "1.3rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>⚠️ {t("keyboard.board.unassigned")}</div>
+                    <div style={{ fontSize: "1.0rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>{unassignedCards.length} {t("keyboard.board.unassignedCards")}</div>
                   </div>
                   <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                     {unassignedCards.length === 0 ? (
                       <div style={{ fontSize: "0.65rem", color: D.textLight, textAlign: "center", padding: 16 }}>{t("keyboard.board.allAssigned")}</div>
                     ) : unassignedCards.map(card => (
-                      <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
+                      <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit} onEdit={guardedEdit} onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />
                     ))}
                   </div>
                 </div>
@@ -1939,8 +1989,8 @@ export function KeyBoardPage() {
                   textAlign: "center", flexShrink: 0,
                   borderBottom: `1px solid ${D.border}`,
                 }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#93c5fd" }}>📅 {t("keyboard.board.appointments")}</div>
-                  <div style={{ fontSize: "0.65rem", color: "#60a5fa", marginTop: 2 }}>{appointments.length} {t("keyboard.board.appointmentsToday")}</div>
+                  <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#93c5fd" }}>📅 {t("keyboard.board.appointments")}</div>
+                  <div style={{ fontSize: "1.0rem", color: "#60a5fa", marginTop: 2 }}>{appointments.length} {t("keyboard.board.appointmentsToday")}</div>
                 </div>
                 <div style={{ flex: 1, overflowY: "auto", padding: 6, display: "flex", flexDirection: "column", gap: 5 }}>
                   {appointments.length === 0 ? (
@@ -1980,11 +2030,11 @@ export function KeyBoardPage() {
 
                 const divider = (color, label, count) => (
                   <div style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    padding: "3px 0", margin: "2px 0",
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "4px 0", margin: "3px 0",
                   }}>
                     <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
-                    <span style={{ fontSize: "0.58rem", fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: "1.0rem", fontWeight: 800, color, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap" }}>
                       {label} {count > 0 ? `(${count})` : ""}
                     </span>
                     <div style={{ height: 2, flex: 1, background: color, borderRadius: 2, opacity: 0.6 }} />
@@ -2008,30 +2058,30 @@ export function KeyBoardPage() {
                       flexShrink: 0,
                     }}>
                       <div style={{
-                        width: 26, height: 26, borderRadius: "50%",
+                        width: 34, height: 34, borderRadius: "50%",
                         background: "rgba(255,255,255,0.25)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: 900, fontSize: "0.85rem", color: "#fff", flexShrink: 0,
+                        fontWeight: 900, fontSize: "1.4rem", color: "#fff", flexShrink: 0,
                       }}>
                         {tech.num}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: "0.85rem", fontWeight: 800, color: "#fff" }}>{tech.name}</div>
+                        <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#fff" }}>{tech.name}</div>
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                          <div style={{ height: 3, flex: 1, background: "rgba(255,255,255,0.25)", borderRadius: 3, overflow: "hidden" }}>
+                          <div style={{ height: 4, flex: 1, background: "rgba(255,255,255,0.25)", borderRadius: 3, overflow: "hidden" }}>
                             <div style={{ height: "100%", width: `${pct}%`, background: barColor, borderRadius: 3 }} />
                           </div>
-                          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: "1.0rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap" }}>
                             {l.hours.toFixed(1)}/{MAX_HOURS}h
                           </span>
                         </div>
                       </div>
                       {/* Total cars count */}
-                      <span style={{ fontSize: "0.75rem", fontWeight: 900, background: "rgba(0,0,0,0.35)", color: "#fff", padding: "2px 8px", borderRadius: 10, flexShrink: 0 }}>
+                      <span style={{ fontSize: "1.2rem", fontWeight: 900, background: "rgba(0,0,0,0.35)", color: "#fff", padding: "3px 10px", borderRadius: 12, flexShrink: 0 }}>
                         🚗 {techWaiting.length + techDropoff.length + techRepair.length + techReady.length + techShop.length}
                       </span>
                       {isUnavail && (
-                        <span style={{ fontSize: "0.55rem", fontWeight: 800, background: "rgba(0,0,0,0.4)", color: "#fbbf24", padding: "2px 6px", borderRadius: 10 }}>OFF</span>
+                        <span style={{ fontSize: "0.9rem", fontWeight: 800, background: "rgba(0,0,0,0.4)", color: "#fbbf24", padding: "3px 8px", borderRadius: 10 }}>OFF</span>
                       )}
                     </div>
 
@@ -2051,7 +2101,7 @@ export function KeyBoardPage() {
                       {techWaiting.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "waiting", needsDispatch: true }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />
                       ))}
 
                       {/* Drop Off + In Progress */}
@@ -2059,18 +2109,18 @@ export function KeyBoardPage() {
                       {techDropoff.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "dropoff", needsDispatch: true }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />
                       ))}
                       {techRepair.map(card => (
                         <div key={card.id} style={{ position: "relative" }}>
                           <KeyCard card={card} col={{ id: "repair", needsDispatch: true }} canEdit={canEdit}
                             onEdit={guardedEdit}
-                            onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
+                            onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />
                           <div style={{
-                            position: "absolute", top: 6, right: 24,
-                            fontSize: "0.6rem", fontWeight: 800,
+                            position: "absolute", top: 6, right: 28,
+                            fontSize: "1.0rem", fontWeight: 800,
                             background: "#ca8a04", color: "#000",
-                            padding: "1px 5px", borderRadius: 3,
+                            padding: "2px 8px", borderRadius: 4,
                           }}>⚙️ {t("keyboard.board.working")}</div>
                         </div>
                       ))}
@@ -2080,7 +2130,7 @@ export function KeyBoardPage() {
                       {techReady.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: "ready", needsDispatch: false }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />
                       ))}
 
                       {/* Shop cars for this tech */}
@@ -2090,7 +2140,7 @@ export function KeyBoardPage() {
                           {techShop.map(card => (
                             <KeyCard key={card.id} card={card} col={{ id: "shop", needsDispatch: false }} canEdit={canEdit}
                               onEdit={(c) => setModal({ colId: c.col, card: c })}
-                              onDelete={handleDeleteCard} onQuickAction={handleQuickAction} />
+                              onDelete={handleDeleteCard} onQuickAction={handleQuickAction} isTechUser={isTech} />
                           ))}
                         </>
                       )}
@@ -2111,10 +2161,10 @@ export function KeyBoardPage() {
                   textAlign: "center", flexShrink: 0,
                   borderBottom: `1px solid ${D.border}`,
                 }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>
+                  <div style={{ fontSize: "1.3rem", fontWeight: 800, color: unassignedCards.length > 0 ? "#fbbf24" : D.textLight }}>
                     ⚠️ {t("keyboard.board.unassigned")}
                   </div>
-                  <div style={{ fontSize: "0.65rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>
+                  <div style={{ fontSize: "1.0rem", color: unassignedCards.length > 0 ? "#fdba74" : D.textLight, marginTop: 2 }}>
                     {unassignedCards.length} {t("keyboard.board.unassignedCards")}
                   </div>
                 </div>
@@ -2127,7 +2177,7 @@ export function KeyBoardPage() {
                       {unassignedCards.map(card => (
                         <KeyCard key={card.id} card={card} col={{ id: card.col, needsDispatch: ACTIVE_COLS.has(card.col) }} canEdit={canEdit}
                           onEdit={guardedEdit}
-                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} />
+                          onDelete={guardedDelete} onQuickAction={guardedQuickAction} allCards={cards} unavailTechs={unavailableTechs} isTechUser={isTech} />
                       ))}
                     </>
                   )}
