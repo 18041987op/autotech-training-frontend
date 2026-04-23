@@ -50,6 +50,8 @@ export function SettingsPage() {
   const { t } = useTranslation();
   const { user } = useOutletContext();
   const isAdmin = user?.role === "admin";
+  const isAdministrative = user?.role?.toLowerCase() === "administrative";
+  const hasElevated = isAdmin || isAdministrative;
 
   return (
     <div className="space-y-5">
@@ -60,38 +62,44 @@ export function SettingsPage() {
         <LanguageSelector />
       </div>
 
-      {/* Admin tools */}
-      {isAdmin && (
+      {/* Admin tools — visible to admin and administrative */}
+      {hasElevated && (
         <div className="card p-6">
           <h2 className="text-lg font-extrabold">{t("settings.adminToolsTitle")}</h2>
           <p className="mt-1 text-sm text-slate-500">{t("settings.adminToolsSubtitle")}</p>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <Link
-              to="/admin/users"
-              className="card p-4 flex items-start gap-3 transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
-            >
-              <div className="shrink-0 h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
-                <Users className="h-4 w-4 text-brand-primary" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-extrabold">{t("settings.manageUsers")}</div>
-                <div className="mt-0.5 text-xs text-slate-500">{t("settings.manageUsersHelp")}</div>
-              </div>
-            </Link>
+            {/* Users page: admin only */}
+            {isAdmin && (
+              <Link
+                to="/admin/users"
+                className="card p-4 flex items-start gap-3 transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+              >
+                <div className="shrink-0 h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
+                  <Users className="h-4 w-4 text-brand-primary" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-extrabold">{t("settings.manageUsers")}</div>
+                  <div className="mt-0.5 text-xs text-slate-500">{t("settings.manageUsersHelp")}</div>
+                </div>
+              </Link>
+            )}
 
-            <Link
-              to="/admin/modules"
-              className="card p-4 flex items-start gap-3 transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
-            >
-              <div className="shrink-0 h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
-                <FolderKanban className="h-4 w-4 text-brand-primary" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-sm font-extrabold">{t("settings.manageModules")}</div>
-                <div className="mt-0.5 text-xs text-slate-500">{t("settings.manageModulesHelp")}</div>
-              </div>
-            </Link>
+            {/* Modules page: admin only */}
+            {isAdmin && (
+              <Link
+                to="/admin/modules"
+                className="card p-4 flex items-start gap-3 transition hover:-translate-y-[1px] hover:shadow-md hover:border-brand-primary hover:ring-2 hover:ring-brand-soft"
+              >
+                <div className="shrink-0 h-9 w-9 rounded-xl bg-brand-soft flex items-center justify-center">
+                  <FolderKanban className="h-4 w-4 text-brand-primary" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-extrabold">{t("settings.manageModules")}</div>
+                  <div className="mt-0.5 text-xs text-slate-500">{t("settings.manageModulesHelp")}</div>
+                </div>
+              </Link>
+            )}
 
             <Link
               to="/admin/progress"

@@ -156,11 +156,14 @@ function HeroBanner({ user, t, navigate }) {
   const firstName = getFirstName(user?.name);
   const greetingKey = getGreetingKey();
   const isAdmin = user?.role === "admin";
+  const isAdministrative = user?.role?.toLowerCase() === "administrative";
   const isSA =
     user?.role === "serviceadvisor" || user?.role === "serviceAdvisor";
 
   const roleSubtitleKey = isAdmin
     ? "home.roleSubtitleAdmin"
+    : isAdministrative
+    ? "home.roleSubtitleAdministrative"
     : isSA
     ? "home.roleSubtitleSA"
     : "home.roleSubtitleTech";

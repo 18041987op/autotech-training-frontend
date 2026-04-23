@@ -121,6 +121,7 @@
     "greetingAdmin": "Welcome back, {{firstName}}",
     "roleSubtitleTech": "Technician — keep your streak going",
     "roleSubtitleAdmin": "Admin Dashboard",
+    "roleSubtitleAdministrative": "Coordinator — manage your team",
     "roleSubtitleSA": "Service Advisor — stay sharp",
     "continueLearning": "Continue Learning",
     "viewAllProgress": "View all progress →",

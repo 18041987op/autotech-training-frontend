@@ -121,6 +121,7 @@
     "greetingAdmin": "Bienvenido/a de vuelta, {{firstName}}",
     "roleSubtitleTech": "Técnico — mantén tu racha",
     "roleSubtitleAdmin": "Panel de Administrador",
+    "roleSubtitleAdministrative": "Coordinadora — gestiona tu equipo",
     "roleSubtitleSA": "Asesor de Servicio — mantente listo",
     "continueLearning": "Continuar aprendiendo",
     "viewAllProgress": "Ver todo el progreso →",
