@@ -28,7 +28,6 @@ import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
 import { MyProductionPage } from "./pages/MyProductionPage";
-import { AdminProductionIssuesPage } from "./pages/AdminProductionIssuesPage";
 import { MyDebtsPage } from "./pages/MyDebtsPage";
 import { KeyBoardPage } from "./pages/KeyBoardPage";
 
@@ -187,7 +186,6 @@ function AppRoutes() {
         <Route path="admin/users" element={<AdminUsersPage />} />
         <Route path="admin/progress" element={<AdminProgressPage />} />
         <Route path="admin/suggestions" element={<AdminSuggestionsPage />} />
-        <Route path="admin/production-issues" element={<AdminProductionIssuesPage />} />
         <Route path="admin/content" element={<AdminContentPage />} />
         <Route path="admin/tools" element={<AdminToolsPage />} />
         <Route path="admin/loans" element={<AdminLoansPage />} />

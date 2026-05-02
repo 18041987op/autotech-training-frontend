@@ -133,7 +133,6 @@ export function Layout({ user, onSignOut }) {
               { to: "/admin/loans",        label: t("nav2.allLoans"),        icon: ClipboardList },
               { to: "/admin/tool-reports", label: t("nav2.toolReports"),     icon: BarChart2 },
               { to: "/admin/suggestions",  label: t("nav2.suggestions"),      icon: Lightbulb },
-              { to: "/admin/production-issues", label: t("nav2.productionIssues"), icon: FileText },
               { to: "/settings",           label: t("nav.settings"),  icon: SettingsIcon },
             ],
           },

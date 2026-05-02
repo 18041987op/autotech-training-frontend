@@ -1765,8 +1765,7 @@
     "suggestions": "Sugerencias",
     "otherApps": "Otras Apps",
     "management": "Gerencia",
-    "production": "Producción",
-    "productionIssues": "Reportes de Producción"
+    "production": "Producción"
   },
   "tools": {
     "catalog": {
