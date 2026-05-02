@@ -47,7 +47,9 @@
     "optionAHelp": "Option A: layout + navigation + i18n only. Next step is wiring real data and role rules.",
     "back": "Back",
     "cancel": "Cancel",
-    "close": "Close"
+    "close": "Close",
+    "retry": "Retry",
+    "sending": "Sending..."
   },
   "auth": {
     "welcomeTitle": "Welcome back",
@@ -1762,7 +1764,9 @@
     "toolReports": "Tool Reports",
     "suggestions": "Suggestions",
     "otherApps": "Other Apps",
-    "management": "Management"
+    "management": "Management",
+    "production": "Production",
+    "productionIssues": "Production Issues"
   },
   "tools": {
     "catalog": {
@@ -2502,5 +2506,86 @@
     "confirm_signature": "Submit Signature",
     "signing": "Signing...",
     "needs_signature": "Needs Signature"
+  },
+  "production": {
+    "title": "My Production",
+    "subtitle": "Day-by-day production from Tekmetric — review before payroll closes.",
+    "notLoggedIn": "Sign in to see your production.",
+    "errorLoad": "Could not load production data",
+    "empty": "No production data in this range.",
+    "viewing": "Viewing",
+    "myProduction": "My production",
+    "scheduled": "Scheduled",
+    "notScheduled": "Not scheduled",
+    "worked": "Worked",
+    "noJobs": "No jobs",
+    "jobsCompleted": "Jobs completed",
+    "postedROs": "Posted ROs (commission paid)",
+    "invoicedROs": "Invoiced ROs",
+    "unnamedJob": "Job",
+    "reportIssue": "Report missing/incorrect work",
+    "reportTitle": "Report production issue",
+    "reportFor": "Reporting issue for",
+    "issueType": "Type",
+    "description": "What's wrong?",
+    "descriptionPlaceholder": "e.g. I completed RO #12345 (brakes) on this day but it doesn't appear in my list.",
+    "sendReport": "Send report",
+    "reportSent": "Report sent — Osman will review before payroll",
+    "reportError": "Could not send the report",
+    "reportTooShort": "Please describe what's wrong (at least 5 characters)",
+    "nav": {
+      "myProduction": "My Production"
+    },
+    "range": {
+      "default": "This + Last week",
+      "thisWeek": "This week",
+      "lastWeek": "Last week",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "custom": "Custom",
+      "from": "From",
+      "to": "To"
+    },
+    "totals": {
+      "billedHours": "Billed Hours",
+      "laborRevenue": "Labor Revenue",
+      "commissionEst": "Commission (est)",
+      "totalSold": "Total Sold",
+      "roCount": "RO Count",
+      "scheduled": "Scheduled",
+      "worked": "Worked"
+    },
+    "issueTypes": {
+      "missing_job": "Missing job(s)",
+      "wrong_hours": "Wrong hours",
+      "wrong_ro": "Wrong RO assignment",
+      "other": "Other"
+    },
+    "admin": {
+      "title": "Production Issue Reports",
+      "subtitle": "Review reports submitted by technicians/SAs before payroll closes.",
+      "notAllowed": "You don't have access to this page.",
+      "errorLoad": "Could not load reports",
+      "empty": "No reports in this status",
+      "unknownEmployee": "Unknown employee",
+      "reportedFor": "Reported for",
+      "submittedAt": "Submitted",
+      "description": "Description from technician",
+      "adminNotes": "Admin notes (audit trail)",
+      "notesPlaceholder": "What did you do? e.g. Adjusted RO #12345 in payroll.",
+      "saveNotes": "Save notes",
+      "markReviewed": "Mark reviewed",
+      "markResolved": "Mark resolved",
+      "dismiss": "Dismiss",
+      "reviewedBy": "By",
+      "updated": "Report updated",
+      "updateError": "Update failed",
+      "tabs": {
+        "open": "Open",
+        "reviewed": "Reviewed",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      }
+    }
   }
 }

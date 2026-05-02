@@ -27,6 +27,8 @@ import { AdminSuggestionsPage } from "./pages/AdminSuggestionsPage";
 import { AssessmentsPage } from "./pages/AssessmentsPage";
 import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
+import { MyProductionPage } from "./pages/MyProductionPage";
+import { AdminProductionIssuesPage } from "./pages/AdminProductionIssuesPage";
 import { MyDebtsPage } from "./pages/MyDebtsPage";
 import { KeyBoardPage } from "./pages/KeyBoardPage";
 
@@ -151,8 +153,9 @@ function AppRoutes() {
         {/* AI Coach page */}
         <Route path="ai" element={<AICoachPage />} />
         
-        {/* Production history page */}
-        <Route path="production" element={<PayHistoryPage />} />
+        {/* Production section — daily breakdown (My Production) + Pay History */}
+        <Route path="production" element={<MyProductionPage />} />
+        <Route path="pay-history" element={<PayHistoryPage />} />
 
         {/* Employee debts — read-only self-service */}
         <Route path="my-debts" element={<MyDebtsPage />} />
@@ -184,6 +187,7 @@ function AppRoutes() {
         <Route path="admin/users" element={<AdminUsersPage />} />
         <Route path="admin/progress" element={<AdminProgressPage />} />
         <Route path="admin/suggestions" element={<AdminSuggestionsPage />} />
+        <Route path="admin/production-issues" element={<AdminProductionIssuesPage />} />
         <Route path="admin/content" element={<AdminContentPage />} />
         <Route path="admin/tools" element={<AdminToolsPage />} />
         <Route path="admin/loans" element={<AdminLoansPage />} />

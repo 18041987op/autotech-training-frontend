@@ -47,7 +47,9 @@
     "optionAHelp": "Opción A: layout + navegación + i18n. Próximo paso: conectar datos reales y reglas por rol.",
     "back": "Volver",
     "cancel": "Cancelar",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "retry": "Reintentar",
+    "sending": "Enviando..."
   },
   "auth": {
     "welcomeTitle": "Bienvenido de vuelta",
@@ -1762,7 +1764,9 @@
     "toolReports": "Reportes de Herramientas",
     "suggestions": "Sugerencias",
     "otherApps": "Otras Apps",
-    "management": "Gerencia"
+    "management": "Gerencia",
+    "production": "Producción",
+    "productionIssues": "Reportes de Producción"
   },
   "tools": {
     "catalog": {
@@ -2502,5 +2506,86 @@
     "confirm_signature": "Enviar Firma",
     "signing": "Firmando...",
     "needs_signature": "Requiere Firma"
+  },
+  "production": {
+    "title": "Mi Producción",
+    "subtitle": "Producción día por día desde Tekmetric — revisa antes que cierre la nómina.",
+    "notLoggedIn": "Inicia sesión para ver tu producción.",
+    "errorLoad": "No se pudo cargar la producción",
+    "empty": "No hay datos de producción en este rango.",
+    "viewing": "Viendo",
+    "myProduction": "Mi producción",
+    "scheduled": "Programado",
+    "notScheduled": "Sin horario",
+    "worked": "Trabajado",
+    "noJobs": "Sin jobs",
+    "jobsCompleted": "Trabajos completados",
+    "postedROs": "ROs cerradas (con comisión)",
+    "invoicedROs": "ROs facturadas",
+    "unnamedJob": "Trabajo",
+    "reportIssue": "Reportar trabajo faltante o incorrecto",
+    "reportTitle": "Reportar problema de producción",
+    "reportFor": "Reportando problema del",
+    "issueType": "Tipo",
+    "description": "¿Qué está mal?",
+    "descriptionPlaceholder": "Ej. Terminé el RO #12345 (frenos) este día pero no aparece en mi lista.",
+    "sendReport": "Enviar reporte",
+    "reportSent": "Reporte enviado — Osman lo revisará antes de la nómina",
+    "reportError": "No se pudo enviar el reporte",
+    "reportTooShort": "Por favor describe qué está mal (mínimo 5 caracteres)",
+    "nav": {
+      "myProduction": "Mi Producción"
+    },
+    "range": {
+      "default": "Esta + Semana pasada",
+      "thisWeek": "Esta semana",
+      "lastWeek": "Semana pasada",
+      "thisMonth": "Este mes",
+      "lastMonth": "Mes pasado",
+      "custom": "Personalizado",
+      "from": "Desde",
+      "to": "Hasta"
+    },
+    "totals": {
+      "billedHours": "Horas facturadas",
+      "laborRevenue": "Ingreso por mano de obra",
+      "commissionEst": "Comisión (est)",
+      "totalSold": "Total vendido",
+      "roCount": "Cantidad de ROs",
+      "scheduled": "Programado",
+      "worked": "Trabajado"
+    },
+    "issueTypes": {
+      "missing_job": "Trabajo(s) faltante(s)",
+      "wrong_hours": "Horas incorrectas",
+      "wrong_ro": "RO mal asignada",
+      "other": "Otro"
+    },
+    "admin": {
+      "title": "Reportes de Producción",
+      "subtitle": "Revisa reportes de técnicos/SAs antes que cierre la nómina.",
+      "notAllowed": "No tienes acceso a esta página.",
+      "errorLoad": "No se pudieron cargar los reportes",
+      "empty": "No hay reportes en este estado",
+      "unknownEmployee": "Empleado desconocido",
+      "reportedFor": "Reportado para",
+      "submittedAt": "Enviado",
+      "description": "Descripción del técnico",
+      "adminNotes": "Notas del admin (auditoría)",
+      "notesPlaceholder": "¿Qué hiciste? Ej. Ajusté el RO #12345 en la nómina.",
+      "saveNotes": "Guardar notas",
+      "markReviewed": "Marcar revisado",
+      "markResolved": "Marcar resuelto",
+      "dismiss": "Descartar",
+      "reviewedBy": "Por",
+      "updated": "Reporte actualizado",
+      "updateError": "Falló la actualización",
+      "tabs": {
+        "open": "Abierto",
+        "reviewed": "Revisado",
+        "resolved": "Resuelto",
+        "dismissed": "Descartado"
+      }
+    }
   }
 }
