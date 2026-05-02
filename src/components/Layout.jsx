@@ -29,6 +29,7 @@ import {
   Users,
   UserCog,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -83,9 +84,16 @@ export function Layout({ user, onSignOut }) {
         { to: "/training",    label: t("nav2.modules"),           icon: GraduationCap },
         { to: "/assessments", label: t("nav.assessments"), icon: Layers },
         { to: "/onboarding",  label: t("nav.onboarding"),  icon: BookOpen },
-        { to: "/scorecard",   label: t("nav.myScorecard"), icon: Gauge },
         { to: "/ai",          label: t("nav.aiCoach"),     icon: MessageSquare },
         { to: "/culture",     label: t("nav.culture"),     icon: Shield },
+      ],
+    },
+    {
+      key: "production",
+      label: t("nav2.production"),
+      items: [
+        { to: "/production",  label: t("production.nav.myProduction", "My Production"), icon: TrendingUp },
+        { to: "/scorecard",   label: t("nav.myScorecard"),                              icon: Gauge },
       ],
     },
     {
@@ -125,6 +133,7 @@ export function Layout({ user, onSignOut }) {
               { to: "/admin/loans",        label: t("nav2.allLoans"),        icon: ClipboardList },
               { to: "/admin/tool-reports", label: t("nav2.toolReports"),     icon: BarChart2 },
               { to: "/admin/suggestions",  label: t("nav2.suggestions"),      icon: Lightbulb },
+              { to: "/admin/production-issues", label: t("nav2.productionIssues"), icon: FileText },
               { to: "/settings",           label: t("nav.settings"),  icon: SettingsIcon },
             ],
           },
