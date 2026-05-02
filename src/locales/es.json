@@ -2537,7 +2537,7 @@
       "myProduction": "Mi Producción"
     },
     "range": {
-      "default": "Esta + Semana pasada",
+      "default": "Esta + Pasada (suma)",
       "thisWeek": "Esta semana",
       "lastWeek": "Semana pasada",
       "thisMonth": "Este mes",
@@ -2553,7 +2553,8 @@
       "totalSold": "Total vendido",
       "roCount": "Cantidad de ROs",
       "scheduled": "Programado",
-      "worked": "Trabajado"
+      "worked": "Trabajado",
+      "jobsCount": "Trabajos hechos"
     },
     "issueTypes": {
       "missing_job": "Trabajo(s) faltante(s)",
@@ -2586,6 +2587,16 @@
         "resolved": "Resuelto",
         "dismissed": "Descartado"
       }
-    }
+    },
+    "compare": {
+      "current": "Actual",
+      "prior": "vs Anterior",
+      "priorShort": "Anterior",
+      "loading": "Cargando anterior…"
+    },
+    "pendingTitle": "Trabajo Pendiente",
+    "pendingDesc": "de trabajos asignados que aún no están marcados como completados",
+    "jobs": "trabajos",
+    "rosPosted": "ROs cerradas"
   }
 }
