@@ -2537,7 +2537,7 @@
       "myProduction": "My Production"
     },
     "range": {
-      "default": "This + Last week",
+      "default": "This + Last week (sum)",
       "thisWeek": "This week",
       "lastWeek": "Last week",
       "thisMonth": "This month",
@@ -2553,7 +2553,8 @@
       "totalSold": "Total Sold",
       "roCount": "RO Count",
       "scheduled": "Scheduled",
-      "worked": "Worked"
+      "worked": "Worked",
+      "jobsCount": "Jobs Done"
     },
     "issueTypes": {
       "missing_job": "Missing job(s)",
@@ -2586,6 +2587,16 @@
         "resolved": "Resolved",
         "dismissed": "Dismissed"
       }
-    }
+    },
+    "compare": {
+      "current": "Current",
+      "prior": "vs Prior",
+      "priorShort": "Prior",
+      "loading": "Loading prior…"
+    },
+    "pendingTitle": "Pending Workload",
+    "pendingDesc": "of jobs assigned to you that aren't marked completed yet",
+    "jobs": "jobs",
+    "rosPosted": "ROs posted"
   }
 }

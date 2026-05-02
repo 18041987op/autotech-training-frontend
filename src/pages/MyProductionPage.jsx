@@ -1,11 +1,14 @@
 /**
- * MyProductionPage — day-by-day production breakdown so a tech/SA can spot
- * missing work BEFORE the Sunday payroll cron runs.
+ * MyProductionPage v2 — day-by-day production with side-by-side comparison
+ * vs prior period.
  *
- * - Default range: current week + previous week (Sun-Sat)
- * - Filters: this week, last week, both, this month, last month, custom
- * - Per-day card: scheduled vs worked, billed hrs, revenue, commission est, jobs list, "Report" button
- * - Admin/Administrative: employee selector to view any teammate
+ * Default: This week (with auto-comparison to last week).
+ * Each metric tile shows: This / Last / Δ% with up/down arrow.
+ * Day list shows the SELECTED period only.
+ *
+ * Permissions:
+ *   - Tech: pending_hours (assigned but not completed jobs) instead of scheduled
+ *   - SA / Admin / Coordinator: scheduled_hours (from schedules table)
  */
 
 import React, { useMemo, useState } from "react";
@@ -13,8 +16,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import {
-  TrendingUp, CalendarDays, ChevronDown, ChevronUp, AlertCircle,
-  Clock, DollarSign, Wrench, Car, FileText, Send, X,
+  TrendingUp, TrendingDown, Minus, CalendarDays, ChevronDown, ChevronUp,
+  AlertCircle, Clock, DollarSign, Wrench, Car, FileText, Send, X, Inbox,
 } from "lucide-react";
 import { useAuthStore, useAuthReady } from "../stores/authStore";
 import { getDailyProduction, reportProductionIssue } from "../lib/productionApi";
@@ -37,12 +40,10 @@ function endOfWeek(d, weekOffset = 0) {
   return e;
 }
 function startOfMonth(d, monthOffset = 0) {
-  const x = new Date(d.getFullYear(), d.getMonth() + monthOffset, 1);
-  return x;
+  return new Date(d.getFullYear(), d.getMonth() + monthOffset, 1);
 }
 function endOfMonth(d, monthOffset = 0) {
-  const x = new Date(d.getFullYear(), d.getMonth() + monthOffset + 1, 0);
-  return x;
+  return new Date(d.getFullYear(), d.getMonth() + monthOffset + 1, 0);
 }
 function fmtISO(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -52,6 +53,14 @@ function fmtHuman(d, opts = {}) {
     weekday: "short", month: "short", day: "numeric", ...opts,
   });
 }
+function fmtRangeShort(start, end) {
+  const s = new Date(start + "T12:00:00");
+  const e = new Date(end + "T12:00:00");
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const sm = months[s.getMonth()], em = months[e.getMonth()];
+  if (sm === em) return `${sm} ${s.getDate()}–${e.getDate()}`;
+  return `${sm} ${s.getDate()} – ${em} ${e.getDate()}`;
+}
 function fmt$(n) {
   if (n == null || isNaN(n)) return "—";
   return "$" + Math.round(Number(n)).toLocaleString();
@@ -60,16 +69,19 @@ function fmtH(n) {
   if (n == null || isNaN(n)) return "—";
   return Number(n).toFixed(1) + " hrs";
 }
+function fmtN(n) {
+  if (n == null || isNaN(n)) return "—";
+  return Number(n).toLocaleString();
+}
 
-// ── Range presets ────────────────────────────────────────────────────────
+// ── Range presets (always have a comparison period) ──────────────────────
 
 const PRESETS = [
-  { key: "default", labelKey: "production.range.default" },   // this week + last week
-  { key: "this_week", labelKey: "production.range.thisWeek" },
-  { key: "last_week", labelKey: "production.range.lastWeek" },
+  { key: "this_week",  labelKey: "production.range.thisWeek" },
+  { key: "last_week",  labelKey: "production.range.lastWeek" },
   { key: "this_month", labelKey: "production.range.thisMonth" },
   { key: "last_month", labelKey: "production.range.lastMonth" },
-  { key: "custom", labelKey: "production.range.custom" },
+  { key: "custom",     labelKey: "production.range.custom" },
 ];
 
 function rangeFor(preset, customStart, customEnd) {
@@ -81,12 +93,33 @@ function rangeFor(preset, customStart, customEnd) {
     case "last_month": return { start: fmtISO(startOfMonth(now, -1)), end: fmtISO(endOfMonth(now, -1)) };
     case "custom":
       return {
-        start: customStart || fmtISO(startOfWeek(now, -1)),
+        start: customStart || fmtISO(startOfWeek(now, 0)),
         end:   customEnd   || fmtISO(endOfWeek(now, 0)),
       };
-    case "default":
     default:
-      return { start: fmtISO(startOfWeek(now, -1)), end: fmtISO(endOfWeek(now, 0)) };
+      return { start: fmtISO(startOfWeek(now, 0)), end: fmtISO(endOfWeek(now, 0)) };
+  }
+}
+
+// Prior comparable period for a preset (this week → last week, etc.)
+function priorRangeFor(preset, current) {
+  const now = new Date();
+  switch (preset) {
+    case "this_week":  return { start: fmtISO(startOfWeek(now, -1)), end: fmtISO(endOfWeek(now, -1)) };
+    case "last_week":  return { start: fmtISO(startOfWeek(now, -2)), end: fmtISO(endOfWeek(now, -2)) };
+    case "this_month": return { start: fmtISO(startOfMonth(now, -1)), end: fmtISO(endOfMonth(now, -1)) };
+    case "last_month": return { start: fmtISO(startOfMonth(now, -2)), end: fmtISO(endOfMonth(now, -2)) };
+    case "custom": {
+      // shift current range back by its own length
+      if (!current?.start || !current?.end) return null;
+      const s = new Date(current.start + "T12:00:00");
+      const e = new Date(current.end + "T12:00:00");
+      const days = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+      const priorEnd = new Date(s); priorEnd.setDate(s.getDate() - 1);
+      const priorStart = new Date(priorEnd); priorStart.setDate(priorEnd.getDate() - (days - 1));
+      return { start: fmtISO(priorStart), end: fmtISO(priorEnd) };
+    }
+    default: return null;
   }
 }
 
@@ -100,20 +133,29 @@ export function MyProductionPage() {
   const user = useAuthStore((s) => s.user);
   const hasElevated = useAuthStore((s) => s.hasElevatedAccess());
 
-  const [preset, setPreset] = useState("default");
+  const [preset, setPreset] = useState("this_week");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
-  const [targetEmail, setTargetEmail] = useState(""); // admin can pick any teammate
+  const [targetEmail, setTargetEmail] = useState("");
 
   const range = useMemo(() => rangeFor(preset, customStart, customEnd), [preset, customStart, customEnd]);
+  const priorRange = useMemo(() => priorRangeFor(preset, range), [preset, range]);
   const effectiveEmail = (hasElevated && targetEmail) ? targetEmail : user?.email;
-
   const enabled = !!effectiveEmail && !!range.start && !!range.end;
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  // Current period
+  const currentQ = useQuery({
     queryKey: ["production-daily", effectiveEmail, range.start, range.end],
     queryFn: () => getDailyProduction(effectiveEmail, range.start, range.end),
     enabled,
+    staleTime: 2 * 60 * 1000,
+  });
+
+  // Prior period (for comparison) — only if priorRange exists
+  const priorQ = useQuery({
+    queryKey: ["production-daily", effectiveEmail, priorRange?.start, priorRange?.end],
+    queryFn: () => getDailyProduction(effectiveEmail, priorRange.start, priorRange.end),
+    enabled: enabled && !!priorRange,
     staleTime: 2 * 60 * 1000,
   });
 
@@ -155,24 +197,33 @@ export function MyProductionPage() {
         targetEmail={targetEmail}
         setTargetEmail={setTargetEmail}
         currentUserEmail={user.email}
+        currentRange={range}
+        priorRange={priorRange}
       />
 
-      {isLoading ? (
+      {currentQ.isLoading ? (
         <LoadingSkeleton />
-      ) : isError ? (
+      ) : currentQ.isError ? (
         <div className="card p-6 border-red-200 bg-red-50 text-red-700 text-sm">
           <AlertCircle className="h-5 w-5 inline mr-2" />
-          {error?.message || t("production.errorLoad", "Could not load production data")}
-          <button onClick={() => refetch()} className="ml-3 btn-outline-sm">
+          {currentQ.error?.message || t("production.errorLoad", "Could not load production data")}
+          <button onClick={() => currentQ.refetch()} className="ml-3 btn-outline-sm">
             {t("common.retry", "Retry")}
           </button>
         </div>
-      ) : data ? (
+      ) : currentQ.data ? (
         <>
-          <TotalsSummary data={data} t={t} />
+          <ComparisonTiles
+            current={currentQ.data}
+            prior={priorQ.data}
+            priorLoading={priorQ.isLoading}
+            currentRange={range}
+            priorRange={priorRange}
+            t={t}
+          />
           <DaysList
-            days={data.days || []}
-            roleKind={data.role_kind}
+            days={currentQ.data.days || []}
+            roleKind={currentQ.data.role_kind}
             employeeEmail={effectiveEmail}
             t={t}
           />
@@ -189,6 +240,7 @@ export function MyProductionPage() {
 function FilterBar({
   preset, setPreset, customStart, setCustomStart, customEnd, setCustomEnd,
   showEmployeePicker, team, targetEmail, setTargetEmail, currentUserEmail,
+  currentRange, priorRange,
 }) {
   const { t } = useTranslation();
   return (
@@ -209,6 +261,20 @@ function FilterBar({
           </button>
         ))}
       </div>
+
+      {/* Range labels under presets */}
+      {currentRange && priorRange && (
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500 pt-1">
+          <span>
+            <span className="font-semibold text-sky-700">{t("production.compare.current", "Current")}:</span>{" "}
+            {fmtRangeShort(currentRange.start, currentRange.end)}
+          </span>
+          <span>
+            <span className="font-semibold text-slate-500">{t("production.compare.prior", "vs Prior")}:</span>{" "}
+            {fmtRangeShort(priorRange.start, priorRange.end)}
+          </span>
+        </div>
+      )}
 
       {preset === "custom" && (
         <div className="flex flex-wrap gap-3 items-center pt-2 border-t border-slate-100">
@@ -260,64 +326,153 @@ function FilterBar({
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Totals summary
+// Comparison tiles — current vs prior with delta arrows
 // ─────────────────────────────────────────────────────────────────────────
 
-function TotalsSummary({ data, t }) {
-  const tot = data.totals || {};
-  const isTech = data.role_kind === "technician";
-  const isSA = data.role_kind === "service_advisor";
+function ComparisonTiles({ current, prior, priorLoading, currentRange, priorRange, t }) {
+  const isTech = current.role_kind === "technician";
+  const isSA = current.role_kind === "service_advisor";
 
-  const tiles = [];
+  const ct = current.totals || {};
+  const pt = prior?.totals || {};
+
+  // Build the metric set based on role
+  const metrics = [];
   if (isTech) {
-    tiles.push(
-      { label: t("production.totals.billedHours", "Billed Hours"), value: fmtH(tot.billed_hours), icon: Clock, color: "sky" },
-      { label: t("production.totals.laborRevenue", "Labor Revenue"), value: fmt$(tot.labor_revenue), icon: DollarSign, color: "emerald" },
-      { label: t("production.totals.commissionEst", "Commission (est)"), value: fmt$(tot.commission_estimate), icon: TrendingUp, color: "violet" }
+    metrics.push(
+      { key: "billed_hours",        label: t("production.totals.billedHours", "Billed Hours"),    icon: Clock,       fmt: fmtH, color: "sky" },
+      { key: "labor_revenue",       label: t("production.totals.laborRevenue", "Labor Revenue"), icon: DollarSign,  fmt: fmt$, color: "emerald" },
+      { key: "commission_estimate", label: t("production.totals.commissionEst", "Commission"),    icon: TrendingUp,  fmt: fmt$, color: "violet" },
+      { key: "jobs_completed",      label: t("production.totals.jobsCount", "Jobs Done"),         icon: Wrench,      fmt: fmtN, color: "amber" },
     );
   }
   if (isSA) {
-    tiles.push(
-      { label: t("production.totals.totalSold", "Total Sold"), value: fmt$(tot.sa_total_sold), icon: DollarSign, color: "emerald" },
-      { label: t("production.totals.roCount", "RO Count"), value: tot.sa_ro_count ?? "—", icon: FileText, color: "sky" }
+    metrics.push(
+      { key: "sa_total_sold", label: t("production.totals.totalSold", "Total Sold"), icon: DollarSign, fmt: fmt$, color: "emerald" },
+      { key: "sa_ro_count",   label: t("production.totals.roCount", "RO Count"),     icon: FileText,   fmt: fmtN, color: "sky" },
     );
-  }
-  tiles.push(
-    { label: t("production.totals.scheduled", "Scheduled"), value: fmtH(tot.scheduled_hours), icon: CalendarDays, color: "slate" }
-  );
-  if (!isTech) {
-    tiles.push({ label: t("production.totals.worked", "Worked"), value: fmtH(tot.worked_hours), icon: Clock, color: "amber" });
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-      {tiles.map((tile) => {
-        const Icon = tile.icon;
-        return (
-          <div key={tile.label} className="card p-4">
-            <div className="flex items-center gap-2 mb-1.5">
-              <Icon className={`h-4 w-4 text-${tile.color}-500`} />
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-                {tile.label}
-              </span>
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {metrics.map((m) => (
+          <ComparisonTile
+            key={m.key}
+            label={m.label}
+            icon={m.icon}
+            color={m.color}
+            currentValue={ct[m.key]}
+            priorValue={pt[m.key]}
+            priorLoading={priorLoading}
+            fmt={m.fmt}
+            t={t}
+          />
+        ))}
+      </div>
+
+      {/* Pending hours (techs only) — separate card, not vs prior */}
+      {isTech && (ct.pending_hours > 0 || ct.pending_jobs_count > 0) && (
+        <div className="card p-4 border-l-4 border-amber-400 bg-amber-50/40">
+          <div className="flex items-center gap-3">
+            <Inbox className="h-5 w-5 text-amber-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-amber-700">
+                {t("production.pendingTitle", "Pending Workload")}
+              </p>
+              <p className="text-sm text-slate-700 mt-0.5">
+                <strong className="text-base text-slate-900">{fmtH(ct.pending_hours)}</strong>
+                {" "}{t("production.pendingDesc", "of jobs assigned to you that aren't marked completed yet")}
+                {" · "}
+                <span className="font-semibold">{ct.pending_jobs_count} {t("production.jobs", "jobs")}</span>
+              </p>
             </div>
-            <p className="text-xl font-extrabold text-slate-900">{tile.value}</p>
           </div>
-        );
-      })}
+        </div>
+      )}
+
+      {/* Scheduled vs worked (SAs only) — separate row */}
+      {!isTech && (ct.scheduled_hours > 0 || ct.worked_hours > 0) && (
+        <div className="grid grid-cols-2 gap-3">
+          <ComparisonTile
+            label={t("production.totals.scheduled", "Scheduled")}
+            icon={CalendarDays}
+            color="slate"
+            currentValue={ct.scheduled_hours}
+            priorValue={pt.scheduled_hours}
+            priorLoading={priorLoading}
+            fmt={fmtH}
+            t={t}
+          />
+          <ComparisonTile
+            label={t("production.totals.worked", "Worked")}
+            icon={Clock}
+            color="amber"
+            currentValue={ct.worked_hours}
+            priorValue={pt.worked_hours}
+            priorLoading={priorLoading}
+            fmt={fmtH}
+            t={t}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+function ComparisonTile({ label, icon: Icon, color, currentValue, priorValue, priorLoading, fmt, t }) {
+  const cur = Number(currentValue) || 0;
+  const pri = Number(priorValue) || 0;
+  const delta = cur - pri;
+  const pct = pri !== 0 ? (delta / pri) * 100 : (cur > 0 ? 100 : 0);
+  const trend = delta > 0 ? "up" : delta < 0 ? "down" : "flat";
+
+  const TrendIcon = trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+  const trendColor = trend === "up"
+    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+    : trend === "down"
+      ? "text-red-700 bg-red-50 border-red-200"
+      : "text-slate-500 bg-slate-50 border-slate-200";
+
+  return (
+    <div className="card p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className={`h-4 w-4 text-${color}-500`} />
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          {label}
+        </span>
+      </div>
+      <p className="text-2xl font-extrabold text-slate-900 leading-tight">{fmt(cur)}</p>
+      <div className="mt-2 flex items-center gap-2 text-[11px]">
+        {priorLoading ? (
+          <span className="text-slate-400">{t("production.compare.loading", "Loading prior…")}</span>
+        ) : (
+          <>
+            <span className="text-slate-500">
+              <span className="font-medium">{t("production.compare.priorShort", "Prior")}:</span>{" "}
+              {fmt(pri)}
+            </span>
+            <span className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 font-bold ${trendColor}`}>
+              <TrendIcon className="h-3 w-3" />
+              {trend === "flat"
+                ? "0%"
+                : `${delta > 0 ? "+" : ""}${pct.toFixed(0)}%`}
+            </span>
+          </>
+        )}
+      </div>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Days list
+// Days list (current period only)
 // ─────────────────────────────────────────────────────────────────────────
 
 function DaysList({ days, roleKind, employeeEmail, t }) {
-  const [expanded, setExpanded] = useState({}); // date -> bool
-  const [reportingFor, setReportingFor] = useState(null); // date or null
+  const [expanded, setExpanded] = useState({});
+  const [reportingFor, setReportingFor] = useState(null);
 
-  // Hide "empty" days unless they're scheduled or part of the current week
   const visibleDays = useMemo(() => {
     return (days || []).filter((d) => {
       const hasWork = (d.jobs?.length || 0) > 0 || (d.posted_ros?.length || 0) > 0;
@@ -374,7 +529,6 @@ function DayCard({ day, roleKind, expanded, onToggle, onReport, t }) {
     <div className="card overflow-hidden">
       <div className="flex items-center justify-between gap-3 p-4 cursor-pointer hover:bg-slate-50"
            onClick={canExpand ? onToggle : undefined}>
-        {/* Date & day name */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 flex flex-col items-center justify-center flex-shrink-0">
             <span className="text-[10px] font-bold uppercase">
@@ -387,15 +541,17 @@ function DayCard({ day, roleKind, expanded, onToggle, onReport, t }) {
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-900">{fmtHuman(day.date)}</p>
             <p className="text-xs text-slate-500">
-              {day.scheduled_hours != null
+              {/* Tech: omit "Not scheduled" — use pending workload card instead. SA: keep schedule line. */}
+              {!isTech && (day.scheduled_hours != null
                 ? `${t("production.scheduled", "Scheduled")}: ${fmtH(day.scheduled_hours)}`
-                : t("production.notScheduled", "Not scheduled")}
-              {day.worked_hours != null && day.worked_hours > 0 ? ` · ${t("production.worked", "Worked")}: ${fmtH(day.worked_hours)}` : ""}
+                : t("production.notScheduled", "Not scheduled"))}
+              {!isTech && day.worked_hours != null && day.worked_hours > 0 ? ` · ${t("production.worked", "Worked")}: ${fmtH(day.worked_hours)}` : ""}
+              {isTech && hasJobs && `${day.jobs.length} ${t("production.jobs", "jobs")}`}
+              {isTech && hasROs && (hasJobs ? " · " : "") + `${day.posted_ros.length} ${t("production.rosPosted", "ROs posted")}`}
             </p>
           </div>
         </div>
 
-        {/* Day stats */}
         <div className="flex items-center gap-3 sm:gap-5 text-xs text-slate-700">
           {isTech && (
             <>
@@ -427,7 +583,6 @@ function DayCard({ day, roleKind, expanded, onToggle, onReport, t }) {
           )}
         </div>
 
-        {/* Right side: expand chevron */}
         <div className="flex items-center gap-2">
           {canExpand ? (
             expanded ? <ChevronUp className="h-5 w-5 text-slate-400" /> : <ChevronDown className="h-5 w-5 text-slate-400" />
@@ -445,7 +600,7 @@ function DayCard({ day, roleKind, expanded, onToggle, onReport, t }) {
                 {t("production.jobsCompleted", "Jobs completed")} ({day.jobs.length})
               </p>
               <div className="space-y-2">
-                {day.jobs.map((j) => <JobRow key={`j-${j.ro_id}-${j.description || j.category}`} job={j} t={t} />)}
+                {day.jobs.map((j, idx) => <JobRow key={`j-${j.ro_id}-${idx}`} job={j} t={t} />)}
               </div>
             </div>
           )}
@@ -458,7 +613,7 @@ function DayCard({ day, roleKind, expanded, onToggle, onReport, t }) {
                   : t("production.invoicedROs", "Invoiced ROs")} ({day.posted_ros.length})
               </p>
               <div className="space-y-2">
-                {day.posted_ros.map((r) => <PostedRORow key={`r-${r.ro_id}`} ro={r} isTech={isTech} t={t} />)}
+                {day.posted_ros.map((r, idx) => <PostedRORow key={`r-${r.ro_id}-${idx}`} ro={r} isTech={isTech} t={t} />)}
               </div>
             </div>
           )}
@@ -476,7 +631,6 @@ function DayCard({ day, roleKind, expanded, onToggle, onReport, t }) {
         </div>
       )}
 
-      {/* Always show Report button on collapsed cards too (for days with no data) */}
       {!canExpand && (
         <div className="border-t border-slate-100 px-4 py-2 flex justify-end">
           <button
@@ -570,9 +724,7 @@ function ReportIssueModal({ date, email, onClose }) {
       queryClient.invalidateQueries({ queryKey: ["production-daily"] });
       onClose();
     },
-    onError: (e) => {
-      toast.error(e?.message || t("production.reportError", "Could not send the report"));
-    },
+    onError: (e) => toast.error(e?.message || t("production.reportError", "Could not send the report")),
   });
 
   const onSubmit = () => {
