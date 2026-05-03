@@ -678,9 +678,11 @@ export function MyScorecardPage() {
   const streak      = historyData?.streak ?? 0;
   const trend       = historyData?.trend ?? null;
   const latestItem  = history[0];
-  const latestTier  = latestItem?.metrics?.tier ?? metricsData?.metrics?.tier ?? null;
-  const latestRank  = latestItem?.ranking?.rank ?? metricsData?.ranking?.rank ?? null;
-  const latestPeers = latestItem?.ranking?.total_peers ?? metricsData?.ranking?.total_peers ?? null;
+  // LIVE current-week wins. History is only used as fallback if live data is
+  // missing (e.g. brand-new employee with no production yet this week).
+  const latestTier  = metricsData?.metrics?.tier ?? latestItem?.metrics?.tier ?? null;
+  const latestRank  = metricsData?.ranking?.rank ?? latestItem?.ranking?.rank ?? null;
+  const latestPeers = metricsData?.ranking?.total_peers ?? latestItem?.ranking?.total_peers ?? null;
   const leaderboard = latestItem?.ranking?.leaderboard ?? [];
 
   const chartData = useMemo(() => {

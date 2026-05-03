@@ -66,6 +66,24 @@ export const getProductionScorecard = (email) => {
   return productionFetch(`/scorecard?${qs}`);
 };
 
+// ─── Live history (replaces /api/payroll-history for last 13 weeks) ─────
+
+/**
+ * Fetch last N weeks of production history for an employee.
+ * Returns same shape as the legacy /api/payroll-history endpoint
+ * (employee, streak, trend, benchmarks, history[]) but computed live
+ * from Tekmetric instead of the CSV-uploaded periods/tech_summary tables.
+ *
+ * @param {string} email work_email of the employee
+ * @param {number} weeks how many weeks back (default 13, max 26)
+ */
+export const getProductionHistory = (email, weeks = 13) => {
+  const qs = new URLSearchParams();
+  qs.set("email", email);
+  qs.set("weeks", String(weeks));
+  return productionFetch(`/history?${qs}`);
+};
+
 // ─── Issue reports ────────────────────────────────────────────────────────
 
 /**

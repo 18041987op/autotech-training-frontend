@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
-import { getProductionScorecard } from "../lib/productionApi";
+import { getProductionScorecard, getProductionHistory } from "../lib/productionApi";
 import { useAuthStore } from "../stores/authStore";
 
 // ── Fetch payroll metrics from training backend ───────────────────────────────
@@ -62,11 +62,19 @@ export function useCheckinPending() {
 // ── Fetch full pay history (up to 13 periods) ────────────────────────────────
 
 export function usePayrollHistory() {
+  // Read current user email from auth store
+  const userEmail = useAuthStore((s) => s.user?.email);
+
   return useQuery({
-    queryKey: ["payroll-history"],
+    queryKey: ["payroll-history", userEmail],
+    enabled: !!userEmail,
     queryFn: async () => {
       try {
-        const data = await apiFetch("/api/payroll-history");
+        // LIVE source: /api/production/history on Management Portal.
+        // Returns same shape as legacy /api/payroll-history but computed
+        // from Tekmetric for the last 13 weeks. Heavier query so we
+        // cache for 10 min — history doesn't change once a week is closed.
+        const data = await getProductionHistory(userEmail, 13);
         return { linked: true, ...data };
       } catch (e) {
         if (e.message?.includes("not found") || e.message?.includes("404")) {
@@ -75,7 +83,7 @@ export function usePayrollHistory() {
         return { linked: false, error: e.message };
       }
     },
-    staleTime: 10 * 60 * 1000,
+    staleTime: 10 * 60 * 1000,  // 10 min — historical weeks change rarely
     retry: false,
   });
 }
