@@ -98,7 +98,8 @@
       "focused": "Capacitación por rol",
       "aiAssisted": "Asistencia con IA",
       "bilingual": "Inglés y Español"
-    }
+    },
+    "signInRequired": "Inicia sesión para ver esta página."
   },
   "home": {
     "title": "Inicio",
@@ -1765,7 +1766,10 @@
     "suggestions": "Sugerencias",
     "otherApps": "Otras Apps",
     "management": "Gerencia",
-    "production": "Producción"
+    "production": "Producción",
+    "feedback": "Sugerencias",
+    "roadmap": "Roadmap",
+    "releases": "Novedades"
   },
   "tools": {
     "catalog": {
@@ -2597,5 +2601,65 @@
     "pendingDesc": "de trabajos asignados que aún no están marcados como completados",
     "jobs": "trabajos",
     "rosPosted": "ROs cerradas"
+  },
+  "roadmap": {
+    "title": "Roadmap e Ideas",
+    "subtitle": "Lo que estamos construyendo y lo que el equipo pide. Dale 👍 a las que quieres y deja comentarios.",
+    "section": {
+      "roadmap": "Lo que estamos construyendo",
+      "ideas": "Ideas del equipo"
+    },
+    "empty": {
+      "items": "Aún no hay items en el roadmap.",
+      "ideas": "Nadie ha enviado ideas todavía — ¡sé el primero!"
+    },
+    "submitIdea": "Enviar una idea",
+    "submitTitle": "Enviar una idea",
+    "fieldTitle": "Título",
+    "fieldDesc": "Descripción",
+    "fieldCategory": "Categoría",
+    "titlePlaceholder": "Ej. Modo oscuro en la página de timesheet",
+    "descPlaceholder": "¿Por qué es útil? ¿Qué problema resuelve?",
+    "send": "Enviar",
+    "ideaSubmitted": "¡Idea enviada! Osman la va a revisar.",
+    "submitError": "No se pudo enviar tu idea",
+    "titleTooShort": "El título es muy corto (mínimo 3 caracteres)",
+    "descTooShort": "La descripción es muy corta (mínimo 5 caracteres)",
+    "loadError": "No se pudo cargar el roadmap",
+    "vote": "Votar 👍",
+    "unvote": "Click para quitar tu voto",
+    "addComment": "Comentar",
+    "comment": "comentario",
+    "comments": "comentarios",
+    "commentsOn": "Comentarios en",
+    "commentPlaceholder": "Agrega un comentario...",
+    "firstComment": "Sé el primero en comentar.",
+    "anonymous": "Anónimo",
+    "adminResponse": "Respuesta del admin",
+    "status": {
+      "planned": "Planeado",
+      "in_progress": "En Progreso",
+      "shipped": "Lanzado",
+      "canceled": "Cancelado"
+    },
+    "category": {
+      "feature": "Feature",
+      "improvement": "Mejora",
+      "fix": "Arreglo",
+      "infrastructure": "Infraestructura",
+      "integration": "Integración"
+    },
+    "ideaStatus": {
+      "pending": "Pendiente de Revisión",
+      "promoted": "Promovido al Roadmap 🎉",
+      "dismissed": "No Planeado",
+      "duplicate": "Duplicado"
+    }
+  },
+  "releases": {
+    "title": "Novedades",
+    "subtitle": "Cambios recientes en la app de AutoRx Training. Más nuevos primero.",
+    "loadError": "No se pudieron cargar las novedades",
+    "empty": "Aún no hay novedades publicadas."
   }
 }

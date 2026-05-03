@@ -30,6 +30,7 @@ import {
   UserCog,
   FileText,
   TrendingUp,
+  Rocket,
 } from "lucide-react";
 
 import { Breadcrumbs } from "./Breadcrumbs";
@@ -115,6 +116,14 @@ export function Layout({ user, onSignOut }) {
         { to: "/benefits",  label: t("nav2.benefits"),   icon: Heart },
         { to: "/my-debts", label: t("nav2.myDebts"),    icon: FileText },
         { to: "/team",      label: t("nav2.team"),       icon: Users },
+      ],
+    },
+    {
+      key: "feedback",
+      label: t("nav2.feedback"),
+      items: [
+        { to: "/roadmap",  label: t("nav2.roadmap"),  icon: Lightbulb },
+        { to: "/releases", label: t("nav2.releases"), icon: Rocket },
       ],
     },
     // Admin section — visible to admin and administrative (some items restricted)

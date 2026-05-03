@@ -29,6 +29,8 @@ import { AICoachPage } from "./pages/AICoachPage";
 import { PayHistoryPage } from "./pages/PayHistoryPage";
 import { MyProductionPage } from "./pages/MyProductionPage";
 import { MyDebtsPage } from "./pages/MyDebtsPage";
+import { RoadmapPage } from "./pages/RoadmapPage";
+import { ReleasesPage } from "./pages/ReleasesPage";
 import { KeyBoardPage } from "./pages/KeyBoardPage";
 
 // Tools pages
@@ -155,6 +157,10 @@ function AppRoutes() {
         {/* Production section — daily breakdown (My Production) + Pay History */}
         <Route path="production" element={<MyProductionPage />} />
         <Route path="pay-history" element={<PayHistoryPage />} />
+
+        {/* Feedback section — Roadmap (vote / submit) + Releases (changelog) */}
+        <Route path="roadmap"  element={<RoadmapPage />} />
+        <Route path="releases" element={<ReleasesPage />} />
 
         {/* Employee debts — read-only self-service */}
         <Route path="my-debts" element={<MyDebtsPage />} />

@@ -98,7 +98,8 @@
       "focused": "Role-focused training",
       "aiAssisted": "AI-powered coaching",
       "bilingual": "English & Spanish"
-    }
+    },
+    "signInRequired": "Sign in to view this page."
   },
   "home": {
     "title": "Home",
@@ -1765,7 +1766,10 @@
     "suggestions": "Suggestions",
     "otherApps": "Other Apps",
     "management": "Management",
-    "production": "Production"
+    "production": "Production",
+    "feedback": "Feedback",
+    "roadmap": "Roadmap",
+    "releases": "What's New"
   },
   "tools": {
     "catalog": {
@@ -2597,5 +2601,65 @@
     "pendingDesc": "of jobs assigned to you that aren't marked completed yet",
     "jobs": "jobs",
     "rosPosted": "ROs posted"
+  },
+  "roadmap": {
+    "title": "Roadmap & Ideas",
+    "subtitle": "What we're building, and what the team is asking for. Vote 👍 the ones you want and add comments.",
+    "section": {
+      "roadmap": "What we're building",
+      "ideas": "Ideas from the team"
+    },
+    "empty": {
+      "items": "No roadmap items yet.",
+      "ideas": "No ideas submitted yet — be the first!"
+    },
+    "submitIdea": "Submit an idea",
+    "submitTitle": "Submit an idea",
+    "fieldTitle": "Title",
+    "fieldDesc": "Description",
+    "fieldCategory": "Category",
+    "titlePlaceholder": "e.g. Add dark mode to the timesheet page",
+    "descPlaceholder": "Why is this useful? What problem does it solve?",
+    "send": "Submit",
+    "ideaSubmitted": "Idea submitted! Osman will review it.",
+    "submitError": "Could not submit your idea",
+    "titleTooShort": "Title is too short (min 3 chars)",
+    "descTooShort": "Description is too short (min 5 chars)",
+    "loadError": "Could not load roadmap",
+    "vote": "Vote 👍",
+    "unvote": "Click to remove your vote",
+    "addComment": "Comment",
+    "comment": "comment",
+    "comments": "comments",
+    "commentsOn": "Comments on",
+    "commentPlaceholder": "Add a comment...",
+    "firstComment": "Be the first to comment.",
+    "anonymous": "Anonymous",
+    "adminResponse": "Admin response",
+    "status": {
+      "planned": "Planned",
+      "in_progress": "In Progress",
+      "shipped": "Shipped",
+      "canceled": "Canceled"
+    },
+    "category": {
+      "feature": "Feature",
+      "improvement": "Improvement",
+      "fix": "Fix",
+      "infrastructure": "Infrastructure",
+      "integration": "Integration"
+    },
+    "ideaStatus": {
+      "pending": "Pending Review",
+      "promoted": "Promoted to Roadmap 🎉",
+      "dismissed": "Not Planned",
+      "duplicate": "Duplicate"
+    }
+  },
+  "releases": {
+    "title": "What's New",
+    "subtitle": "Recent updates to the AutoRx Training App. Newest first.",
+    "loadError": "Could not load releases",
+    "empty": "No releases published yet."
   }
 }
