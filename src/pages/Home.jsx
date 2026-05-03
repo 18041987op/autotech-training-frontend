@@ -252,12 +252,15 @@ function HeroBanner({ user, t, navigate }) {
       </div>
 
       {/* Wave — fill uses --surface-sub so it matches the page background
-         (bg-slate-50 #f8fafc in light mode, #0f172a in dark mode) */}
+         (bg-slate-50 #f8fafc in light mode, #0f172a in dark mode).
+         `block` on the SVG removes inline-element descender space.
+         The 1px safety strip below kills any sub-pixel rendering gap at
+         the wave's bottom edge. */}
       <div className="absolute bottom-0 left-0 right-0 leading-none">
         <svg
           viewBox="0 0 1200 48"
           preserveAspectRatio="none"
-          className="w-full h-8"
+          className="block w-full h-8"
           aria-hidden="true"
         >
           <path
@@ -265,6 +268,11 @@ function HeroBanner({ user, t, navigate }) {
             style={{ fill: "var(--surface-sub, #f8fafc)" }}
           />
         </svg>
+        <div
+          className="-mt-px h-px"
+          style={{ background: "var(--surface-sub, #f8fafc)" }}
+          aria-hidden="true"
+        />
       </div>
     </motion.div>
   );
