@@ -122,7 +122,16 @@ function AppRoutes() {
           user ? (
             <Navigate to="/" replace />
           ) : (
-            <AuthScreen onSignedIn={(u) => setUser(u)} />
+            <AuthScreen
+              onSignedIn={(u) => {
+                window.__APP_USER__ = u;
+                setUser(u);
+                setStoreUser(u);  // ← sync zustand store too, so hooks like
+                                   //   useAuthStore((s) => s.user) and
+                                   //   useAuthReady see the user immediately
+                                   //   instead of needing a page refresh.
+              }}
+            />
           )
         }
       />
