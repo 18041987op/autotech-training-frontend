@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { TrendingUp, Award, DollarSign, Car, Wrench, AlertCircle } from "lucide-react";
+import { useAuthStore } from "../stores/authStore";
 
 // ── Tier colour map — matches app's badge patterns ────────────────────────────
 const TIER_STYLE = {
@@ -85,6 +86,12 @@ function StatPill({ icon: Icon, label, value, color = "#1E6FAE" }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export function PayrollMetricsCard({ metricsData, compact = false }) {
   const { t } = useTranslation();
+  const userRole = useAuthStore((s) => s.user?.role);
+
+  // Owner/super-admin (Osman) — production metrics don't apply, hide the card.
+  if ((userRole || "").toLowerCase() === "admin") {
+    return null;
+  }
 
   // Not linked to payroll portal
   if (!metricsData?.linked) {

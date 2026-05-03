@@ -24,6 +24,7 @@ import {
 } from "../components/BadgeSystem";
 import { PayrollMetricsCard } from "../components/PayrollMetricsCard";
 import { usePayrollMetrics } from "../hooks/usePayrollMetrics";
+import { useAuthStore } from "../stores/authStore";
 
 // Persist show/hide preference in localStorage
 const METRICS_PREF_KEY = "home_show_payroll_metrics";
@@ -418,7 +419,11 @@ function EarnedBadgesRow({ badgesData, isLoading, t, navigate }) {
 
 // ── PayrollMetricsWidget ──────────────────────────────────────────────────────
 // Collapsible widget on the Home page. Toggle persisted in localStorage.
+// Hidden entirely for the owner/super-admin (Osman) — production metrics
+// don't apply to him; everyone else (including administrative) sees it.
 function PayrollMetricsWidget({ t }) {
+  const userRole = useAuthStore((s) => s.user?.role);
+  const isOwner = (userRole || "").toLowerCase() === "admin";
   const { data: metricsData, isLoading } = usePayrollMetrics();
 
   const [show, setShow] = useState(() => {
@@ -436,6 +441,9 @@ function PayrollMetricsWidget({ t }) {
     setShow(next);
     try { localStorage.setItem(METRICS_PREF_KEY, String(next)); } catch {}
   };
+
+  // Owner/super-admin (Osman) — production metrics don't apply, hide widget.
+  if (isOwner) return null;
 
   // Don't render anything while loading (avoids flash of "not linked")
   if (isLoading) return null;
