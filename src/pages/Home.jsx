@@ -251,7 +251,8 @@ function HeroBanner({ user, t, navigate }) {
         </div>
       </div>
 
-      {/* Wave — fill uses CSS var so it matches the page surface in light + dark */}
+      {/* Wave — fill uses --surface-sub so it matches the page background
+         (bg-slate-50 #f8fafc in light mode, #0f172a in dark mode) */}
       <div className="absolute bottom-0 left-0 right-0 leading-none">
         <svg
           viewBox="0 0 1200 48"
@@ -261,7 +262,7 @@ function HeroBanner({ user, t, navigate }) {
         >
           <path
             d="M0,24 C150,48 350,0 600,24 C850,48 1050,0 1200,24 L1200,48 L0,48 Z"
-            style={{ fill: "var(--surface, #ffffff)" }}
+            style={{ fill: "var(--surface-sub, #f8fafc)" }}
           />
         </svg>
       </div>
