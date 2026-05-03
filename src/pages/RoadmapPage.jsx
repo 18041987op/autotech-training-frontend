@@ -81,22 +81,25 @@ export function RoadmapPage() {
   };
 
   // Hooks first — derived data (memoized) must come BEFORE any early return.
+  // Depend on `data` (stable from react-query) — recompute the `|| []` fallbacks
+  // INSIDE the useMemo so we don't allocate new array refs every render.
+  const itemsByStatus = useMemo(() => {
+    const groups = { in_progress: [], planned: [], shipped: [], canceled: [] };
+    for (const it of (data?.items || [])) (groups[it.status] || groups.planned).push(it);
+    return groups;
+  }, [data]);
+
+  const visibleIdeas = useMemo(
+    () => (data?.ideas || []).filter(i => i.status !== "promoted" && i.status !== "duplicate"),
+    [data]
+  );
+
+  // Keep these as plain consts AFTER the memos so they don't enter the deps
+  // of any hook above (they're only used in JSX below the early returns).
   const items = data?.items || [];
-  const ideas = data?.ideas || [];
   const voteCounts = data?.vote_counts || {};
   const commentCounts = data?.comment_counts || {};
   const myVotes = new Set(data?.my_votes || []);
-
-  const itemsByStatus = useMemo(() => {
-    const groups = { in_progress: [], planned: [], shipped: [], canceled: [] };
-    for (const it of items) (groups[it.status] || groups.planned).push(it);
-    return groups;
-  }, [items]);
-
-  const visibleIdeas = useMemo(() =>
-    (ideas || []).filter(i => i.status !== "promoted" && i.status !== "duplicate"),
-    [ideas]
-  );
 
   if (!ready) return <LoadingSkeleton />;
   if (!email) {
