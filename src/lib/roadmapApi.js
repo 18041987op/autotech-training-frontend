@@ -57,6 +57,12 @@ export const addComment = (email, target_type, target_id, body) =>
 export const getComments = (target_type, target_id) =>
   fetchMgmt(`/api/roadmap/comments?target_type=${target_type}&target_id=${target_id}`);
 
+export const updateComment = (email, id, body) =>
+  fetchMgmt(`/api/roadmap`, { method: "POST", body: { action: "update_comment", email, id, body } });
+
+export const deleteComment = (email, id) =>
+  fetchMgmt(`/api/roadmap`, { method: "POST", body: { action: "delete_comment", email, id } });
+
 // ─── Releases ─────────────────────────────────────────────────────────────
 
 export const getReleases = (email, includeDrafts = false) => {

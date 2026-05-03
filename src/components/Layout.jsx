@@ -123,7 +123,7 @@ export function Layout({ user, onSignOut }) {
       label: t("nav2.feedback"),
       items: [
         { to: "/roadmap",  label: t("nav2.roadmap"),  icon: Lightbulb },
-        { to: "/releases", label: t("nav2.releases"), icon: Rocket },
+        { to: "/releases", label: t("nav2.releases"), icon: Rocket, badgeKey: "newReleases" },
       ],
     },
     // Admin section — visible to admin and administrative (some items restricted)
@@ -405,7 +405,8 @@ function NavSection({ sections }) {
   );
 }
 
-function SideItem({ to, label, icon: Icon, end }) {
+function SideItem({ to, label, icon: Icon, end, badgeKey }) {
+  const badgeCount = useSidebarBadge(badgeKey);
   return (
     <NavLink
       to={to}
@@ -413,9 +414,47 @@ function SideItem({ to, label, icon: Icon, end }) {
       className={({ isActive }) => (isActive ? "nav-item-active" : "nav-item-idle")}
     >
       <Icon className="h-4 w-4" />
-      {label}
+      <span className="flex-1 truncate">{label}</span>
+      {badgeCount > 0 && (
+        <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-5 px-1.5 rounded-full text-[10px] font-extrabold bg-amber-500 text-white">
+          {badgeCount}
+        </span>
+      )}
     </NavLink>
   );
+}
+
+// ── useSidebarBadge: computes a count for a given badge key ────────────────
+// 'newReleases' = number of published releases since the user last visited /releases.
+function useSidebarBadge(badgeKey) {
+  const [count, setCount] = React.useState(0);
+  React.useEffect(() => {
+    if (badgeKey !== "newReleases") return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const lastSeen = localStorage.getItem("releases_last_seen_at") || "1970-01-01T00:00:00Z";
+        const mod = await import("../lib/roadmapApi");
+        const u = JSON.parse(localStorage.getItem("auth-storage") || "{}")?.state?.user;
+        const email = u?.email;
+        if (!email) return;
+        const data = await mod.getReleases(email, false);
+        if (cancelled) return;
+        const releases = data?.releases || [];
+        const newer = releases.filter(r => {
+          const ts = r.published_at || (r.released_at && r.released_at + "T00:00:00Z");
+          return ts && ts > lastSeen;
+        });
+        setCount(newer.length);
+      } catch {
+        // silent — badge is non-critical
+      }
+    };
+    check();
+    const interval = setInterval(check, 5 * 60 * 1000); // refresh every 5 min
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [badgeKey]);
+  return count;
 }
 
 // ─── CrossAppNav ─────────────────────────────────────────────────────────────

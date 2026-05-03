@@ -6,7 +6,7 @@
  * (with category icons).
  */
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
@@ -47,6 +47,11 @@ export function ReleasesPage() {
   const ready = useAuthReady();
   const user = useAuthStore((s) => s.user);
   const email = user?.email;
+
+  // Mark releases as 'seen' so the sidebar badge clears.
+  useEffect(() => {
+    try { localStorage.setItem("releases_last_seen_at", new Date().toISOString()); } catch (e) { /* ignore */ }
+  }, []);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["releases", email],

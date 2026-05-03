@@ -21,6 +21,7 @@ import {
 import { useAuthStore, useAuthReady } from "../stores/authStore";
 import {
   getRoadmap, submitIdea, toggleVote, addComment, getComments,
+  updateComment, deleteComment,
 } from "../lib/roadmapApi";
 import { PageHero } from "../components/PageHero";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
@@ -485,6 +486,97 @@ function SubmitIdeaModal({ email, onClose, onSubmitted }) {
   );
 }
 
+// ── Single comment row with edit/delete for own comments ────────────────
+
+function CommentRow({ comment, email, onChanged, t }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(comment.body);
+  const [busy, setBusy] = useState(false);
+
+  // Read current user from auth store inside the row.
+  // We compare email rather than emp_id because the comments API only stores user_id (emp_id).
+  // The comment carries user_name; we approximate "is mine" by also passing the logged-in user's name.
+  // Better: backend includes user_email on comments. For now, rely on user_id check via API itself.
+  // Show edit/delete optimistically; the backend enforces permission.
+  const isMine = comment.user_email
+    ? comment.user_email === email
+    : comment.user_name && useAuthStore.getState().user?.name === comment.user_name;
+
+  const save = async () => {
+    if (draft.trim().length < 1) return;
+    setBusy(true);
+    try {
+      await updateComment(email, comment.id, draft.trim());
+      setEditing(false);
+      onChanged();
+    } catch (e) {
+      toast.error(e?.message || "Edit failed");
+    } finally { setBusy(false); }
+  };
+
+  const remove = async () => {
+    if (!window.confirm(t("roadmap.confirmDelete", "Delete this comment?"))) return;
+    setBusy(true);
+    try {
+      await deleteComment(email, comment.id);
+      onChanged();
+    } catch (e) {
+      toast.error(e?.message || "Delete failed");
+    } finally { setBusy(false); }
+  };
+
+  return (
+    <div className={`rounded-xl p-3 ${comment.is_admin_response ? "bg-sky-50 border border-sky-200" : "bg-slate-50"}`}>
+      <div className="flex items-center gap-2 mb-1">
+        <p className="text-xs font-bold text-slate-700">
+          {comment.user_name}
+          {comment.is_admin_response && <span className="ml-1.5 text-[9px] font-extrabold uppercase tracking-wide text-sky-600">· admin</span>}
+        </p>
+        <p className="text-[10px] text-slate-400 ml-auto">
+          {new Date(comment.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
+        </p>
+      </div>
+      {editing ? (
+        <>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            rows={2}
+            maxLength={2000}
+            className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm bg-white"
+          />
+          <div className="flex gap-2 mt-1.5">
+            <button onClick={save} disabled={busy || draft.trim().length < 1}
+              className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50" type="button">
+              {t("common.save", "Save")}
+            </button>
+            <button onClick={() => { setEditing(false); setDraft(comment.body); }} disabled={busy}
+              className="text-[11px] font-medium px-2 py-0.5 rounded-md text-slate-500 hover:text-slate-700" type="button">
+              {t("common.cancel", "Cancel")}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="text-sm text-slate-700 whitespace-pre-wrap">{comment.body}</p>
+          {isMine && (
+            <div className="flex gap-3 mt-1.5">
+              <button onClick={() => setEditing(true)} disabled={busy}
+                className="text-[10px] text-slate-500 hover:text-sky-600 transition" type="button">
+                {t("common.edit", "Edit")}
+              </button>
+              <button onClick={remove} disabled={busy}
+                className="text-[10px] text-slate-500 hover:text-red-600 transition" type="button">
+                {t("common.delete", "Delete")}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Comments modal ──────────────────────────────────────────────────────
 
 function CommentsModal({ target, email, onClose, onChanged }) {
@@ -539,18 +631,7 @@ function CommentsModal({ target, email, onClose, onChanged }) {
             </div>
           ) : (
             comments.map((c) => (
-              <div key={c.id} className={`rounded-xl p-3 ${c.is_admin_response ? "bg-sky-50 border border-sky-200" : "bg-slate-50"}`}>
-                <div className="flex items-center gap-2 mb-1">
-                  <p className="text-xs font-bold text-slate-700">
-                    {c.user_name}
-                    {c.is_admin_response && <span className="ml-1.5 text-[9px] font-extrabold uppercase tracking-wide text-sky-600">· admin</span>}
-                  </p>
-                  <p className="text-[10px] text-slate-400 ml-auto">
-                    {new Date(c.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
-                  </p>
-                </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{c.body}</p>
-              </div>
+              <CommentRow key={c.id} comment={c} email={email} onChanged={() => { refetch(); onChanged(); }} t={t} />
             ))
           )}
         </div>
