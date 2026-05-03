@@ -182,6 +182,9 @@ function HeroBanner({ user, t, navigate }) {
       style={{
         background:
           "linear-gradient(135deg, #0f3460 0%, #1E6FAE 55%, #2a9fd6 100%)",
+        // Inset shadow at bottom masks the rounded-clip anti-aliasing line
+        // on high-DPR mobile displays. Uses page-bg color so it's invisible.
+        boxShadow: "inset 0 -1px 0 var(--surface-sub, #f8fafc)",
       }}
     >
       {/* Dot-grid texture overlay */}
@@ -268,8 +271,9 @@ function HeroBanner({ user, t, navigate }) {
             style={{ fill: "var(--surface-sub, #f8fafc)" }}
           />
         </svg>
+        {/* 4px-thick safety strip — handles high-DPR mobile sub-pixel rendering */}
         <div
-          className="-mt-px h-px"
+          className="-mt-1 h-1"
           style={{ background: "var(--surface-sub, #f8fafc)" }}
           aria-hidden="true"
         />
