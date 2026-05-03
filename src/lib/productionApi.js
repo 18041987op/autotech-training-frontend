@@ -49,6 +49,23 @@ export const getDailyProduction = (email, start, end) => {
   return productionFetch(`/daily?${qs}`);
 };
 
+// ─── Live scorecard (replaces /api/payroll-metrics for current week) ─────
+
+/**
+ * Fetch the current-week production scorecard for an employee.
+ * Returns the same shape as the legacy /api/payroll-metrics endpoint
+ * (linked, employee, period, metrics, ranking, benchmarks, compensation,
+ * checkin_needed) but computed live from Tekmetric instead of from the
+ * pre-computed CSV-upload tables.
+ *
+ * @param {string} email work_email of the employee
+ */
+export const getProductionScorecard = (email) => {
+  const qs = new URLSearchParams();
+  qs.set("email", email);
+  return productionFetch(`/scorecard?${qs}`);
+};
+
 // ─── Issue reports ────────────────────────────────────────────────────────
 
 /**

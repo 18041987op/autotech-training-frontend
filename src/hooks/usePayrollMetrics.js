@@ -1,19 +1,29 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "../lib/api";
+import { getProductionScorecard } from "../lib/productionApi";
+import { useAuthStore } from "../stores/authStore";
 
 // ── Fetch payroll metrics from training backend ───────────────────────────────
 // Training backend proxies the call to the payroll portal using the shared API key.
 // Returns null / { linked: false } if the employee's email isn't found in payroll.
 
 export function usePayrollMetrics() {
+  // Read current user email from the auth store. Must be a hook value so
+  // useQuery re-runs when the user changes.
+  const userEmail = useAuthStore((s) => s.user?.email);
+
   return useQuery({
-    queryKey: ["payroll-metrics"],
+    queryKey: ["payroll-metrics", userEmail],
+    enabled: !!userEmail,
     queryFn: async () => {
       try {
-        const data = await apiFetch("/api/payroll-metrics");
+        // LIVE source: /api/production/scorecard on Management Portal.
+        // Returns same shape as legacy /api/payroll-metrics but computed
+        // from Tekmetric in real time for the current week (Sun → today).
+        const data = await getProductionScorecard(userEmail);
         return { linked: true, ...data };
       } catch (e) {
-        // 404 = employee email not linked yet in payroll portal
+        // 404 = employee email not linked yet in management
         if (
           e.message?.includes("not found") ||
           e.message?.includes("404") ||
@@ -26,8 +36,8 @@ export function usePayrollMetrics() {
         return { linked: false, error: e.message };
       }
     },
-    staleTime: 5 * 60 * 1000,  // Cache for 5 min — metrics don't change mid-shift
-    retry: false,               // Don't retry 404s
+    staleTime: 2 * 60 * 1000,  // 2 min — live data should refresh more often
+    retry: false,
   });
 }
 
