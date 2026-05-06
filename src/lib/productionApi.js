@@ -112,3 +112,25 @@ export const listProductionIssues = (filters = {}) => {
  */
 export const updateProductionIssue = (payload) =>
   productionFetch(`/issues`, { method: "PATCH", body: payload });
+
+// ─── Reassignments (job assignment changes) ─────────────────────────────
+
+/**
+ * List reassignments where this employee was the FROM tech (lost the work).
+ * @param {string} email work_email
+ * @param {object} opts  { weekStart?, weekEnd? }
+ */
+export const getMyReassignments = (email, opts = {}) => {
+  const qs = new URLSearchParams();
+  qs.set("email", email);
+  if (opts.weekStart) qs.set("weekStart", opts.weekStart);
+  if (opts.weekEnd)   qs.set("weekEnd", opts.weekEnd);
+  return productionFetch(`/reassignments?${qs}`);
+};
+
+/**
+ * Acknowledge or report a reassignment.
+ * @param {object} payload { id, action: "ack" | "report", email }
+ */
+export const updateReassignment = (payload) =>
+  productionFetch(`/reassignments`, { method: "POST", body: payload });

@@ -2600,7 +2600,17 @@
     "pendingTitle": "Trabajo Pendiente",
     "pendingDesc": "de trabajos asignados que aún no están marcados como completados",
     "jobs": "trabajos",
-    "rosPosted": "ROs cerradas"
+    "rosPosted": "ROs cerradas",
+    "reassignments": {
+      "headline": "{{count}} trabajo{{plural}} reasignado{{plural}} fuera de ti",
+      "summary": "{{hours}}h, {{labor}} en labor — NO se cuentan en tus totales de producción.",
+      "ack": "Confirmar",
+      "ackHint": "Lo vi — está bien",
+      "report": "Reportar",
+      "reportConfirm": "¿Reportar esta reasignación como sospechosa? El admin la revisará.",
+      "wasCompleted": "Después de marcado completado",
+      "roPosted": "RO ya facturado"
+    }
   },
   "roadmap": {
     "title": "Roadmap e Ideas",

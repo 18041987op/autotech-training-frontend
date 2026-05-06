@@ -23,6 +23,7 @@ import { useAuthStore, useAuthReady } from "../stores/authStore";
 import { getDailyProduction, reportProductionIssue } from "../lib/productionApi";
 import { getTeamDirectory } from "../lib/hrApi";
 import { PageHero } from "../components/PageHero";
+import ReassignmentsCard from "../components/ReassignmentsCard";
 import { LoadingSkeleton } from "../components/LoadingSkeleton";
 
 // ── Date helpers (Sunday-anchored, matches payroll week) ─────────────────
@@ -199,6 +200,12 @@ export function MyProductionPage() {
         currentUserEmail={user.email}
         currentRange={range}
         priorRange={priorRange}
+      />
+
+      <ReassignmentsCard
+        email={effectiveEmail}
+        weekStart={range.start}
+        weekEnd={range.end}
       />
 
       {currentQ.isLoading ? (

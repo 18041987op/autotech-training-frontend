@@ -2600,7 +2600,17 @@
     "pendingTitle": "Pending Workload",
     "pendingDesc": "of jobs assigned to you that aren't marked completed yet",
     "jobs": "jobs",
-    "rosPosted": "ROs posted"
+    "rosPosted": "ROs posted",
+    "reassignments": {
+      "headline": "{{count}} job{{plural}} reassigned away from you",
+      "summary": "{{hours}}h, {{labor}} in labor — these are NOT counted in your production totals.",
+      "ack": "Acknowledge",
+      "ackHint": "I've seen this — looks fine",
+      "report": "Report",
+      "reportConfirm": "Report this reassignment as suspicious? Admin will review.",
+      "wasCompleted": "After you completed it",
+      "roPosted": "RO already posted"
+    }
   },
   "roadmap": {
     "title": "Roadmap & Ideas",
