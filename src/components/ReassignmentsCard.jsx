@@ -45,11 +45,15 @@ export default function ReassignmentsCard({ email, weekStart, weekEnd }) {
     onError: (e) => toast.error(e?.message || "Update failed"),
   });
 
-  const items = data?.reassignments || [];
-  // Only show un-acknowledged + recent ones
+  // Only show un-acknowledged + recent ones.
+  // Inline `data?.reassignments` inside the memo so React-hooks/exhaustive-deps
+  // sees `data` (stable from useQuery) rather than a freshly-created array each
+  // render. (CHG-020 / CHG-025 — same pattern as before.)
   const visible = useMemo(
-    () => items.filter((r) => !r.acknowledged_by_tech && !r.reported_as_suspicious),
-    [items]
+    () => (data?.reassignments || []).filter(
+      (r) => !r.acknowledged_by_tech && !r.reported_as_suspicious
+    ),
+    [data]
   );
 
   const totals = useMemo(() => {
